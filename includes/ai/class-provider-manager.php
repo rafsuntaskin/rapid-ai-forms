@@ -1,0 +1,79 @@
+<?php
+/**
+ * Resolves and dispatches AI requests to the configured provider.
+ *
+ * @package WP_AI_Forms
+ */
+
+namespace WP_AI_Forms\Ai;
+
+use WP_AI_Forms\Ai\Providers\Anthropic;
+use WP_AI_Forms\Ai\Providers\Gemini;
+use WP_AI_Forms\Ai\Providers\Openai_Compatible;
+use WP_AI_Forms\Ai\Providers\Managed;
+
+defined( 'ABSPATH' ) || exit;
+
+class Provider_Manager {
+	const OPTION_KEY = 'wp_ai_forms_ai_settings';
+
+	private $providers = [];
+
+	public function __construct() {
+		$this->register( new Anthropic() );
+		$this->register( new Gemini() );
+		$this->register( new Openai_Compatible() );
+		$this->register( new Managed() );
+
+		/**
+		 * Allow third parties to register additional providers.
+		 *
+		 * @param Provider_Manager $manager
+		 */
+		do_action( 'wp_ai_forms_register_providers', $this );
+	}
+
+	public function register( Provider $provider ) {
+		$this->providers[ $provider->key() ] = $provider;
+	}
+
+	public function get( $key ) {
+		return $this->providers[ $key ] ?? null;
+	}
+
+	public function all() {
+		return $this->providers;
+	}
+
+	public function settings() {
+		$defaults = [
+			'mode'           => 'byok',           // 'byok' | 'managed'
+			'active_provider' => 'openai_compatible',
+			'providers'      => [
+				'anthropic'         => [ 'api_key' => '', 'model' => 'claude-sonnet-4-6' ],
+				'gemini'            => [ 'api_key' => '', 'model' => 'gemini-2.0-flash' ],
+				'openai_compatible' => [ 'api_key' => '', 'base_url' => 'https://api.openai.com/v1', 'model' => 'gpt-4o-mini' ],
+				'managed'           => [ 'license_key' => '' ],
+			],
+		];
+		$saved = get_option( self::OPTION_KEY, [] );
+		return wp_parse_args( is_array( $saved ) ? $saved : [], $defaults );
+	}
+
+	public function save_settings( array $settings ) {
+		update_option( self::OPTION_KEY, $settings );
+	}
+
+	public function generate_form_schema( $prompt ) {
+		$settings = $this->settings();
+		$key      = 'managed' === $settings['mode'] ? 'managed' : $settings['active_provider'];
+		$provider = $this->get( $key );
+
+		if ( ! $provider ) {
+			return new \WP_Error( 'wpaif_no_provider', __( 'No AI provider configured.', 'wp-ai-forms' ) );
+		}
+
+		$options = $settings['providers'][ $key ] ?? [];
+		return $provider->generate_form_schema( $prompt, $options );
+	}
+}

@@ -1,0 +1,15 @@
+{
+  "name": "wp-ai-forms",
+  "version": "0.1.0",
+  "description": "AI-powered form builder for WordPress.",
+  "private": true,
+  "scripts": {
+    "build": "wp-scripts build src/admin/index.js src/frontend/index.js",
+    "start": "wp-scripts start src/admin/index.js src/frontend/index.js",
+    "lint:js": "wp-scripts lint-js src",
+    "format": "wp-scripts format src"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  }
+}

@@ -1,0 +1,35 @@
+.wpaif-page {
+	max-width: 960px;
+	margin-top: 16px;
+
+	.wpaif-mt {
+		margin-top: 16px;
+	}
+}
+
+.wpaif-page-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 16px;
+
+	&__desc {
+		color: #50575e;
+		margin: 4px 0 0;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 8px;
+	}
+}
+
+.wpaif-field-card {
+	margin-top: 12px;
+	background: #fafafa;
+}
+
+.wpaif-tabs {
+	margin-top: 16px;
+}
