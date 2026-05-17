@@ -5,6 +5,10 @@
 docs/
 CLAUDE.md
 
+# Build/dev scripts
+bin/
+dist/
+
 # Build sources (only the built `build/` output ships)
 src/
 .claude/
