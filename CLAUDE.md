@@ -1,5 +1,7 @@
 # WP AI Forms — agent notes
 
+> **For product/technical spec** (data contracts, REST endpoints, AI provider contract, roadmap), see [`docs/SPEC.md`](docs/SPEC.md). This file holds agent-oriented conventions only.
+
 ## What this plugin is
 A WordPress plugin that builds forms from natural-language prompts. Two AI modes:
 - **BYOK**: user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
