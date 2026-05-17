@@ -288,6 +288,143 @@ add_action( 'wp_ai_forms_submission_created', function ( $id, $form, $data ) {
 
 ---
 
+## 5A. Managed service backend contract
+
+This section specifies the HTTP contract our hosted backend must implement so the plugin's `Managed` provider can talk to it. **The plugin never holds an LLM provider key.** It only holds a per-site `license_key`. The backend is responsible for authenticating the license, debiting credits, and proxying the actual LLM call using server-held provider keys.
+
+### 5A.1 Trust model
+
+```
+[WP site]  ──Bearer license_key──▶  [Our backend]  ──provider key──▶  [LLM provider]
+```
+
+- The `license_key` is the only credential present in the plugin.
+- A leaked license key only burns *that customer's* credits — there is no shared/global secret to compromise.
+- License keys must be **per-site bindable**: when first used, the backend records the site URL (`X-Site-URL`) and may refuse later requests from a different origin (configurable per plan).
+- License keys are revocable from the customer dashboard and must propagate revocation within ≤ 60s.
+
+### 5A.2 Endpoint: generate form schema
+
+`POST {endpoint}/v1/generate-form` — endpoint URL is filterable in the plugin via `wp_ai_forms_managed_endpoint`; the default is `https://api.example.com/v1/generate-form`.
+
+**Request**
+
+| Header | Value |
+|---|---|
+| `Authorization` | `Bearer {license_key}` |
+| `Content-Type` | `application/json` |
+| `X-Site-URL` | `home_url()` of the calling site |
+| `X-Plugin-Version` | `WP_AI_FORMS_VERSION` (recommended, for telemetry) |
+| `X-Idempotency-Key` | optional, ULID/UUID — if present, the backend MUST return the same response for repeated requests within 24h without re-debiting credits |
+
+```json
+{
+  "prompt": "Contact form with name, email, and a message",
+  "options": {
+    "preferred_model": "fast",        // optional: "fast" | "balanced" | "best"
+    "locale": "en_US"                 // optional: hint for label language
+  }
+}
+```
+
+**Successful response (200)**
+
+```jsonc
+{
+  "schema": { /* Form Schema, §2 */ },
+  "usage": {
+    "credits_charged": 1,
+    "credits_remaining": 248,
+    "model_used": "claude-haiku-4-5"  // informational, never trusted by the plugin
+  },
+  "request_id": "req_01HXYZ..."       // echo this back in errors/support tickets
+}
+```
+
+The plugin accepts either `{ schema }` directly or `{ text: "..." }` (where `text` is raw model output to be parsed by `Schema_Prompt::extract_schema()`). New backend implementations SHOULD return `schema` to avoid double-parsing on the WP side.
+
+**Error responses**
+
+| HTTP | Plugin maps to | Meaning |
+|---|---|---|
+| `400` | `wpaif_managed_error` | Malformed prompt, prompt too long, or schema generation failed validation server-side |
+| `401` | `wpaif_managed_error` | License key invalid or revoked |
+| `402` | `wpaif_no_credits` | License valid but out of credits |
+| `403` | `wpaif_managed_error` | License is locked to a different site URL |
+| `429` | `wpaif_managed_error` | Rate-limited; backend SHOULD include `Retry-After` |
+| `5xx` | `wpaif_managed_error` | Backend or upstream provider failure |
+
+Error body:
+```json
+{
+  "code": "out_of_credits",
+  "message": "Your account is out of credits. Top up at https://example.com/billing.",
+  "request_id": "req_01HXYZ...",
+  "details": { "credits_remaining": 0 }
+}
+```
+
+### 5A.3 Endpoint: license introspection (optional but recommended)
+
+`GET {endpoint}/v1/license` with `Authorization: Bearer {license_key}`.
+
+```json
+{
+  "valid": true,
+  "plan": "starter",
+  "credits_remaining": 248,
+  "credits_renew_at": "2026-06-01T00:00:00Z",
+  "bound_site_url": "https://customer.com"
+}
+```
+
+Used by the plugin's Settings page to display a live "credits remaining" badge. The plugin will call this at most once per page load and cache the result for 5 minutes via a transient.
+
+**Plugin work needed:** add a Settings card that fetches and displays this — currently the plugin only stores the key and uses it on generate. Tracked in §12, v0.4.
+
+### 5A.4 Webhook: credit balance changes (optional)
+
+When a customer tops up credits or changes plan, the backend MAY POST to a plugin endpoint to refresh local state:
+
+`POST /wp-json/wp-ai-forms/v1/managed/webhook` (to be added)
+
+Body signed with `X-Signature: sha256={hmac}` where the HMAC secret is derived from the license key (so each site has a unique signing key the customer also controls). The plugin verifies and updates a cached `credits_remaining` transient.
+
+This webhook is **not yet implemented**. Until then, the plugin polls `/v1/license`.
+
+### 5A.5 Credit accounting rules
+
+Rules the backend MUST enforce (the plugin can't):
+
+1. **Atomic debit.** Credits are debited *before* the upstream LLM call is initiated. If the upstream call fails with a 5xx, credits are refunded. If it returns invalid JSON that fails schema validation, credits are refunded (one retry permitted at backend's discretion).
+2. **Idempotency.** Requests carrying `X-Idempotency-Key` must produce identical responses for 24h with **at most one** debit.
+3. **Rate limits.** Per-license rate limits return `429` with `Retry-After`.
+4. **Abuse handling.** Repeated `400`s with unparseable prompts should not silently burn credits; after N failures the backend SHOULD `400` without invoking the LLM.
+
+### 5A.6 What the backend implementation needs (out of scope for the plugin repo)
+
+These belong in the separate `wp-ai-forms-backend` service, not this plugin:
+
+- License issuance & billing (Stripe, Paddle, LemonSqueezy, etc.).
+- Multi-provider routing (try Anthropic first, fall back to OpenAI on rate limit, etc.). Vercel AI Gateway is a natural fit here.
+- Provider key vaulting (env vars on the host; never in source).
+- Per-prompt audit log (for support and abuse review).
+- Credit ledger with refundable debits.
+- Webhook signing keys derived per-license.
+
+### 5A.7 Security checklist before going live
+
+- [ ] All upstream provider keys live only in backend env vars, never in any plugin artifact.
+- [ ] License keys are at least 128 bits of entropy, prefixed for type detection (e.g. `wpaif_live_…`).
+- [ ] License keys are hashed at rest (Argon2id / bcrypt) — never stored plaintext server-side.
+- [ ] Site-URL binding enabled for paid plans.
+- [ ] `429`s on per-license, per-IP, and global tiers.
+- [ ] `X-Idempotency-Key` honored.
+- [ ] All errors return a `request_id` to aid customer support.
+- [ ] Webhook signature verification implemented before the webhook is announced.
+
+---
+
 ## 6. Frontend rendering
 
 ### 6.1 Shortcode
