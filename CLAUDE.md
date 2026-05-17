@@ -3,9 +3,13 @@
 > **For product/technical spec** (data contracts, REST endpoints, AI provider contract, roadmap), see [`docs/SPEC.md`](docs/SPEC.md). This file holds agent-oriented conventions only.
 
 ## What this plugin is
-A WordPress plugin that builds forms from natural-language prompts. Two AI modes:
-- **BYOK**: user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
-- **Managed**: our hosted service, credit-based, authenticated by license key.
+A WordPress plugin that builds forms from natural-language prompts.
+
+**MVP (v0.1) ships BYOK only.** The managed/credit-based mode is intentionally hidden from the Settings UI until after the wp.org launch — the PHP `Managed` provider and the backend contract are wired ahead of time, but no user-facing UI exists for it yet. Don't surface it in MVP work unless explicitly asked.
+
+Modes:
+- **BYOK** (MVP): user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
+- **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
 
 Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submissions`) and rendered via the `[wp_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
 
@@ -36,9 +40,11 @@ Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submi
 - Add a new field type: extend `Form_Renderer::render_field` (PHP), the `FIELD_TYPES` array in `FormEditor.js`, and the allowed types in `Schema_Prompt::sanitize_schema`.
 - Build: `npm run build`. Dev watch: `npm run start`.
 
-## Not yet built
-- Gutenberg block (planned: thin wrapper around shortcode).
-- Submissions admin view (data is being stored; UI to come).
-- Managed service backend (PHP client points at a placeholder endpoint; override with the `wp_ai_forms_managed_endpoint` filter).
-- File upload field type.
-- Conditional logic / multi-step.
+## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
+- Submissions admin view (data is being stored; UI to come) — v0.2.
+- Email notifications — v0.2.
+- Gutenberg block (thin wrapper around shortcode) — v0.4.
+- File upload field type — v0.5.
+- Conditional logic / multi-step — v0.5.
+- Managed service (UI + backend) — v1.0, post wp.org launch.
+- WP AI Client SDK adoption — future, once SDK stabilizes / lands in WP 7.0 core.

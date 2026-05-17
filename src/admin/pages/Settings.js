@@ -5,7 +5,6 @@ import {
 	CardBody,
 	CardHeader,
 	Notice,
-	RadioControl,
 	SelectControl,
 	Spinner,
 	TextControl,
@@ -60,7 +59,7 @@ export default function Settings( { api } ) {
 		<div className="wpaif-page">
 			<PageHeader
 				title={ __( 'AI Settings', 'wp-ai-forms' ) }
-				description={ __( 'Choose how AI is powered: bring your own key or use our managed credit-based service.', 'wp-ai-forms' ) }
+				description={ __( 'Configure the AI provider used to generate form schemas. A managed credit-based service is coming after our wp.org launch.', 'wp-ai-forms' ) }
 				actions={
 					<Button variant="primary" onClick={ save } isBusy={ saving }>
 						{ __( 'Save settings', 'wp-ai-forms' ) }
@@ -74,22 +73,7 @@ export default function Settings( { api } ) {
 				</Notice>
 			) }
 
-			<Card>
-				<CardHeader><strong>{ __( 'Mode', 'wp-ai-forms' ) }</strong></CardHeader>
-				<CardBody>
-					<RadioControl
-						selected={ settings.mode }
-						options={ [
-							{ label: __( 'Bring your own key (BYOK)', 'wp-ai-forms' ), value: 'byok' },
-							{ label: __( 'Managed service (credit-based)', 'wp-ai-forms' ), value: 'managed' },
-						] }
-						onChange={ ( v ) => setSettings( { ...settings, mode: v } ) }
-					/>
-				</CardBody>
-			</Card>
-
-			{ settings.mode === 'byok' && (
-				<Card className="wpaif-mt">
+			<Card className="wpaif-mt">
 					<CardHeader><strong>{ __( 'BYOK provider', 'wp-ai-forms' ) }</strong></CardHeader>
 					<CardBody>
 						<SelectControl
@@ -130,25 +114,17 @@ export default function Settings( { api } ) {
 								</Card>
 							);
 						} ) }
-					</CardBody>
-				</Card>
-			) }
+				</CardBody>
+			</Card>
 
-			{ settings.mode === 'managed' && (
-				<Card className="wpaif-mt">
-					<CardHeader><strong>{ __( 'Managed service', 'wp-ai-forms' ) }</strong></CardHeader>
-					<CardBody>
-						<TextControl
-							label={ __( 'License key', 'wp-ai-forms' ) }
-							type="password"
-							value={ settings.providers.managed.license_key || '' }
-							placeholder={ settings.providers.managed.license_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
-							onChange={ ( v ) => updateProvider( 'managed', { license_key: v } ) }
-							help={ __( 'Credits will be deducted per AI generation.', 'wp-ai-forms' ) }
-						/>
-					</CardBody>
-				</Card>
-			) }
+			<Card className="wpaif-mt">
+				<CardBody>
+					<p>
+						<strong>{ __( 'Coming soon: managed service.', 'wp-ai-forms' ) }</strong>{ ' ' }
+						{ __( 'After our wp.org launch, you\'ll be able to skip managing API keys and pay-as-you-go for AI form generation. No action needed today.', 'wp-ai-forms' ) }
+					</p>
+				</CardBody>
+			</Card>
 		</div>
 	);
 }

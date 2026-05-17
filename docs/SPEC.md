@@ -14,10 +14,12 @@ WP AI Forms is a WordPress plugin that lets site owners build forms from natural
 
 ### 1.1 AI modes
 
-| Mode | Description | Configured by |
-|---|---|---|
-| `byok` | Site owner brings their own API key. | `active_provider` + per-provider config |
-| `managed` | Plugin calls the vendor's managed service, billed by credits. | `license_key` |
+| Mode | Description | Configured by | Status |
+|---|---|---|---|
+| `byok` | Site owner brings their own API key. | `active_provider` + per-provider config | **MVP (v0.1)** |
+| `managed` | Plugin calls the vendor's managed service, billed by credits. | `license_key` | Post-wp.org launch (v1.0). Code present, UI hidden. |
+
+> **MVP scope.** v0.1 ships as **BYOK only**. The managed/credit-based path will be enabled once the plugin is live on wp.org and the backend service is GA. The PHP `Managed` provider and the backend contract (§5A) are documented now so the path is wired ahead of time, but the Settings UI does not expose `managed` mode in MVP.
 
 ### 1.2 Goals
 - Generate working form schemas from a single natural-language prompt.
@@ -288,7 +290,9 @@ add_action( 'wp_ai_forms_submission_created', function ( $id, $form, $data ) {
 
 ---
 
-## 5A. Managed service backend contract
+## 5A. Managed service backend contract — POST-MVP (v1.0)
+
+> **Not in MVP.** This section is documented now to lock in the wire protocol ahead of time, but no UI is shipped for the managed path in v0.1. The plugin will surface the managed-service Settings card and credit-balance UI once the hosted backend is live (see §12 Roadmap).
 
 This section specifies the HTTP contract our hosted backend must implement so the plugin's `Managed` provider can talk to it. **The plugin never holds an LLM provider key.** It only holds a per-site `license_key`. The backend is responsible for authenticating the license, debiting credits, and proxying the actual LLM call using server-held provider keys.
 
@@ -425,6 +429,50 @@ These belong in the separate `wp-ai-forms-backend` service, not this plugin:
 
 ---
 
+## 5B. WordPress Abilities API integration
+
+Starting with WordPress 6.9, the [Abilities API](https://developer.wordpress.org/apis/abilities-api/) provides a discovery registry for plugin capabilities. WP AI Forms registers its high-value verbs there so AI agents, automation tools, and other plugins can find and call them with input/output schema validation and capability checks.
+
+Registration is guarded with `function_exists( 'wp_register_ability' )`, so the plugin still loads cleanly on WP < 6.9 — the abilities simply aren't published there.
+
+### 5B.1 Category
+
+```
+wp-ai-forms — "AI Forms"
+```
+
+### 5B.2 Registered abilities
+
+| Ability name | Purpose | Permission |
+|---|---|---|
+| `wp-ai-forms/generate-form-schema` | Turn a natural-language prompt into a Form Schema (§2). | `manage_options` |
+| `wp-ai-forms/create-form` | Persist a form (with an optional pre-generated schema). | `manage_options` |
+| `wp-ai-forms/list-forms` | Paginated form list including the shortcode string. | `manage_options` |
+| `wp-ai-forms/get-form` | Fetch a single form by `id` or `uuid`. | `manage_options` |
+
+Each ability carries a full `input_schema` / `output_schema` (JSON Schema) so callers can introspect what to send and what they'll get back.
+
+### 5B.3 Extension point
+
+After WP AI Forms registers its abilities, it fires:
+
+```php
+do_action( 'wp_ai_forms_abilities_registered' );
+```
+
+Other plugins can use this to register related abilities or extend the `wp-ai-forms` category (e.g. add `wp-ai-forms/export-submissions` from a companion plugin).
+
+### 5B.4 Not done as abilities (intentional)
+
+- **Public form submission.** Submissions are intentionally a public REST endpoint (`POST /submissions/{uuid}`), not an ability — anonymous visitors shouldn't need agent-tier permissions to fill in a contact form.
+- **Settings management.** Provider credentials are a UI concern, not an agent-facing verb.
+
+### 5B.5 Future: WP AI Client SDK adoption
+
+The companion [WordPress AI Client SDK](https://make.wordpress.org/ai/2025/11/21/introducing-the-wordpress-ai-client-sdk/) (proposed for merge into WP 7.0 core) provides shared BYOK credential storage and a unified provider abstraction across plugins. Once it stabilizes (currently 0.1.0) or lands in core, our `Ai\Provider_Manager` and Settings BYOK UI can be swapped to consume the SDK — users would then manage AI keys once at the site level instead of per-plugin. Tracked in §12 (Roadmap).
+
+---
+
 ## 6. Frontend rendering
 
 ### 6.1 Shortcode
@@ -525,6 +573,15 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 
 ## 12. Roadmap (with acceptance criteria)
 
+### v0.1 — MVP (BYOK only)
+- [x] BYOK with Anthropic, Gemini, OpenAI-compatible providers.
+- [x] Form CRUD + custom DB tables.
+- [x] Shortcode renderer + frontend submission.
+- [x] React admin SPA.
+- [x] Abilities API registration.
+- [ ] Submit to wp.org plugin directory.
+  *Done when:* the plugin passes wp.org review and is listed.
+
 ### v0.2 — Operability
 - [ ] Submissions admin view: paginated list per form, JSON & CSV export.
   *Done when:* admin can browse submissions, filter by date, and download a CSV.
@@ -547,10 +604,15 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [ ] Conditional logic (show/hide fields based on other field values).
 - [ ] Multi-step forms with progress indicator.
 
-### v1.0 — Managed service GA
-- [ ] Managed backend live with credit billing.
+### v1.0 — Managed service GA (post wp.org launch)
+- [ ] Managed backend live with credit billing (separate `wp-ai-forms-backend` service).
+- [ ] Settings UI: re-enable mode selector, surface managed card with license key + live credit balance.
 - [ ] Usage dashboard inside the plugin admin.
-- [ ] Public API for billing webhook → settings sync.
+- [ ] Webhook receiver for billing → settings sync.
+- [ ] Pre-launch security checklist (§5A.7) signed off.
+
+### Future
+- [ ] WP AI Client SDK adoption (once 7.0 lands or SDK stabilizes) — replace our `Provider_Manager` and BYOK Settings UI with the SDK's shared credential store. See §5B.5.
 
 ---
 

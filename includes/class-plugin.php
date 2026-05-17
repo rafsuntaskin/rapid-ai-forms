@@ -7,6 +7,7 @@
 
 namespace WP_AI_Forms;
 
+use WP_AI_Forms\Abilities\Abilities;
 use WP_AI_Forms\Admin\Admin;
 use WP_AI_Forms\Api\Rest_Controller;
 use WP_AI_Forms\Shortcodes\Form_Shortcode;
@@ -32,5 +33,6 @@ class Plugin {
 		( new Rest_Controller() )->register();
 		( new Form_Shortcode() )->register();
 		( new Frontend() )->register();
+		( new Abilities() )->register();
 	}
 }

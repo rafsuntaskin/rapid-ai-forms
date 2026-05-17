@@ -14,18 +14,19 @@ AI-powered form builder for WordPress. Describe the form you want and let AI gen
 
 WP AI Forms lets you build forms with natural language. Describe what you need ("contact form with name, email, phone, and a message"), and the plugin asks your selected AI provider to generate the schema for you. Edit, save, and embed anywhere with the `[wp_ai_form id="123"]` shortcode.
 
-**Two ways to power AI:**
+**Bring Your Own Key (BYOK).** Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compatible endpoint (OpenAI, OpenRouter, local LLMs, Groq, etc.).
 
-* **BYOK (Bring Your Own Key):** Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compatible endpoint (OpenAI, OpenRouter, local LLMs, Groq, etc.).
-* **Managed service:** Pay-as-you-go credits, no API keys to manage. Add your license key and go.
+**Coming soon:** A managed credit-based service so you can skip API key management entirely — pay-as-you-go with no upstream provider account needed.
 
 **Features**
 
-* AI-driven form generation from a single prompt
-* Drag-free field editing in a React admin SPA
+* AI-driven form generation from a single prompt (BYOK)
+* Field editing in a React admin SPA
 * Custom DB tables for forms and submissions — built to scale
 * Shortcode: `[wp_ai_form id="123"]`
-* Gutenberg block support (coming soon)
+* Discoverable via the WordPress Abilities API (6.9+)
+* Gutenberg block (coming soon)
+* Managed credit-based service (coming soon after launch)
 
 == Installation ==
 
