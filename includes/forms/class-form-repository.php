@@ -18,15 +18,15 @@ class Form_Repository {
 
 		$now = current_time( 'mysql', true );
 		$row = [
-			'uuid'       => wp_generate_uuid4(),
-			'title'      => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
-			'status'     => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
-			'schema'     => wp_json_encode( isset( $data['schema'] ) ? $data['schema'] : [] ),
-			'settings'   => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : [] ),
-			'ai_prompt'  => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
-			'author_id'  => get_current_user_id(),
-			'created_at' => $now,
-			'updated_at' => $now,
+			'uuid'        => wp_generate_uuid4(),
+			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
+			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
+			'form_schema' => wp_json_encode( isset( $data['schema'] ) ? $data['schema'] : [] ),
+			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : [] ),
+			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
+			'author_id'   => get_current_user_id(),
+			'created_at'  => $now,
+			'updated_at'  => $now,
 		];
 
 		$wpdb->insert( Schema::forms_table(), $row );
@@ -45,7 +45,7 @@ class Form_Repository {
 			$row['status'] = sanitize_key( $data['status'] );
 		}
 		if ( array_key_exists( 'schema', $data ) ) {
-			$row['schema'] = wp_json_encode( $data['schema'] );
+			$row['form_schema'] = wp_json_encode( $data['schema'] );
 		}
 		if ( array_key_exists( 'settings', $data ) ) {
 			$row['settings'] = wp_json_encode( $data['settings'] );
@@ -89,8 +89,9 @@ class Form_Repository {
 
 	private function hydrate( array $row ) {
 		$row['id']       = (int) $row['id'];
-		$row['schema']   = json_decode( $row['schema'], true ) ?: [];
-		$row['settings'] = json_decode( $row['settings'], true ) ?: [];
+		$row['schema']   = json_decode( $row['form_schema'] ?? '', true ) ?: [];
+		$row['settings'] = json_decode( $row['settings'] ?? '', true ) ?: [];
+		unset( $row['form_schema'] );
 		return $row;
 	}
 }

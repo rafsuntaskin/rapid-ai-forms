@@ -4,8 +4,8 @@
   "description": "AI-powered form builder for WordPress.",
   "private": true,
   "scripts": {
-    "build": "wp-scripts build src/admin/index.js src/frontend/index.js",
-    "start": "wp-scripts start src/admin/index.js src/frontend/index.js",
+    "build": "wp-scripts build",
+    "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js src",
     "format": "wp-scripts format src"
   },

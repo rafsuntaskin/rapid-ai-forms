@@ -10,7 +10,7 @@ namespace WP_AI_Forms\Db;
 defined( 'ABSPATH' ) || exit;
 
 class Schema {
-	const DB_VERSION = '1.0.0';
+	const DB_VERSION = '1.0.1';
 
 	public static function forms_table() {
 		global $wpdb;
@@ -37,7 +37,7 @@ class Schema {
 			uuid VARCHAR(36) NOT NULL,
 			title VARCHAR(255) NOT NULL DEFAULT '',
 			status VARCHAR(20) NOT NULL DEFAULT 'draft',
-			schema LONGTEXT NOT NULL,
+			form_schema LONGTEXT NOT NULL,
 			settings LONGTEXT NOT NULL,
 			ai_prompt LONGTEXT NULL,
 			author_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
