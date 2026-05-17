@@ -163,13 +163,11 @@ class Rest_Controller {
 		$settings = $manager->settings();
 		// Mask secrets for safety on the wire.
 		foreach ( $settings['providers'] as $key => $cfg ) {
-			foreach ( [ 'api_key', 'license_key' ] as $secret ) {
-				if ( ! empty( $cfg[ $secret ] ) ) {
-					$settings['providers'][ $key ][ $secret . '_set' ] = true;
-					$settings['providers'][ $key ][ $secret ]          = '';
-				} else {
-					$settings['providers'][ $key ][ $secret . '_set' ] = false;
-				}
+			if ( ! empty( $cfg['api_key'] ) ) {
+				$settings['providers'][ $key ]['api_key_set'] = true;
+				$settings['providers'][ $key ]['api_key']     = '';
+			} else {
+				$settings['providers'][ $key ]['api_key_set'] = false;
 			}
 		}
 		$providers = [];
@@ -185,9 +183,6 @@ class Rest_Controller {
 		$current  = $manager->settings();
 		$incoming = $req->get_json_params() ?: [];
 
-		if ( isset( $incoming['mode'] ) ) {
-			$current['mode'] = in_array( $incoming['mode'], [ 'byok', 'managed' ], true ) ? $incoming['mode'] : 'byok';
-		}
 		if ( isset( $incoming['active_provider'] ) ) {
 			$current['active_provider'] = sanitize_key( $incoming['active_provider'] );
 		}
@@ -197,8 +192,8 @@ class Rest_Controller {
 					continue;
 				}
 				foreach ( $cfg as $field => $value ) {
-					// Empty secret means "leave as is"; non-empty replaces.
-					if ( in_array( $field, [ 'api_key', 'license_key' ], true ) && '' === $value ) {
+					// Empty api_key means "leave as is"; non-empty replaces.
+					if ( 'api_key' === $field && '' === $value ) {
 						continue;
 					}
 					$current['providers'][ $key ][ $field ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;

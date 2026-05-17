@@ -40,7 +40,6 @@ export default function Settings( { api } ) {
 		setMessage( null );
 		try {
 			const next = await api.put( 'settings', {
-				mode: settings.mode,
 				active_provider: settings.active_provider,
 				providers: settings.providers,
 			} );
@@ -53,13 +52,13 @@ export default function Settings( { api } ) {
 		}
 	};
 
-	const byokProviders = ( settings.available_providers || [] ).filter( ( p ) => p.key !== 'managed' );
+	const providers = settings.available_providers || [];
 
 	return (
 		<div className="wpaif-page">
 			<PageHeader
 				title={ __( 'AI Settings', 'wp-ai-forms' ) }
-				description={ __( 'Configure the AI provider used to generate form schemas. A managed credit-based service is coming after our wp.org launch.', 'wp-ai-forms' ) }
+				description={ __( 'Configure the AI provider used to generate form schemas.', 'wp-ai-forms' ) }
 				actions={
 					<Button variant="primary" onClick={ save } isBusy={ saving }>
 						{ __( 'Save settings', 'wp-ai-forms' ) }
@@ -74,16 +73,16 @@ export default function Settings( { api } ) {
 			) }
 
 			<Card className="wpaif-mt">
-					<CardHeader><strong>{ __( 'BYOK provider', 'wp-ai-forms' ) }</strong></CardHeader>
+					<CardHeader><strong>{ __( 'AI provider', 'wp-ai-forms' ) }</strong></CardHeader>
 					<CardBody>
 						<SelectControl
 							label={ __( 'Active provider', 'wp-ai-forms' ) }
 							value={ settings.active_provider }
-							options={ byokProviders.map( ( p ) => ( { label: p.label, value: p.key } ) ) }
+							options={ providers.map( ( p ) => ( { label: p.label, value: p.key } ) ) }
 							onChange={ ( v ) => setSettings( { ...settings, active_provider: v } ) }
 						/>
 
-						{ byokProviders.map( ( p ) => {
+						{ providers.map( ( p ) => {
 							const cfg = settings.providers[ p.key ] || {};
 							return (
 								<Card key={ p.key } className="wpaif-mt">
@@ -114,15 +113,6 @@ export default function Settings( { api } ) {
 								</Card>
 							);
 						} ) }
-				</CardBody>
-			</Card>
-
-			<Card className="wpaif-mt">
-				<CardBody>
-					<p>
-						<strong>{ __( 'Coming soon: managed service.', 'wp-ai-forms' ) }</strong>{ ' ' }
-						{ __( 'After our wp.org launch, you\'ll be able to skip managing API keys and pay-as-you-go for AI form generation. No action needed today.', 'wp-ai-forms' ) }
-					</p>
 				</CardBody>
 			</Card>
 		</div>

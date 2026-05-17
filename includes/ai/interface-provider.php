@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 interface Provider {
 	/**
-	 * Unique provider key, e.g. "openai", "anthropic", "gemini", "managed".
+	 * Unique provider key, e.g. "anthropic", "gemini", "openai_compatible".
 	 */
 	public function key();
 

@@ -1,0 +1,37 @@
+# Files and directories excluded from the wp.org distribution zip.
+# Honored by `wp dist-archive`, `10up/action-wordpress-plugin-deploy`, and similar tools.
+
+# Internal docs
+docs/
+CLAUDE.md
+
+# Build sources (only the built `build/` output ships)
+src/
+.claude/
+node_modules/
+
+# Dev configs
+.git/
+.gitignore
+.distignore
+.editorconfig
+.eslintrc*
+.prettierrc*
+.stylelintrc*
+package.json
+package-lock.json
+composer.json
+composer.lock
+webpack.config.js
+phpcs.xml*
+phpunit.xml*
+tests/
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Misc
+*.log
+*.zip
