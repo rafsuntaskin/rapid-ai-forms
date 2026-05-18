@@ -237,11 +237,19 @@ class Rest_Controller {
 		$fields = $form['schema']['fields'] ?? [];
 		foreach ( $fields as $field ) {
 			$name = $field['name'];
+			$type = $field['type'] ?? 'text';
+
+			// Hidden fields take their value from the schema, never from the client.
+			if ( 'hidden' === $type ) {
+				$out[ $name ] = sanitize_text_field( $field['default_value'] ?? '' );
+				continue;
+			}
+
 			if ( ! array_key_exists( $name, $payload ) ) {
 				continue;
 			}
 			$value = $payload[ $name ];
-			switch ( $field['type'] ) {
+			switch ( $type ) {
 				case 'email':
 					$value = sanitize_email( $value );
 					break;
@@ -253,6 +261,10 @@ class Rest_Controller {
 					break;
 				case 'number':
 					$value = is_numeric( $value ) ? $value + 0 : null;
+					break;
+				case 'checkbox_group':
+					$allowed = array_column( (array) ( $field['options'] ?? [] ), 'value' );
+					$value   = array_values( array_intersect( array_map( 'sanitize_text_field', (array) $value ), $allowed ) );
 					break;
 				default:
 					$value = is_array( $value ) ? array_map( 'sanitize_text_field', $value ) : sanitize_text_field( $value );

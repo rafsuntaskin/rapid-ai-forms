@@ -25,9 +25,10 @@ Schema shape:
     {
       "name": "snake_case_id",
       "label": "Human label",
-      "type": "text|email|tel|url|number|date|textarea|select|radio|checkbox",
+      "type": "text|email|tel|url|number|date|password|hidden|textarea|select|radio|checkbox|checkbox_group",
       "required": true,
       "placeholder": "optional",
+      "default_value": "optional, used by hidden fields",
       "options": [ { "label": "Yes", "value": "yes" } ]
     }
   ]
@@ -36,7 +37,10 @@ Schema shape:
 Rules:
 - Always include a "submit_label".
 - "name" must be snake_case and unique within the form.
-- Only include "options" when type is select or radio. Select/radio fields MUST have at least 2 options.
+- Only include "options" when type is select, radio, or checkbox_group. Those fields MUST have at least 2 options.
+- "checkbox" is a single yes/no toggle. Use "checkbox_group" when the user can select multiple values from a list.
+- Use "hidden" only when you need to carry a server-side value (campaign tag, referrer, etc.); include a "default_value".
+- Use "password" for password input fields.
 - If the user message includes "Current form schema:", treat the request as an
   EDIT. Return the full updated schema, preserving every existing field, option,
   label, name, type, and order EXACTLY unless the user explicitly asked you to
@@ -89,7 +93,7 @@ EOT;
 			'fields'       => [],
 		];
 
-		$allowed_types = [ 'text', 'email', 'tel', 'url', 'number', 'date', 'textarea', 'select', 'radio', 'checkbox' ];
+		$allowed_types = [ 'text', 'email', 'tel', 'url', 'number', 'date', 'password', 'hidden', 'textarea', 'select', 'radio', 'checkbox', 'checkbox_group' ];
 
 		foreach ( (array) ( $schema['fields'] ?? [] ) as $field ) {
 			if ( empty( $field['name'] ) ) {
@@ -106,7 +110,10 @@ EOT;
 				'required'    => ! empty( $field['required'] ),
 				'placeholder' => sanitize_text_field( $field['placeholder'] ?? '' ),
 			];
-			if ( in_array( $type, [ 'select', 'radio' ], true ) && ! empty( $field['options'] ) ) {
+			if ( 'hidden' === $type && isset( $field['default_value'] ) ) {
+				$entry['default_value'] = sanitize_text_field( $field['default_value'] );
+			}
+			if ( in_array( $type, [ 'select', 'radio', 'checkbox_group' ], true ) && ! empty( $field['options'] ) ) {
 				$entry['options'] = array_values(
 					array_filter(
 						array_map(

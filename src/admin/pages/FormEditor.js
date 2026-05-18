@@ -21,15 +21,20 @@ import FormPreview from '../components/FormPreview';
 const FIELD_TYPES = [
 	{ label: 'Text', value: 'text' },
 	{ label: 'Email', value: 'email' },
+	{ label: 'Password', value: 'password' },
 	{ label: 'Number', value: 'number' },
 	{ label: 'Textarea', value: 'textarea' },
 	{ label: 'Select', value: 'select' },
 	{ label: 'Radio', value: 'radio' },
-	{ label: 'Checkbox', value: 'checkbox' },
+	{ label: 'Checkbox (single)', value: 'checkbox' },
+	{ label: 'Checkbox group', value: 'checkbox_group' },
 	{ label: 'Date', value: 'date' },
 	{ label: 'Phone', value: 'tel' },
 	{ label: 'URL', value: 'url' },
+	{ label: 'Hidden', value: 'hidden' },
 ];
+
+const TYPES_WITH_OPTIONS = [ 'select', 'radio', 'checkbox_group' ];
 
 export default function FormEditor( { api, formId } ) {
 	const [ form, setForm ] = useState( null );
@@ -244,12 +249,22 @@ export default function FormEditor( { api, formId } ) {
 										/>
 									</FlexItem>
 								</Flex>
-								<ToggleControl
-									label={ __( 'Required', 'wp-ai-forms' ) }
-									checked={ !! f.required }
-									onChange={ ( v ) => updateField( i, { required: v } ) }
-								/>
-								{ ( f.type === 'select' || f.type === 'radio' ) && (
+								{ f.type !== 'hidden' && (
+									<ToggleControl
+										label={ __( 'Required', 'wp-ai-forms' ) }
+										checked={ !! f.required }
+										onChange={ ( v ) => updateField( i, { required: v } ) }
+									/>
+								) }
+								{ f.type === 'hidden' && (
+									<TextControl
+										label={ __( 'Default value', 'wp-ai-forms' ) }
+										help={ __( 'This value is submitted with the form. Not visible or editable to visitors.', 'wp-ai-forms' ) }
+										value={ f.default_value || '' }
+										onChange={ ( v ) => updateField( i, { default_value: v } ) }
+									/>
+								) }
+								{ TYPES_WITH_OPTIONS.includes( f.type ) && (
 									<div className="wpaif-options">
 										<div className="wpaif-options__header">
 											<strong>{ __( 'Options', 'wp-ai-forms' ) }</strong>

@@ -19,9 +19,12 @@ const onSubmit = async ( event ) => {
 	const submit = form.querySelector( '.wpaif-form__submit' );
 
 	const data = {};
-	new FormData( form ).forEach( ( value, key ) => {
-		if ( key in data ) {
-			data[ key ] = [].concat( data[ key ], value );
+	new FormData( form ).forEach( ( value, rawKey ) => {
+		// `name[]` inputs (checkbox_group) → always treat as array, strip the suffix.
+		const isArray = rawKey.endsWith( '[]' );
+		const key = isArray ? rawKey.slice( 0, -2 ) : rawKey;
+		if ( isArray || key in data ) {
+			data[ key ] = [].concat( data[ key ] || [], value );
 		} else {
 			data[ key ] = value;
 		}

@@ -4,7 +4,7 @@
  */
 import { __ } from '@wordpress/i18n';
 
-const PLAIN_INPUT_TYPES = [ 'text', 'email', 'tel', 'url', 'number', 'date' ];
+const PLAIN_INPUT_TYPES = [ 'text', 'email', 'tel', 'url', 'number', 'date', 'password' ];
 
 function PreviewField( { field } ) {
 	if ( ! field.name ) {
@@ -15,6 +15,19 @@ function PreviewField( { field } ) {
 	const placeholder = field.placeholder || '';
 	const type = field.type || 'text';
 	const options = Array.isArray( field.options ) ? field.options : [];
+
+	// Hidden fields are not visible — show a compact dev-only indicator instead.
+	if ( type === 'hidden' ) {
+		return (
+			<div className="wpaif-field wpaif-field--hidden wpaif-preview-hidden">
+				<small>
+					{ __( 'Hidden: ', 'wp-ai-forms' ) }
+					<code>{ field.name }</code>
+					{ field.default_value ? ` = ${ field.default_value }` : '' }
+				</small>
+			</div>
+		);
+	}
 
 	const label = field.label ? (
 		<label htmlFor={ id }>
@@ -75,6 +88,22 @@ function PreviewField( { field } ) {
 	} else if ( type === 'checkbox' ) {
 		control = (
 			<input type="checkbox" id={ id } name={ field.name } value="1" disabled />
+		);
+	} else if ( type === 'checkbox_group' ) {
+		control = (
+			<div className="wpaif-checkbox-group">
+				{ options.length === 0 && (
+					<em className="wpaif-preview-empty">
+						{ __( 'No options yet — add some to the field.', 'wp-ai-forms' ) }
+					</em>
+				) }
+				{ options.map( ( opt, i ) => (
+					<label key={ i }>
+						<input type="checkbox" name={ `${ field.name }[]` } value={ opt.value || '' } disabled />{ ' ' }
+						{ opt.label || opt.value || '' }
+					</label>
+				) ) }
+			</div>
 		);
 	} else {
 		control = (

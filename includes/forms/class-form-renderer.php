@@ -52,6 +52,16 @@ class Form_Renderer {
 			return;
 		}
 
+		// Hidden fields render bare — no wrapper, no label.
+		if ( 'hidden' === $type ) {
+			printf(
+				'<input type="hidden" name="%s" value="%s" />',
+				esc_attr( $name ),
+				esc_attr( $field['default_value'] ?? '' )
+			);
+			return;
+		}
+
 		echo '<div class="wpaif-field wpaif-field--' . esc_attr( $type ) . '">';
 		if ( $label ) {
 			echo '<label for="' . esc_attr( $id ) . '">' . $label;
@@ -82,11 +92,19 @@ class Form_Renderer {
 			case 'checkbox':
 				echo '<input type="checkbox" ' . $attrs . ' value="1" />';
 				break;
+			case 'checkbox_group':
+				echo '<div class="wpaif-checkbox-group">';
+				foreach ( (array) ( $field['options'] ?? [] ) as $opt ) {
+					echo '<label><input type="checkbox" name="' . esc_attr( $name ) . '[]" value="' . esc_attr( $opt['value'] ?? '' ) . '" /> ' . esc_html( $opt['label'] ?? '' ) . '</label>';
+				}
+				echo '</div>';
+				break;
 			case 'radio':
-				foreach ( (array) ( $field['options'] ?? [] ) as $i => $opt ) {
+				foreach ( (array) ( $field['options'] ?? [] ) as $opt ) {
 					echo '<label><input type="radio" name="' . esc_attr( $name ) . '" value="' . esc_attr( $opt['value'] ?? '' ) . '"' . ( $required ? ' required' : '' ) . ' /> ' . esc_html( $opt['label'] ?? '' ) . '</label>';
 				}
 				break;
+			case 'password':
 			case 'email':
 			case 'number':
 			case 'tel':
