@@ -135,3 +135,52 @@
 .wpaif-tabs {
 	margin-top: 16px;
 }
+
+.wpaif-shortcode {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 4px 4px 10px;
+	background: #f0f6fc;
+	border: 1px solid #c6d9eb;
+	border-radius: 999px;
+	font-size: 13px;
+	max-width: 100%;
+
+	&__label {
+		color: #1d4ed8;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	&__input {
+		flex: 1 1 auto;
+		min-width: 180px;
+		max-width: 360px;
+		border: 0;
+		background: transparent;
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		font-size: 12.5px;
+		color: #1f2937;
+		padding: 2px 4px;
+		box-shadow: none;
+		outline: none;
+		cursor: text;
+
+		&:focus {
+			background: rgba(255, 255, 255, 0.7);
+			border-radius: 4px;
+		}
+	}
+
+	&__btn.components-button {
+		border-radius: 999px;
+		padding: 2px 12px;
+		min-height: 26px;
+		line-height: 1;
+	}
+}
+
+.wpaif-list__shortcode-cell {
+	min-width: 280px;
+}

@@ -2,6 +2,7 @@ import { useEffect, useState } from '@wordpress/element';
 import { Button, Card, CardBody, Spinner, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
+import ShortcodeCopy from '../components/ShortcodeCopy';
 
 export default function FormsList( { api } ) {
 	const [ forms, setForms ] = useState( null );
@@ -75,8 +76,8 @@ export default function FormsList( { api } ) {
 									<a href={ `#/forms/${ f.id }` }>{ f.title || `(#${ f.id })` }</a>
 								</td>
 								<td>{ f.status }</td>
-								<td>
-									<code>{ `[wp_ai_form id="${ f.id }"]` }</code>
+								<td className="wpaif-list__shortcode-cell">
+									<ShortcodeCopy shortcode={ `[wp_ai_form id="${ f.id }"]` } />
 								</td>
 								<td>{ f.updated_at }</td>
 								<td>

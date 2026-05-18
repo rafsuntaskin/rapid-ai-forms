@@ -17,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
 import { useAsync } from '../../shared/hooks/useAsync';
 import FormPreview from '../components/FormPreview';
+import ShortcodeCopy from '../components/ShortcodeCopy';
 
 const FIELD_TYPES = [
 	{ label: 'Text', value: 'text' },
@@ -131,7 +132,12 @@ export default function FormEditor( { api, formId } ) {
 		<div className="wpaif-page wpaif-editor">
 			<PageHeader
 				title={ __( 'Edit form', 'wp-ai-forms' ) }
-				description={ `[wp_ai_form id="${ form.id }"]` }
+				description={
+					<ShortcodeCopy
+						shortcode={ `[wp_ai_form id="${ form.id }"]` }
+						label={ __( 'Embed:', 'wp-ai-forms' ) }
+					/>
+				}
 				actions={
 					<Flex>
 						<FlexItem>
