@@ -3,10 +3,11 @@ import {
 	Button,
 	Card,
 	CardBody,
-	ConfirmDialog,
+	Flex,
+	Modal,
 	Notice,
-	SearchControl,
 	Spinner,
+	TextControl,
 } from '@wordpress/components';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
@@ -103,12 +104,12 @@ export default function FormsList( { api } ) {
 
 			{ forms !== null && forms.length > 0 && (
 				<div className="wpaif-list__toolbar">
-					<SearchControl
+					<TextControl
 						label={ __( 'Search forms', 'wp-ai-forms' ) }
+						hideLabelFromVision
 						placeholder={ __( 'Search by title, id, or uuid…', 'wp-ai-forms' ) }
 						value={ search }
 						onChange={ setSearch }
-						__nextHasNoMarginBottom
 					/>
 					<span className="wpaif-list__count">
 						{ sprintf(
@@ -179,17 +180,28 @@ export default function FormsList( { api } ) {
 				</div>
 			) }
 
-			<ConfirmDialog
-				isOpen={ !! deleting }
-				onCancel={ () => setDeleting( null ) }
-				onConfirm={ confirmDelete }
-				confirmButtonText={ __( 'Delete form', 'wp-ai-forms' ) }
-			>
-				{ deleting && sprintf(
-					__( 'Delete "%s"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone.', 'wp-ai-forms' ),
-					deleting.title || `#${ deleting.id }`
-				) }
-			</ConfirmDialog>
+			{ deleting && (
+				<Modal
+					title={ __( 'Delete form?', 'wp-ai-forms' ) }
+					onRequestClose={ () => setDeleting( null ) }
+					className="wpaif-delete-modal"
+				>
+					<p>
+						{ sprintf(
+							__( 'Delete "%s"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone.', 'wp-ai-forms' ),
+							deleting.title || `#${ deleting.id }`
+						) }
+					</p>
+					<Flex justify="flex-end" gap={ 2 }>
+						<Button variant="tertiary" onClick={ () => setDeleting( null ) }>
+							{ __( 'Cancel', 'wp-ai-forms' ) }
+						</Button>
+						<Button variant="primary" isDestructive onClick={ confirmDelete }>
+							{ __( 'Delete form', 'wp-ai-forms' ) }
+						</Button>
+					</Flex>
+				</Modal>
+			) }
 		</div>
 	);
 }
