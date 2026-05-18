@@ -30,8 +30,8 @@ class Form_Renderer {
 				<?php $this->render_field( $field ); ?>
 			<?php endforeach; ?>
 
-			<div class="wpaif-form__actions">
-				<button type="submit" class="wpaif-form__submit">
+			<div class="wpaif-form__actions wp-block-button">
+				<button type="submit" class="wpaif-form__submit wp-block-button__link wp-element-button">
 					<?php echo esc_html( $schema['submit_label'] ?? __( 'Submit', 'wp-ai-forms' ) ); ?>
 				</button>
 			</div>

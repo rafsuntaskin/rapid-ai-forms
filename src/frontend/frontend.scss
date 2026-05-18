@@ -11,12 +11,10 @@
 		margin-top: 8px;
 	}
 
+	// Submit button inherits the theme's .wp-block-button__link / .wp-element-button styles.
+	// Only declare the bare minimum — cursor + disabled state. Don't set background, padding,
+	// border, color, or border-radius here; the theme's block-button rules will provide them.
 	&__submit {
-		padding: 8px 18px;
-		border-radius: 0;
-		border: 0;
-		background: #2271b1;
-		color: #fff;
 		cursor: pointer;
 
 		&:disabled {

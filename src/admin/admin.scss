@@ -72,6 +72,16 @@
 		button {
 			pointer-events: none;
 		}
+
+		// Frontend submit button defers to the theme; in the admin preview there's
+		// no theme, so apply a neutral stand-in so the button is still visible.
+		.wpaif-form__submit {
+			padding: 8px 18px;
+			border: 1px solid #1d4ed8;
+			background: #2271b1;
+			color: #fff;
+			font: inherit;
+		}
 	}
 }
 
