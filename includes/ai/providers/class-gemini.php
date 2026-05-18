@@ -64,6 +64,8 @@ class Gemini implements Provider {
 
 	public function verify( array $options = [] ) {
 		$api_key = $options['api_key'] ?? '';
+		$model   = trim( (string) ( $options['model'] ?? '' ) );
+
 		if ( ! $api_key ) {
 			return new \WP_Error( 'wpaif_missing_key', __( 'API key is required.', 'wp-ai-forms' ) );
 		}
@@ -76,10 +78,33 @@ class Gemini implements Provider {
 			return $response;
 		}
 		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $code >= 400 ) {
-			$body = json_decode( wp_remote_retrieve_body( $response ), true );
-			$msg  = $body['error']['message'] ?? __( 'Google rejected this API key.', 'wp-ai-forms' );
+			$msg = $body['error']['message'] ?? __( 'Google rejected this API key.', 'wp-ai-forms' );
 			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+		}
+
+		if ( '' !== $model ) {
+			// Gemini returns names like "models/gemini-2.0-flash"; users may enter
+			// either form. Normalize to the bare id for comparison.
+			$ids = array_map(
+				static function ( $m ) {
+					$name = $m['name'] ?? '';
+					return 0 === strpos( $name, 'models/' ) ? substr( $name, 7 ) : $name;
+				},
+				(array) ( $body['models'] ?? [] )
+			);
+			$short = 0 === strpos( $model, 'models/' ) ? substr( $model, 7 ) : $model;
+			if ( ! in_array( $short, $ids, true ) ) {
+				return new \WP_Error(
+					'wpaif_model_unavailable',
+					sprintf(
+						/* translators: %s: model id */
+						__( 'Model "%s" is not available to this API key. Check the model id at ai.google.dev.', 'wp-ai-forms' ),
+						$model
+					)
+				);
+			}
 		}
 		return true;
 	}

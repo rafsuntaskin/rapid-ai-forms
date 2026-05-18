@@ -68,12 +68,13 @@ class Openai_Compatible implements Provider {
 	public function verify( array $options = [] ) {
 		$api_key  = $options['api_key'] ?? '';
 		$base_url = untrailingslashit( $options['base_url'] ?? 'https://api.openai.com/v1' );
+		$model    = trim( (string) ( $options['model'] ?? '' ) );
 
 		if ( ! $api_key ) {
 			return new \WP_Error( 'wpaif_missing_key', __( 'API key is required.', 'wp-ai-forms' ) );
 		}
 
-		// GET /models is cheap (no token usage) and proves both auth and endpoint reachability.
+		// GET /models is cheap (no token usage) and proves auth, endpoint, and model availability.
 		$response = wp_remote_get(
 			$base_url . '/models',
 			[
@@ -86,10 +87,24 @@ class Openai_Compatible implements Provider {
 			return $response;
 		}
 		$code = wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $code >= 400 ) {
-			$body = json_decode( wp_remote_retrieve_body( $response ), true );
-			$msg  = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'wp-ai-forms' );
+			$msg = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'wp-ai-forms' );
 			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+		}
+
+		if ( '' !== $model ) {
+			$ids = array_column( (array) ( $body['data'] ?? [] ), 'id' );
+			if ( ! in_array( $model, $ids, true ) ) {
+				return new \WP_Error(
+					'wpaif_model_unavailable',
+					sprintf(
+						/* translators: %s: model id */
+						__( 'Model "%s" is not available to this API key. Check the model id or pick one your account can access.', 'wp-ai-forms' ),
+						$model
+					)
+				);
+			}
 		}
 		return true;
 	}
