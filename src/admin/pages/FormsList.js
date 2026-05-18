@@ -12,6 +12,7 @@ import {
 import { __, sprintf, _n } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
 import ShortcodeCopy from '../components/ShortcodeCopy';
+import { useAiConfigured } from '../hooks/useAiConfigured';
 
 function formatRelative( iso ) {
 	if ( ! iso ) return '';
@@ -34,6 +35,8 @@ export default function FormsList( { api } ) {
 	const [ creating, setCreating ] = useState( false );
 	const [ search, setSearch ] = useState( '' );
 	const [ deleting, setDeleting ] = useState( null );
+	const ai = useAiConfigured( api );
+	const settingsUrl = ( window.WP_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 
 	useEffect( () => {
 		api.get( 'forms' )
@@ -95,6 +98,14 @@ export default function FormsList( { api } ) {
 					</Button>
 				}
 			/>
+
+			{ ai.ready && ! ai.configured && (
+				<Notice status="warning" isDismissible={ false }>
+					{ __( 'AI is not connected yet — set an API key in', 'wp-ai-forms' ) }{ ' ' }
+					<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'wp-ai-forms' ) }</a>{ ' ' }
+					{ __( 'to enable form generation. You can still build forms manually.', 'wp-ai-forms' ) }
+				</Notice>
+			) }
 
 			{ error && (
 				<Notice status="error" isDismissible onRemove={ () => setError( null ) }>

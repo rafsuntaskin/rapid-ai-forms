@@ -18,6 +18,7 @@ import PageHeader from '../../shared/components/PageHeader';
 import { useAsync } from '../../shared/hooks/useAsync';
 import FormPreview from '../components/FormPreview';
 import ShortcodeCopy from '../components/ShortcodeCopy';
+import { useAiConfigured } from '../hooks/useAiConfigured';
 
 const FIELD_TYPES = [
 	{ label: 'Text', value: 'text' },
@@ -46,6 +47,8 @@ export default function FormEditor( { api, formId } ) {
 	const generate = useAsync( ( p, currentSchema ) =>
 		api.post( 'ai/generate', { prompt: p, current_schema: currentSchema } )
 	);
+	const ai = useAiConfigured( api );
+	const settingsUrl = ( window.WP_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 	const save = useAsync( ( payload ) => api.put( `forms/${ formId }`, payload ) );
 
 	useEffect( () => {
@@ -165,6 +168,13 @@ export default function FormEditor( { api, formId } ) {
 					</strong>
 				</CardHeader>
 				<CardBody>
+					{ ai.ready && ! ai.configured && (
+						<Notice status="warning" isDismissible={ false }>
+							{ __( 'No AI key set. Add one in', 'wp-ai-forms' ) }{ ' ' }
+							<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'wp-ai-forms' ) }</a>{ ' ' }
+							{ __( 'to enable AI generation. You can still add and edit fields below by hand.', 'wp-ai-forms' ) }
+						</Notice>
+					) }
 					<TextareaControl
 						label={ __( 'Prompt', 'wp-ai-forms' ) }
 						help={
@@ -174,8 +184,14 @@ export default function FormEditor( { api, formId } ) {
 						}
 						value={ prompt }
 						onChange={ setPrompt }
+						disabled={ ai.ready && ! ai.configured }
 					/>
-					<Button variant="secondary" onClick={ onGenerate } isBusy={ generate.loading } disabled={ ! prompt }>
+					<Button
+						variant="secondary"
+						onClick={ onGenerate }
+						isBusy={ generate.loading }
+						disabled={ ! prompt || ( ai.ready && ! ai.configured ) }
+					>
 						{ hasExistingFields
 							? __( 'Apply changes', 'wp-ai-forms' )
 							: __( 'Generate fields', 'wp-ai-forms' ) }
