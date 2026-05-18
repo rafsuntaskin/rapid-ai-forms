@@ -66,7 +66,36 @@ export default function Settings( { api } ) {
 	const save = async () => {
 		setSaving( true );
 		setMessage( null );
+		setVerifyResult( null );
+
+		const cfg = settings.providers[ settings.active_provider ] || {};
+		const payload = {
+			provider: settings.active_provider,
+			api_key: cfg.api_key || '',
+			base_url: cfg.base_url || '',
+			model: cfg.model || '',
+		};
+
 		try {
+			// Step 1: verify against the live API. Aborts the save if it fails.
+			const v = await api.post( 'ai/verify', payload );
+			setVerifyResult( {
+				status: 'success',
+				text: v.latency_ms
+					? __( 'Connection verified.', 'wp-ai-forms' ) + ` (${ v.latency_ms }ms)`
+					: __( 'Connection verified.', 'wp-ai-forms' ),
+			} );
+		} catch ( e ) {
+			setVerifyResult( {
+				status: 'error',
+				text: __( 'Save blocked — verification failed: ', 'wp-ai-forms' ) + ( e.message || '' ),
+			} );
+			setSaving( false );
+			return;
+		}
+
+		try {
+			// Step 2: persist.
 			const next = await api.put( 'settings', {
 				active_provider: settings.active_provider,
 				providers: settings.providers,
