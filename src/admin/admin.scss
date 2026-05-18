@@ -103,6 +103,35 @@
 	background: #fafafa;
 }
 
+.wpaif-options {
+	margin: 12px 0 8px;
+	padding: 12px;
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-radius: 4px;
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 8px;
+	}
+
+	&__empty {
+		color: #646970;
+		font-style: italic;
+		margin: 4px 0 0;
+	}
+
+	&__row {
+		margin-top: 4px;
+
+		.components-base-control {
+			margin-bottom: 0;
+		}
+	}
+}
+
 .wpaif-tabs {
 	margin-top: 16px;
 }

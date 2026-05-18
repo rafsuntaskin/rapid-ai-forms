@@ -77,6 +77,25 @@ export default function FormEditor( { api, formId } ) {
 		updateSchema( { fields } );
 	};
 
+	const updateOption = ( fieldIdx, optIdx, patch ) => {
+		const options = [ ...( form.schema.fields[ fieldIdx ].options || [] ) ];
+		options[ optIdx ] = { ...options[ optIdx ], ...patch };
+		updateField( fieldIdx, { options } );
+	};
+
+	const addOption = ( fieldIdx ) => {
+		const options = [ ...( form.schema.fields[ fieldIdx ].options || [] ) ];
+		const n = options.length + 1;
+		options.push( { label: `Option ${ n }`, value: `option_${ n }` } );
+		updateField( fieldIdx, { options } );
+	};
+
+	const removeOption = ( fieldIdx, optIdx ) => {
+		const options = [ ...( form.schema.fields[ fieldIdx ].options || [] ) ];
+		options.splice( optIdx, 1 );
+		updateField( fieldIdx, { options } );
+	};
+
 	const hasExistingFields = ( form.schema.fields || [] ).length > 0;
 
 	const onGenerate = async () => {
@@ -230,6 +249,52 @@ export default function FormEditor( { api, formId } ) {
 									checked={ !! f.required }
 									onChange={ ( v ) => updateField( i, { required: v } ) }
 								/>
+								{ ( f.type === 'select' || f.type === 'radio' ) && (
+									<div className="wpaif-options">
+										<div className="wpaif-options__header">
+											<strong>{ __( 'Options', 'wp-ai-forms' ) }</strong>
+											<Button variant="secondary" size="small" onClick={ () => addOption( i ) }>
+												{ __( 'Add option', 'wp-ai-forms' ) }
+											</Button>
+										</div>
+										{ ( f.options || [] ).length === 0 && (
+											<p className="wpaif-options__empty">
+												{ __( 'No options yet. Add at least 2 for the field to render.', 'wp-ai-forms' ) }
+											</p>
+										) }
+										{ ( f.options || [] ).map( ( opt, oi ) => (
+											<Flex key={ oi } align="flex-end" gap={ 2 } className="wpaif-options__row">
+												<FlexItem isBlock>
+													<TextControl
+														label={ oi === 0 ? __( 'Label', 'wp-ai-forms' ) : '' }
+														hideLabelFromVision={ oi !== 0 }
+														value={ opt.label || '' }
+														onChange={ ( v ) => updateOption( i, oi, { label: v } ) }
+													/>
+												</FlexItem>
+												<FlexItem isBlock>
+													<TextControl
+														label={ oi === 0 ? __( 'Value', 'wp-ai-forms' ) : '' }
+														hideLabelFromVision={ oi !== 0 }
+														value={ opt.value || '' }
+														onChange={ ( v ) => updateOption( i, oi, { value: v } ) }
+													/>
+												</FlexItem>
+												<FlexItem>
+													<Button
+														variant="tertiary"
+														size="small"
+														isDestructive
+														onClick={ () => removeOption( i, oi ) }
+														aria-label={ __( 'Remove option', 'wp-ai-forms' ) }
+													>
+														×
+													</Button>
+												</FlexItem>
+											</Flex>
+										) ) }
+									</div>
+								) }
 								<Button variant="link" isDestructive onClick={ () => removeField( i ) }>
 									{ __( 'Remove', 'wp-ai-forms' ) }
 								</Button>
