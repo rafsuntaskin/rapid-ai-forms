@@ -53,17 +53,15 @@ export default function Settings( { api } ) {
 	};
 
 	const providers = settings.available_providers || [];
+	const activeKey = settings.active_provider;
+	const activeProvider = providers.find( ( p ) => p.key === activeKey );
+	const activeCfg = settings.providers[ activeKey ] || {};
 
 	return (
-		<div className="wpaif-page">
+		<div className="wpaif-page wpaif-settings">
 			<PageHeader
 				title={ __( 'AI Settings', 'wp-ai-forms' ) }
 				description={ __( 'Configure the AI provider used to generate form schemas.', 'wp-ai-forms' ) }
-				actions={
-					<Button variant="primary" onClick={ save } isBusy={ saving }>
-						{ __( 'Save settings', 'wp-ai-forms' ) }
-					</Button>
-				}
 			/>
 
 			{ message && (
@@ -73,48 +71,52 @@ export default function Settings( { api } ) {
 			) }
 
 			<Card className="wpaif-mt">
-					<CardHeader><strong>{ __( 'AI provider', 'wp-ai-forms' ) }</strong></CardHeader>
-					<CardBody>
-						<SelectControl
-							label={ __( 'Active provider', 'wp-ai-forms' ) }
-							value={ settings.active_provider }
-							options={ providers.map( ( p ) => ( { label: p.label, value: p.key } ) ) }
-							onChange={ ( v ) => setSettings( { ...settings, active_provider: v } ) }
-						/>
-
-						{ providers.map( ( p ) => {
-							const cfg = settings.providers[ p.key ] || {};
-							return (
-								<Card key={ p.key } className="wpaif-mt">
-									<CardHeader>{ p.label }</CardHeader>
-									<CardBody>
-										<TextControl
-											label={ __( 'API Key', 'wp-ai-forms' ) }
-											type="password"
-											value={ cfg.api_key || '' }
-											placeholder={ cfg.api_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
-											onChange={ ( v ) => updateProvider( p.key, { api_key: v } ) }
-										/>
-										{ 'model' in cfg && (
-											<TextControl
-												label={ __( 'Model', 'wp-ai-forms' ) }
-												value={ cfg.model || '' }
-												onChange={ ( v ) => updateProvider( p.key, { model: v } ) }
-											/>
-										) }
-										{ 'base_url' in cfg && (
-											<TextControl
-												label={ __( 'Base URL', 'wp-ai-forms' ) }
-												value={ cfg.base_url || '' }
-												onChange={ ( v ) => updateProvider( p.key, { base_url: v } ) }
-											/>
-										) }
-									</CardBody>
-								</Card>
-							);
-						} ) }
+				<CardHeader><strong>{ __( 'AI provider', 'wp-ai-forms' ) }</strong></CardHeader>
+				<CardBody>
+					<SelectControl
+						label={ __( 'Active provider', 'wp-ai-forms' ) }
+						help={ __( 'Choose which provider to use. Credentials below apply to the selected provider only.', 'wp-ai-forms' ) }
+						value={ activeKey }
+						options={ providers.map( ( p ) => ( { label: p.label, value: p.key } ) ) }
+						onChange={ ( v ) => setSettings( { ...settings, active_provider: v } ) }
+					/>
 				</CardBody>
 			</Card>
+
+			{ activeProvider && (
+				<Card className="wpaif-mt">
+					<CardHeader><strong>{ activeProvider.label }</strong></CardHeader>
+					<CardBody>
+						<TextControl
+							label={ __( 'API Key', 'wp-ai-forms' ) }
+							type="password"
+							value={ activeCfg.api_key || '' }
+							placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
+							onChange={ ( v ) => updateProvider( activeKey, { api_key: v } ) }
+						/>
+						{ 'model' in activeCfg && (
+							<TextControl
+								label={ __( 'Model', 'wp-ai-forms' ) }
+								value={ activeCfg.model || '' }
+								onChange={ ( v ) => updateProvider( activeKey, { model: v } ) }
+							/>
+						) }
+						{ 'base_url' in activeCfg && (
+							<TextControl
+								label={ __( 'Base URL', 'wp-ai-forms' ) }
+								value={ activeCfg.base_url || '' }
+								onChange={ ( v ) => updateProvider( activeKey, { base_url: v } ) }
+							/>
+						) }
+					</CardBody>
+				</Card>
+			) }
+
+			<div className="wpaif-settings__footer">
+				<Button variant="primary" onClick={ save } isBusy={ saving }>
+					{ __( 'Save settings', 'wp-ai-forms' ) }
+				</Button>
+			</div>
 		</div>
 	);
 }
