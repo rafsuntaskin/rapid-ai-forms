@@ -149,13 +149,28 @@
 }
 
 .wpaif-verify {
-	margin-top: 8px;
+	margin-top: 12px;
 
 	&__result {
+		display: block;
+		margin: 10px 0 0;
+		padding: 10px 12px;
 		font-size: 13px;
+		line-height: 1.5;
+		word-break: break-word;
+		border-left: 3px solid;
 
-		&--success { color: #1a7e3a; }
-		&--error { color: #c0392b; }
+		&--success {
+			color: #1a7e3a;
+			background: #f0faf3;
+			border-color: #1a7e3a;
+		}
+
+		&--error {
+			color: #8b1a1a;
+			background: #fbeaea;
+			border-color: #c0392b;
+		}
 	}
 }
 

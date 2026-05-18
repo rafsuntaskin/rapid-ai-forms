@@ -4,8 +4,6 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
-	Flex,
-	FlexItem,
 	Notice,
 	SelectControl,
 	Spinner,
@@ -174,26 +172,22 @@ export default function Settings( { api } ) {
 								} }
 							/>
 						) }
-						<Flex align="center" gap={ 3 } className="wpaif-verify">
-							<FlexItem>
-								<Button
-									variant="secondary"
-									onClick={ verify }
-									isBusy={ verifying }
-									disabled={ verifying || ( ! activeCfg.api_key && ! activeCfg.api_key_set ) }
-								>
-									{ __( 'Verify connection', 'wp-ai-forms' ) }
-								</Button>
-							</FlexItem>
+						<div className="wpaif-verify">
+							<Button
+								variant="secondary"
+								onClick={ verify }
+								isBusy={ verifying }
+								disabled={ verifying || ( ! activeCfg.api_key && ! activeCfg.api_key_set ) }
+							>
+								{ __( 'Verify connection', 'wp-ai-forms' ) }
+							</Button>
 							{ verifyResult && (
-								<FlexItem>
-									<span className={ `wpaif-verify__result wpaif-verify__result--${ verifyResult.status }` }>
-										{ verifyResult.status === 'success' ? '✓ ' : '✕ ' }
-										{ verifyResult.text }
-									</span>
-								</FlexItem>
+								<p className={ `wpaif-verify__result wpaif-verify__result--${ verifyResult.status }` }>
+									{ verifyResult.status === 'success' ? '✓ ' : '✕ ' }
+									{ verifyResult.text }
+								</p>
 							) }
-						</Flex>
+						</div>
 					</CardBody>
 				</Card>
 			) }
