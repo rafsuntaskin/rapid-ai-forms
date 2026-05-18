@@ -16,6 +16,7 @@ import {
 import { __ } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
 import { useAsync } from '../../shared/hooks/useAsync';
+import FormPreview from '../components/FormPreview';
 
 const FIELD_TYPES = [
 	{ label: 'Text', value: 'text' },
@@ -91,7 +92,7 @@ export default function FormEditor( { api, formId } ) {
 	};
 
 	return (
-		<div className="wpaif-page">
+		<div className="wpaif-page wpaif-editor">
 			<PageHeader
 				title={ __( 'Edit form', 'wp-ai-forms' ) }
 				description={ `[wp_ai_form id="${ form.id }"]` }
@@ -111,6 +112,8 @@ export default function FormEditor( { api, formId } ) {
 			{ savedAt && <Notice status="success" isDismissible>{ __( 'Saved at ', 'wp-ai-forms' ) + savedAt }</Notice> }
 			{ save.error && <Notice status="error" isDismissible={ false }>{ save.error.message }</Notice> }
 
+			<div className="wpaif-editor__columns">
+				<div className="wpaif-editor__main">
 			<Card>
 				<CardHeader><strong>{ __( 'Generate with AI', 'wp-ai-forms' ) }</strong></CardHeader>
 				<CardBody>
@@ -211,6 +214,11 @@ export default function FormEditor( { api, formId } ) {
 					) ) }
 				</CardBody>
 			</Card>
+				</div>
+				<aside className="wpaif-editor__side">
+					<FormPreview form={ form } />
+				</aside>
+			</div>
 		</div>
 	);
 }

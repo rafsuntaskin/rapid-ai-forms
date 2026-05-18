@@ -1,0 +1,131 @@
+/**
+ * Client-side preview that mirrors how Form_Renderer outputs the form
+ * on the frontend. Read-only — submission is intercepted with preventDefault.
+ */
+import { __ } from '@wordpress/i18n';
+
+const PLAIN_INPUT_TYPES = [ 'text', 'email', 'tel', 'url', 'number', 'date' ];
+
+function PreviewField( { field } ) {
+	if ( ! field.name ) {
+		return null;
+	}
+	const id = `wpaif-preview-${ field.name }`;
+	const required = !! field.required;
+	const placeholder = field.placeholder || '';
+	const type = field.type || 'text';
+	const options = Array.isArray( field.options ) ? field.options : [];
+
+	const label = field.label ? (
+		<label htmlFor={ id }>
+			{ field.label }
+			{ required && <span className="wpaif-required"> *</span> }
+		</label>
+	) : null;
+
+	let control = null;
+	if ( PLAIN_INPUT_TYPES.includes( type ) ) {
+		control = (
+			<input
+				type={ type }
+				id={ id }
+				name={ field.name }
+				placeholder={ placeholder }
+				required={ required }
+				disabled
+			/>
+		);
+	} else if ( type === 'textarea' ) {
+		control = (
+			<textarea
+				id={ id }
+				name={ field.name }
+				placeholder={ placeholder }
+				required={ required }
+				disabled
+			/>
+		);
+	} else if ( type === 'select' ) {
+		control = (
+			<select id={ id } name={ field.name } required={ required } disabled>
+				<option value="">{ __( '— Select —', 'wp-ai-forms' ) }</option>
+				{ options.map( ( opt, i ) => (
+					<option key={ i } value={ opt.value || opt.label || '' }>
+						{ opt.label || opt.value || '' }
+					</option>
+				) ) }
+			</select>
+		);
+	} else if ( type === 'radio' ) {
+		control = (
+			<div className="wpaif-radio-group">
+				{ options.length === 0 && (
+					<em className="wpaif-preview-empty">
+						{ __( 'No options yet — add some to the field.', 'wp-ai-forms' ) }
+					</em>
+				) }
+				{ options.map( ( opt, i ) => (
+					<label key={ i }>
+						<input type="radio" name={ field.name } value={ opt.value || '' } disabled />{ ' ' }
+						{ opt.label || opt.value || '' }
+					</label>
+				) ) }
+			</div>
+		);
+	} else if ( type === 'checkbox' ) {
+		control = (
+			<input type="checkbox" id={ id } name={ field.name } value="1" disabled />
+		);
+	} else {
+		control = (
+			<input type="text" id={ id } name={ field.name } placeholder={ placeholder } disabled />
+		);
+	}
+
+	return (
+		<div className={ `wpaif-field wpaif-field--${ type }` }>
+			{ label }
+			{ control }
+		</div>
+	);
+}
+
+export default function FormPreview( { form } ) {
+	const schema = form && form.schema ? form.schema : {};
+	const fields = Array.isArray( schema.fields ) ? schema.fields : [];
+	const submitLabel = schema.submit_label || __( 'Submit', 'wp-ai-forms' );
+	const showTitle = !! schema.show_title;
+
+	return (
+		<div className="wpaif-preview">
+			<div className="wpaif-preview__header">
+				<strong>{ __( 'Live preview', 'wp-ai-forms' ) }</strong>
+				<span className="wpaif-preview__hint">
+					{ __( 'How the form will appear to visitors.', 'wp-ai-forms' ) }
+				</span>
+			</div>
+			<form
+				className="wpaif-form wpaif-preview__form"
+				onSubmit={ ( e ) => e.preventDefault() }
+			>
+				{ showTitle && form.title && (
+					<h3 className="wpaif-form__title">{ form.title }</h3>
+				) }
+				{ fields.length === 0 ? (
+					<p className="wpaif-preview-empty">
+						{ __( 'No fields yet. Generate with AI or add fields to see them here.', 'wp-ai-forms' ) }
+					</p>
+				) : (
+					fields.map( ( field, i ) => (
+						<PreviewField key={ field.name || i } field={ field } />
+					) )
+				) }
+				<div className="wpaif-form__actions">
+					<button type="submit" className="wpaif-form__submit" disabled>
+						{ submitLabel }
+					</button>
+				</div>
+			</form>
+		</div>
+	);
+}

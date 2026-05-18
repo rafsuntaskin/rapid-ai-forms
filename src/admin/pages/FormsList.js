@@ -6,6 +6,7 @@ import PageHeader from '../../shared/components/PageHeader';
 export default function FormsList( { api } ) {
 	const [ forms, setForms ] = useState( null );
 	const [ error, setError ] = useState( null );
+	const [ creating, setCreating ] = useState( false );
 
 	useEffect( () => {
 		api.get( 'forms' )
@@ -14,12 +15,25 @@ export default function FormsList( { api } ) {
 	}, [ api ] );
 
 	const createBlank = async () => {
-		const form = await api.post( 'forms', {
-			title: __( 'Untitled form', 'wp-ai-forms' ),
-			status: 'draft',
-			schema: { fields: [], submit_label: 'Submit' },
-		} );
-		window.location.hash = `#/forms/${ form.id }`;
+		setError( null );
+		setCreating( true );
+		try {
+			const form = await api.post( 'forms', {
+				title: __( 'Untitled form', 'wp-ai-forms' ),
+				status: 'draft',
+				schema: { fields: [], submit_label: 'Submit' },
+			} );
+			if ( ! form || ! form.id ) {
+				throw new Error( __( 'Form was created but no id was returned.', 'wp-ai-forms' ) );
+			}
+			// Prepend optimistically so a back-nav shows it immediately.
+			setForms( ( prev ) => ( prev ? [ form, ...prev ] : [ form ] ) );
+			window.location.hash = `#/forms/${ form.id }`;
+		} catch ( e ) {
+			setError( e.message || __( 'Could not create form.', 'wp-ai-forms' ) );
+		} finally {
+			setCreating( false );
+		}
 	};
 
 	return (
@@ -28,7 +42,7 @@ export default function FormsList( { api } ) {
 				title={ __( 'Forms', 'wp-ai-forms' ) }
 				description={ __( 'Create AI-generated forms and embed them with shortcodes.', 'wp-ai-forms' ) }
 				actions={
-					<Button variant="primary" onClick={ createBlank }>
+					<Button variant="primary" onClick={ createBlank } isBusy={ creating } disabled={ creating }>
 						{ __( 'New form', 'wp-ai-forms' ) }
 					</Button>
 				}

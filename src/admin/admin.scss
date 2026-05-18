@@ -1,3 +1,6 @@
+// Reuse the frontend form styles so the live preview matches the real render.
+@import '../frontend/frontend.scss';
+
 .wpaif-page {
 	max-width: 960px;
 	margin-top: 16px;
@@ -5,6 +8,76 @@
 	.wpaif-mt {
 		margin-top: 16px;
 	}
+}
+
+.wpaif-editor {
+	max-width: 1400px;
+
+	&__columns {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 380px;
+		gap: 24px;
+		align-items: start;
+		margin-top: 16px;
+
+		@media (max-width: 1100px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__main {
+		min-width: 0;
+
+		// Reset the top margin of the first card since the column already provides spacing.
+		> .components-card:first-child {
+			margin-top: 0;
+		}
+	}
+
+	&__side {
+		position: sticky;
+		top: 48px;
+	}
+}
+
+.wpaif-preview {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+
+	&__header {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 12px 16px;
+		border-bottom: 1px solid #f0f0f1;
+		background: #f6f7f7;
+		border-top-left-radius: 4px;
+		border-top-right-radius: 4px;
+	}
+
+	&__hint {
+		font-size: 12px;
+		color: #646970;
+	}
+
+	&__form {
+		padding: 16px;
+
+		// Subdue the preview controls so they don't look interactive.
+		input,
+		select,
+		textarea,
+		button {
+			pointer-events: none;
+		}
+	}
+}
+
+.wpaif-preview-empty {
+	color: #646970;
+	font-style: italic;
 }
 
 .wpaif-page-header {

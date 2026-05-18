@@ -1,4 +1,4 @@
-import { useMemo, useState } from '@wordpress/element';
+import { useEffect, useMemo, useState } from '@wordpress/element';
 import { TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createApiClient } from '../shared/api/createApiClient';
@@ -13,9 +13,14 @@ export default function App() {
 		[ config.restUrl, config.nonce ]
 	);
 
-	// Trivial hash-based routing: #/forms/:id, #/settings, #/ (list).
+	// Hash-based routing: #/forms/:id, #/settings, #/ (list).
 	const [ route, setRoute ] = useState( window.location.hash || '#/' );
-	window.addEventListener( 'hashchange', () => setRoute( window.location.hash || '#/' ) );
+
+	useEffect( () => {
+		const handler = () => setRoute( window.location.hash || '#/' );
+		window.addEventListener( 'hashchange', handler );
+		return () => window.removeEventListener( 'hashchange', handler );
+	}, [] );
 
 	const editMatch = route.match( /^#\/forms\/(\d+)/ );
 	if ( editMatch ) {
