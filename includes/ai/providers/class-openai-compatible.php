@@ -64,4 +64,33 @@ class Openai_Compatible implements Provider {
 		$text = $body['choices'][0]['message']['content'] ?? '';
 		return Schema_Prompt::extract_schema( $text );
 	}
+
+	public function verify( array $options = [] ) {
+		$api_key  = $options['api_key'] ?? '';
+		$base_url = untrailingslashit( $options['base_url'] ?? 'https://api.openai.com/v1' );
+
+		if ( ! $api_key ) {
+			return new \WP_Error( 'wpaif_missing_key', __( 'API key is required.', 'wp-ai-forms' ) );
+		}
+
+		// GET /models is cheap (no token usage) and proves both auth and endpoint reachability.
+		$response = wp_remote_get(
+			$base_url . '/models',
+			[
+				'timeout' => 15,
+				'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( $code >= 400 ) {
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+			$msg  = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'wp-ai-forms' );
+			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+		}
+		return true;
+	}
 }

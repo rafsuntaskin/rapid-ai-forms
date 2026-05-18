@@ -148,6 +148,17 @@
 	}
 }
 
+.wpaif-verify {
+	margin-top: 8px;
+
+	&__result {
+		font-size: 13px;
+
+		&--success { color: #1a7e3a; }
+		&--error { color: #c0392b; }
+	}
+}
+
 .wpaif-shortcode {
 	display: inline-flex;
 	align-items: center;

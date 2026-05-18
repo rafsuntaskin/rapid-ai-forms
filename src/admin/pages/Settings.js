@@ -4,6 +4,8 @@ import {
 	Card,
 	CardBody,
 	CardHeader,
+	Flex,
+	FlexItem,
 	Notice,
 	SelectControl,
 	Spinner,
@@ -16,6 +18,8 @@ export default function Settings( { api } ) {
 	const [ settings, setSettings ] = useState( null );
 	const [ saving, setSaving ] = useState( false );
 	const [ message, setMessage ] = useState( null );
+	const [ verifying, setVerifying ] = useState( false );
+	const [ verifyResult, setVerifyResult ] = useState( null );
 
 	useEffect( () => {
 		api.get( 'settings' ).then( setSettings );
@@ -33,6 +37,30 @@ export default function Settings( { api } ) {
 				[ key ]: { ...settings.providers[ key ], ...patch },
 			},
 		} );
+	};
+
+	const verify = async () => {
+		setVerifying( true );
+		setVerifyResult( null );
+		const cfg = settings.providers[ settings.active_provider ] || {};
+		try {
+			const res = await api.post( 'ai/verify', {
+				provider: settings.active_provider,
+				api_key: cfg.api_key || '',
+				base_url: cfg.base_url || '',
+				model: cfg.model || '',
+			} );
+			setVerifyResult( {
+				status: 'success',
+				text: res.latency_ms
+					? __( 'Connection works.', 'wp-ai-forms' ) + ` (${ res.latency_ms }ms)`
+					: __( 'Connection works.', 'wp-ai-forms' ),
+			} );
+		} catch ( e ) {
+			setVerifyResult( { status: 'error', text: e.message || __( 'Verification failed.', 'wp-ai-forms' ) } );
+		} finally {
+			setVerifying( false );
+		}
 	};
 
 	const save = async () => {
@@ -92,22 +120,51 @@ export default function Settings( { api } ) {
 							type="password"
 							value={ activeCfg.api_key || '' }
 							placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
-							onChange={ ( v ) => updateProvider( activeKey, { api_key: v } ) }
+							onChange={ ( v ) => {
+								updateProvider( activeKey, { api_key: v } );
+								setVerifyResult( null );
+							} }
 						/>
 						{ 'model' in activeCfg && (
 							<TextControl
 								label={ __( 'Model', 'wp-ai-forms' ) }
 								value={ activeCfg.model || '' }
-								onChange={ ( v ) => updateProvider( activeKey, { model: v } ) }
+								onChange={ ( v ) => {
+									updateProvider( activeKey, { model: v } );
+									setVerifyResult( null );
+								} }
 							/>
 						) }
 						{ 'base_url' in activeCfg && (
 							<TextControl
 								label={ __( 'Base URL', 'wp-ai-forms' ) }
 								value={ activeCfg.base_url || '' }
-								onChange={ ( v ) => updateProvider( activeKey, { base_url: v } ) }
+								onChange={ ( v ) => {
+									updateProvider( activeKey, { base_url: v } );
+									setVerifyResult( null );
+								} }
 							/>
 						) }
+						<Flex align="center" gap={ 3 } className="wpaif-verify">
+							<FlexItem>
+								<Button
+									variant="secondary"
+									onClick={ verify }
+									isBusy={ verifying }
+									disabled={ verifying || ( ! activeCfg.api_key && ! activeCfg.api_key_set ) }
+								>
+									{ __( 'Verify connection', 'wp-ai-forms' ) }
+								</Button>
+							</FlexItem>
+							{ verifyResult && (
+								<FlexItem>
+									<span className={ `wpaif-verify__result wpaif-verify__result--${ verifyResult.status }` }>
+										{ verifyResult.status === 'success' ? '✓ ' : '✕ ' }
+										{ verifyResult.text }
+									</span>
+								</FlexItem>
+							) }
+						</Flex>
 					</CardBody>
 				</Card>
 			) }

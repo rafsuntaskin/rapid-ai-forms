@@ -61,4 +61,26 @@ class Gemini implements Provider {
 		$text = $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
 		return Schema_Prompt::extract_schema( $text );
 	}
+
+	public function verify( array $options = [] ) {
+		$api_key = $options['api_key'] ?? '';
+		if ( ! $api_key ) {
+			return new \WP_Error( 'wpaif_missing_key', __( 'API key is required.', 'wp-ai-forms' ) );
+		}
+
+		$response = wp_remote_get(
+			'https://generativelanguage.googleapis.com/v1beta/models?key=' . rawurlencode( $api_key ),
+			[ 'timeout' => 15 ]
+		);
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( $code >= 400 ) {
+			$body = json_decode( wp_remote_retrieve_body( $response ), true );
+			$msg  = $body['error']['message'] ?? __( 'Google rejected this API key.', 'wp-ai-forms' );
+			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+		}
+		return true;
+	}
 }

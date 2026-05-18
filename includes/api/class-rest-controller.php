@@ -63,6 +63,16 @@ class Rest_Controller {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/ai/verify',
+			[
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'ai_verify' ],
+				'permission_callback' => [ $this, 'can_manage' ],
+			]
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/ai/generate',
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
@@ -145,6 +155,40 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$ok   = $repo->delete( (int) $req['id'] );
 		return rest_ensure_response( [ 'deleted' => $ok ] );
+	}
+
+	public function ai_verify( $req ) {
+		$provider_key = sanitize_key( (string) $req->get_param( 'provider' ) );
+		$manager      = new Provider_Manager();
+		$provider     = $manager->get( $provider_key );
+		if ( ! $provider ) {
+			return new \WP_Error( 'wpaif_unknown_provider', __( 'Unknown provider.', 'wp-ai-forms' ), [ 'status' => 400 ] );
+		}
+
+		// Merge incoming form values over the saved options so the user can verify
+		// before saving. Empty fields fall back to the stored value (so partial
+		// edits still test the right thing).
+		$settings = $manager->settings();
+		$saved    = isset( $settings['providers'][ $provider_key ] ) ? $settings['providers'][ $provider_key ] : [];
+		$options  = [];
+		foreach ( [ 'api_key', 'base_url', 'model' ] as $field ) {
+			$incoming = $req->get_param( $field );
+			if ( is_string( $incoming ) && '' !== $incoming ) {
+				$options[ $field ] = sanitize_text_field( $incoming );
+			} elseif ( isset( $saved[ $field ] ) ) {
+				$options[ $field ] = $saved[ $field ];
+			}
+		}
+
+		$start  = microtime( true );
+		$result = $provider->verify( $options );
+		$ms     = (int) round( ( microtime( true ) - $start ) * 1000 );
+
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( [ 'status' => 400, 'latency_ms' => $ms ] );
+			return $result;
+		}
+		return rest_ensure_response( [ 'ok' => true, 'latency_ms' => $ms ] );
 	}
 
 	public function ai_generate( $req ) {
