@@ -80,22 +80,23 @@ class Abilities {
 		wp_register_ability(
 			'wp-ai-forms/generate-form-schema',
 			[
-				'label'               => __( 'Generate form schema from a prompt', 'wp-ai-forms' ),
-				'description'         => __( 'Use the configured AI provider to turn a natural-language description into a form schema.', 'wp-ai-forms' ),
+				'label'               => __( 'Generate or edit a form schema from a prompt', 'wp-ai-forms' ),
+				'description'         => __( 'Use the configured AI provider to produce a form schema. If a current_schema is supplied, the model edits it in place, preserving fields the user did not ask to change.', 'wp-ai-forms' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => [
 					'type'       => 'object',
 					'required'   => [ 'prompt' ],
 					'properties' => [
-						'prompt' => [ 'type' => 'string', 'description' => 'Natural-language description of the form.' ],
+						'prompt'         => [ 'type' => 'string', 'description' => 'Natural-language description or edit instruction.' ],
+						'current_schema' => array_merge( $form_schema_shape, [ 'description' => 'Optional existing schema to edit. Omit for a from-scratch generation.' ] ),
 					],
 				],
 				'output_schema'       => $form_schema_shape,
 				'permission_callback' => $can_manage,
 				'execute_callback'    => function ( $input ) {
 					$manager = new Provider_Manager();
-					$schema  = $manager->generate_form_schema( (string) ( $input['prompt'] ?? '' ) );
-					return is_wp_error( $schema ) ? $schema : $schema;
+					$current = isset( $input['current_schema'] ) && is_array( $input['current_schema'] ) ? $input['current_schema'] : null;
+					return $manager->generate_form_schema( (string) ( $input['prompt'] ?? '' ), $current );
 				},
 				'meta'                => [ 'plugin' => 'wp-ai-forms' ],
 			]

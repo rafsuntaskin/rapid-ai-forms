@@ -13,11 +13,10 @@ class Schema_Prompt {
 
 	public static function system() {
 		return <<<EOT
-You are a form schema generator for a WordPress plugin. Given a natural-language
-description, output a JSON object describing the form. Only output JSON — no
+You are a form schema editor for a WordPress plugin. You output JSON only — no
 prose, no markdown fences.
 
-Schema:
+Schema shape:
 {
   "title": "string",
   "submit_label": "string",
@@ -34,8 +33,18 @@ Schema:
   ]
 }
 
-Always include a "submit_label". Use snake_case for "name". Only include "options"
-when type is select or radio.
+Rules:
+- Always include a "submit_label".
+- "name" must be snake_case and unique within the form.
+- Only include "options" when type is select or radio. Select/radio fields MUST have at least 2 options.
+- If the user message includes "Current form schema:", treat the request as an
+  EDIT. Return the full updated schema, preserving every existing field, option,
+  label, name, type, and order EXACTLY unless the user explicitly asked you to
+  change them. Do not invent extra fields, rename existing ones, or reorder
+  unless asked. New fields you add should be appended at the end unless the user
+  specifies a position.
+- If no "Current form schema:" block is present, generate a new schema from
+  scratch matching the user's description.
 EOT;
 	}
 

@@ -37,7 +37,9 @@ export default function FormEditor( { api, formId } ) {
 	const [ savedAt, setSavedAt ] = useState( null );
 	const [ prompt, setPrompt ] = useState( '' );
 
-	const generate = useAsync( ( p ) => api.post( 'ai/generate', { prompt: p } ) );
+	const generate = useAsync( ( p, currentSchema ) =>
+		api.post( 'ai/generate', { prompt: p, current_schema: currentSchema } )
+	);
 	const save = useAsync( ( payload ) => api.put( `forms/${ formId }`, payload ) );
 
 	useEffect( () => {
@@ -75,9 +77,19 @@ export default function FormEditor( { api, formId } ) {
 		updateSchema( { fields } );
 	};
 
+	const hasExistingFields = ( form.schema.fields || [] ).length > 0;
+
 	const onGenerate = async () => {
-		const schema = await generate.run( prompt );
-		setForm( { ...form, schema, title: schema.title || form.title, ai_prompt: prompt } );
+		const currentSchema = hasExistingFields ? form.schema : null;
+		const schema = await generate.run( prompt, currentSchema );
+		setForm( {
+			...form,
+			schema,
+			// Only adopt the AI's title on a from-scratch generation; otherwise keep the user's title.
+			title: hasExistingFields ? form.title : schema.title || form.title,
+			ai_prompt: prompt,
+		} );
+		setPrompt( '' );
 	};
 
 	const onSave = async () => {
@@ -115,16 +127,28 @@ export default function FormEditor( { api, formId } ) {
 			<div className="wpaif-editor__columns">
 				<div className="wpaif-editor__main">
 			<Card>
-				<CardHeader><strong>{ __( 'Generate with AI', 'wp-ai-forms' ) }</strong></CardHeader>
+				<CardHeader>
+					<strong>
+						{ hasExistingFields
+							? __( 'Edit with AI', 'wp-ai-forms' )
+							: __( 'Generate with AI', 'wp-ai-forms' ) }
+					</strong>
+				</CardHeader>
 				<CardBody>
 					<TextareaControl
 						label={ __( 'Prompt', 'wp-ai-forms' ) }
-						help={ __( 'Describe the form you want. Example: "Contact form with name, email, phone, and a message field."', 'wp-ai-forms' ) }
+						help={
+							hasExistingFields
+								? __( 'Describe a change. The AI keeps existing fields and applies only what you ask. Example: "Add a phone field after email" or "Make the message field optional".', 'wp-ai-forms' )
+								: __( 'Describe the form you want. Example: "Contact form with name, email, phone, and a message field."', 'wp-ai-forms' )
+						}
 						value={ prompt }
 						onChange={ setPrompt }
 					/>
 					<Button variant="secondary" onClick={ onGenerate } isBusy={ generate.loading } disabled={ ! prompt }>
-						{ __( 'Generate fields', 'wp-ai-forms' ) }
+						{ hasExistingFields
+							? __( 'Apply changes', 'wp-ai-forms' )
+							: __( 'Generate fields', 'wp-ai-forms' ) }
 					</Button>
 					{ generate.error && (
 						<Notice status="error" isDismissible={ false } className="wpaif-mt">

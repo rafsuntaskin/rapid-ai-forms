@@ -148,9 +148,10 @@ class Rest_Controller {
 	}
 
 	public function ai_generate( $req ) {
-		$prompt  = (string) $req->get_param( 'prompt' );
-		$manager = new Provider_Manager();
-		$schema  = $manager->generate_form_schema( $prompt );
+		$prompt         = (string) $req->get_param( 'prompt' );
+		$current_schema = $req->get_param( 'current_schema' );
+		$manager        = new Provider_Manager();
+		$schema         = $manager->generate_form_schema( $prompt, is_array( $current_schema ) ? $current_schema : null );
 		if ( is_wp_error( $schema ) ) {
 			$schema->add_data( [ 'status' => 400 ] );
 			return $schema;

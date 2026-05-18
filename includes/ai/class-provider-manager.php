@@ -60,7 +60,7 @@ class Provider_Manager {
 		update_option( self::OPTION_KEY, $settings );
 	}
 
-	public function generate_form_schema( $prompt ) {
+	public function generate_form_schema( $prompt, $current_schema = null ) {
 		$settings = $this->settings();
 		$provider = $this->get( $settings['active_provider'] );
 
@@ -69,6 +69,16 @@ class Provider_Manager {
 		}
 
 		$options = $settings['providers'][ $settings['active_provider'] ] ?? [];
+
+		// When editing, prepend the current schema so the model knows what to preserve.
+		if ( is_array( $current_schema ) && ! empty( $current_schema['fields'] ) ) {
+			$prompt = sprintf(
+				"Current form schema:\n%s\n\nUser request:\n%s",
+				wp_json_encode( $current_schema, JSON_PRETTY_PRINT ),
+				$prompt
+			);
+		}
+
 		return $provider->generate_form_schema( $prompt, $options );
 	}
 }
