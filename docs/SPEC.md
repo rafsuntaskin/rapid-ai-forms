@@ -590,10 +590,11 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [ ] DB migration runner.
   *Done when:* bumping `Schema::DB_VERSION` runs `dbDelta` on next admin load.
 
-### v0.3 — Anti-abuse
+### v0.3 — Anti-abuse + Styling
 - [ ] Honeypot field auto-injected into the renderer.
 - [ ] Optional Cloudflare Turnstile / hCaptcha integration.
 - [ ] Per-IP submission rate limit (configurable).
+- [ ] **AI-driven per-form CSS editor with live iframe preview** — see [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
 
 ### v0.4 — Block editor
 - [ ] Gutenberg block `wp-ai-forms/form` selecting a form by id.
