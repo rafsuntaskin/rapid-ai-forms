@@ -12,18 +12,16 @@ defined( 'ABSPATH' ) || exit;
 class Form_Renderer {
 
 	public function render( array $form ) {
-		$schema = isset( $form['schema'] ) && is_array( $form['schema'] ) ? $form['schema'] : [];
-		$fields = isset( $schema['fields'] ) && is_array( $schema['fields'] ) ? $schema['fields'] : [];
+		$schema = isset( $form['schema'] ) && is_array( $form['schema'] ) ? $form['schema'] : array();
+		$fields = isset( $schema['fields'] ) && is_array( $schema['fields'] ) ? $schema['fields'] : array();
 
-		$nonce      = wp_create_nonce( 'wp_rest' );
-		$form_uuid  = esc_attr( $form['uuid'] );
-		$form_title = esc_html( $form['title'] );
+		$nonce = wp_create_nonce( 'wp_rest' );
 
 		ob_start();
 		?>
-		<form class="wpaif-form" data-form-uuid="<?php echo $form_uuid; ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+		<form class="wpaif-form" data-form-uuid="<?php echo esc_attr( $form['uuid'] ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">
 			<?php if ( ! empty( $schema['show_title'] ) ) : ?>
-				<h3 class="wpaif-form__title"><?php echo $form_title; ?></h3>
+				<h3 class="wpaif-form__title"><?php echo esc_html( $form['title'] ); ?></h3>
 			<?php endif; ?>
 
 			<?php foreach ( $fields as $field ) : ?>
@@ -44,7 +42,7 @@ class Form_Renderer {
 	private function render_field( array $field ) {
 		$type     = isset( $field['type'] ) ? sanitize_key( $field['type'] ) : 'text';
 		$name     = isset( $field['name'] ) ? sanitize_key( $field['name'] ) : '';
-		$label    = isset( $field['label'] ) ? esc_html( $field['label'] ) : '';
+		$label    = isset( $field['label'] ) ? $field['label'] : '';
 		$required = ! empty( $field['required'] );
 		$id       = 'wpaif-' . $name . '-' . wp_rand( 1000, 9999 );
 
@@ -64,13 +62,14 @@ class Form_Renderer {
 
 		echo '<div class="wpaif-field wpaif-field--' . esc_attr( $type ) . '">';
 		if ( $label ) {
-			echo '<label for="' . esc_attr( $id ) . '">' . $label;
+			printf( '<label for="%s">%s', esc_attr( $id ), esc_html( $label ) );
 			if ( $required ) {
 				echo ' <span class="wpaif-required">*</span>';
 			}
 			echo '</label>';
 		}
 
+		// Attribute string built from pre-escaped values; safe to echo as-is.
 		$attrs = sprintf(
 			'id="%s" name="%s"%s',
 			esc_attr( $id ),
@@ -80,28 +79,43 @@ class Form_Renderer {
 
 		switch ( $type ) {
 			case 'textarea':
-				echo '<textarea ' . $attrs . '></textarea>';
+				echo '<textarea ' . $attrs . '></textarea>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is a sprintf of esc_attr()ed values.
 				break;
 			case 'select':
-				echo '<select ' . $attrs . '>';
-				foreach ( (array) ( $field['options'] ?? [] ) as $opt ) {
-					echo '<option value="' . esc_attr( $opt['value'] ?? '' ) . '">' . esc_html( $opt['label'] ?? '' ) . '</option>';
+				echo '<select ' . $attrs . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is a sprintf of esc_attr()ed values.
+				foreach ( (array) ( $field['options'] ?? array() ) as $opt ) {
+					printf(
+						'<option value="%s">%s</option>',
+						esc_attr( $opt['value'] ?? '' ),
+						esc_html( $opt['label'] ?? '' )
+					);
 				}
 				echo '</select>';
 				break;
 			case 'checkbox':
-				echo '<input type="checkbox" ' . $attrs . ' value="1" />';
+				echo '<input type="checkbox" ' . $attrs . ' value="1" />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is a sprintf of esc_attr()ed values.
 				break;
 			case 'checkbox_group':
 				echo '<div class="wpaif-checkbox-group">';
-				foreach ( (array) ( $field['options'] ?? [] ) as $opt ) {
-					echo '<label><input type="checkbox" name="' . esc_attr( $name ) . '[]" value="' . esc_attr( $opt['value'] ?? '' ) . '" /> ' . esc_html( $opt['label'] ?? '' ) . '</label>';
+				foreach ( (array) ( $field['options'] ?? array() ) as $opt ) {
+					printf(
+						'<label><input type="checkbox" name="%s[]" value="%s" /> %s</label>',
+						esc_attr( $name ),
+						esc_attr( $opt['value'] ?? '' ),
+						esc_html( $opt['label'] ?? '' )
+					);
 				}
 				echo '</div>';
 				break;
 			case 'radio':
-				foreach ( (array) ( $field['options'] ?? [] ) as $opt ) {
-					echo '<label><input type="radio" name="' . esc_attr( $name ) . '" value="' . esc_attr( $opt['value'] ?? '' ) . '"' . ( $required ? ' required' : '' ) . ' /> ' . esc_html( $opt['label'] ?? '' ) . '</label>';
+				foreach ( (array) ( $field['options'] ?? array() ) as $opt ) {
+					printf(
+						'<label><input type="radio" name="%s" value="%s"%s /> %s</label>',
+						esc_attr( $name ),
+						esc_attr( $opt['value'] ?? '' ),
+						$required ? ' required' : '',
+						esc_html( $opt['label'] ?? '' )
+					);
 				}
 				break;
 			case 'password':
@@ -112,7 +126,7 @@ class Form_Renderer {
 			case 'date':
 			case 'text':
 			default:
-				echo '<input type="' . esc_attr( $type ) . '" ' . $attrs . ' />';
+				echo '<input type="' . esc_attr( $type ) . '" ' . $attrs . ' />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is a sprintf of esc_attr()ed values.
 		}
 
 		echo '</div>';

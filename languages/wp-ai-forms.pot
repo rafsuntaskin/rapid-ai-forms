@@ -1,0 +1,545 @@
+# Copyright (C) 2026 Rafsun Taskin
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP AI Forms 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ai-forms\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-19T12:07:36+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.8.1\n"
+"X-Domain: wp-ai-forms\n"
+
+#. Plugin Name of the plugin
+msgid "WP AI Forms"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://example.com/wp-ai-forms"
+msgstr ""
+
+#. Description of the plugin
+msgid "AI-powered form builder for WordPress. Generate forms with natural language and render them via shortcodes. Bring your own AI provider key (Anthropic, Gemini, or any OpenAI-compatible endpoint)."
+msgstr ""
+
+#. Author of the plugin
+msgid "Rafsun Taskin"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:35
+#: includes/admin/class-admin.php:23
+#: includes/admin/class-admin.php:24
+msgid "AI Forms"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:36
+msgid "Build, fetch, and submit AI-generated forms."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:86
+msgid "Generate or edit a form schema from a prompt"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:87
+msgid "Use the configured AI provider to produce a form schema. If a current_schema is supplied, the model edits it in place, preserving fields the user did not ask to change."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:114
+msgid "Create a form"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:115
+msgid "Persist a form (with an optional pre-generated schema)."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:143
+#: src/admin/pages/FormsList.js:75
+msgid "Could not create form."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:152
+msgid "List forms"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:153
+msgid "Return a paginated list of forms with their shortcodes."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:209
+msgid "Get a form"
+msgstr ""
+
+#: includes/abilities/class-abilities.php:210
+msgid "Fetch a single form (and its schema) by id or uuid."
+msgstr ""
+
+#: includes/abilities/class-abilities.php:235
+#: includes/api/class-rest-controller.php:137
+#: includes/api/class-rest-controller.php:152
+#: includes/api/class-rest-controller.php:274
+msgid "Form not found."
+msgstr ""
+
+#: includes/admin/class-admin.php:35
+#: includes/admin/class-admin.php:36
+#: src/admin/pages/FormsList.js:96
+msgid "Forms"
+msgstr ""
+
+#: includes/admin/class-admin.php:44
+msgid "AI Forms Settings"
+msgstr ""
+
+#: includes/admin/class-admin.php:45
+msgid "Settings"
+msgstr ""
+
+#: includes/ai/class-provider-manager.php:78
+msgid "No AI provider configured."
+msgstr ""
+
+#: includes/ai/class-schema-prompt.php:63
+msgid "AI returned an empty response."
+msgstr ""
+
+#: includes/ai/class-schema-prompt.php:82
+msgid "AI response was not valid JSON."
+msgstr ""
+
+#: includes/ai/class-schema-prompt.php:91
+#: includes/forms/class-form-renderer.php:33
+#: src/admin/components/FormPreview.js:125
+msgid "Submit"
+msgstr ""
+
+#: includes/ai/providers/class-anthropic.php:23
+msgid "Anthropic (Claude)"
+msgstr ""
+
+#: includes/ai/providers/class-anthropic.php:31
+msgid "Anthropic API key is not set."
+msgstr ""
+
+#: includes/ai/providers/class-anthropic.php:65
+msgid "Anthropic API error."
+msgstr ""
+
+#: includes/ai/providers/class-anthropic.php:75
+#: includes/ai/providers/class-gemini.php:73
+#: includes/ai/providers/class-openai-compatible.php:80
+msgid "API key is required."
+msgstr ""
+
+#: includes/ai/providers/class-anthropic.php:110
+msgid "Anthropic rejected this API key."
+msgstr ""
+
+#: includes/ai/providers/class-gemini.php:22
+msgid "Google Gemini"
+msgstr ""
+
+#: includes/ai/providers/class-gemini.php:30
+msgid "Gemini API key is not set."
+msgstr ""
+
+#: includes/ai/providers/class-gemini.php:61
+msgid "Gemini API error."
+msgstr ""
+
+#: includes/ai/providers/class-gemini.php:86
+msgid "Google rejected this API key."
+msgstr ""
+
+#. translators: %s: model id
+#: includes/ai/providers/class-gemini.php:106
+msgid "Model \"%s\" is not available to this API key. Check the model id at ai.google.dev."
+msgstr ""
+
+#: includes/ai/providers/class-openai-compatible.php:24
+msgid "OpenAI-compatible"
+msgstr ""
+
+#: includes/ai/providers/class-openai-compatible.php:67
+msgid "AI API error."
+msgstr ""
+
+#: includes/ai/providers/class-openai-compatible.php:98
+msgid "The endpoint rejected this API key."
+msgstr ""
+
+#. translators: %s: model id
+#: includes/ai/providers/class-openai-compatible.php:109
+msgid "Model \"%s\" is not available to this API key. Check the model id or pick one your account can access."
+msgstr ""
+
+#: includes/api/class-rest-controller.php:168
+msgid "Unknown provider."
+msgstr ""
+
+#: src/admin/components/FormPreview.js:24
+msgid "Hidden: "
+msgstr ""
+
+#: src/admin/components/FormPreview.js:64
+msgid "— Select —"
+msgstr ""
+
+#: src/admin/components/FormPreview.js:77
+#: src/admin/components/FormPreview.js:97
+msgid "No options yet — add some to the field."
+msgstr ""
+
+#: src/admin/components/FormPreview.js:131
+msgid "Live preview"
+msgstr ""
+
+#: src/admin/components/FormPreview.js:133
+msgid "How the form will appear to visitors."
+msgstr ""
+
+#: src/admin/components/FormPreview.js:145
+msgid "No fields yet. Generate with AI or add fields to see them here."
+msgstr ""
+
+#: src/admin/components/ShortcodeCopy.js:35
+msgid "Embed shortcode"
+msgstr ""
+
+#: src/admin/components/ShortcodeCopy.js:44
+msgid "Shortcode"
+msgstr ""
+
+#: src/admin/components/ShortcodeCopy.js:52
+msgid "✓ Copied"
+msgstr ""
+
+#: src/admin/components/ShortcodeCopy.js:52
+msgid "Copy"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:137
+msgid "Edit form"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:141
+msgid "Embed:"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:147
+msgid "Back"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:151
+msgid "Save"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:157
+msgid "Saved at "
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:166
+msgid "Edit with AI"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:167
+msgid "Generate with AI"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:173
+msgid "No AI key set. Add one in"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:174
+#: src/admin/pages/FormsList.js:108
+msgid "AI Forms → Settings"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:175
+msgid "to enable AI generation. You can still add and edit fields below by hand."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:179
+msgid "Prompt"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:182
+msgid "Describe a change. The AI keeps existing fields and applies only what you ask. Example: \"Add a phone field after email\" or \"Make the message field optional\"."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:183
+msgid "Describe the form you want. Example: \"Contact form with name, email, phone, and a message field.\""
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:196
+msgid "Apply changes"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:197
+msgid "Generate fields"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:208
+msgid "Form details"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:211
+msgid "Title"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:216
+msgid "Submit button label"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:221
+msgid "Status"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:235
+#: src/admin/pages/FormsList.js:176
+msgid "Fields"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:238
+msgid "Add field"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:245
+msgid "No fields yet. Generate with AI or add manually."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:253
+#: src/admin/pages/FormEditor.js:306
+msgid "Label"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:260
+msgid "Name (snake_case)"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:267
+msgid "Type"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:276
+msgid "Required"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:283
+msgid "Default value"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:284
+msgid "This value is submitted with the form. Not visible or editable to visitors."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:292
+msgid "Options"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:294
+msgid "Add option"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:299
+msgid "No options yet. Add at least 2 for the field to render."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:314
+msgid "Value"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:326
+msgid "Remove option"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:336
+msgid "Remove"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:21
+msgid "just now"
+msgstr ""
+
+#. translators: %d: number of minutes elapsed
+#: src/admin/pages/FormsList.js:23
+msgid "%d minute ago"
+msgid_plural "%d minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of hours elapsed
+#: src/admin/pages/FormsList.js:25
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of days elapsed
+#: src/admin/pages/FormsList.js:27
+msgid "%d day ago"
+msgid_plural "%d days ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/admin/pages/FormsList.js:65
+msgid "Untitled form"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:70
+msgid "Form was created but no id was returned."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:89
+msgid "Could not delete form."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:97
+msgid "Create AI-generated forms and embed them anywhere with a shortcode."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:100
+msgid "+ New form"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:107
+msgid "AI is not connected yet — set an API key in"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:109
+msgid "to enable form generation. You can still build forms manually."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:122
+msgid "Search forms"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:124
+msgid "Search by title, id, or uuid…"
+msgstr ""
+
+#. translators: %d: number of forms shown in the filtered list
+#: src/admin/pages/FormsList.js:131
+msgid "%d form"
+msgid_plural "%d forms"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/admin/pages/FormsList.js:145
+msgid "No forms yet"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:146
+msgid "Create your first AI-powered form. Describe it in plain language and the editor will build the fields for you."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:148
+msgid "Create your first form"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:156
+msgid "No forms match your search."
+msgstr ""
+
+#. translators: %d: form id number used as a placeholder title
+#: src/admin/pages/FormsList.js:168
+msgid "Untitled form #%d"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:180
+msgid "Updated"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:187
+msgid "Edit"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:194
+msgid "Delete"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:204
+msgid "Delete form?"
+msgstr ""
+
+#. translators: %s: form title (or "#id" fallback for untitled forms)
+#: src/admin/pages/FormsList.js:211
+msgid "Delete \"%s\"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone."
+msgstr ""
+
+#: src/admin/pages/FormsList.js:217
+msgid "Cancel"
+msgstr ""
+
+#: src/admin/pages/FormsList.js:220
+msgid "Delete form"
+msgstr ""
+
+#: src/admin/pages/Settings.js:54
+#: src/admin/pages/Settings.js:55
+msgid "Connection works."
+msgstr ""
+
+#: src/admin/pages/Settings.js:58
+msgid "Verification failed."
+msgstr ""
+
+#: src/admin/pages/Settings.js:83
+#: src/admin/pages/Settings.js:84
+msgid "Connection verified."
+msgstr ""
+
+#: src/admin/pages/Settings.js:89
+msgid "Save blocked — verification failed: "
+msgstr ""
+
+#: src/admin/pages/Settings.js:102
+msgid "Settings saved."
+msgstr ""
+
+#: src/admin/pages/Settings.js:118
+msgid "AI Settings"
+msgstr ""
+
+#: src/admin/pages/Settings.js:119
+msgid "Configure the AI provider used to generate form schemas."
+msgstr ""
+
+#: src/admin/pages/Settings.js:129
+msgid "AI provider"
+msgstr ""
+
+#: src/admin/pages/Settings.js:132
+msgid "Active provider"
+msgstr ""
+
+#: src/admin/pages/Settings.js:133
+msgid "Choose which provider to use. Credentials below apply to the selected provider only."
+msgstr ""
+
+#: src/admin/pages/Settings.js:146
+msgid "API Key"
+msgstr ""
+
+#: src/admin/pages/Settings.js:149
+msgid "Saved — leave blank to keep"
+msgstr ""
+
+#: src/admin/pages/Settings.js:157
+msgid "Model"
+msgstr ""
+
+#: src/admin/pages/Settings.js:167
+msgid "Base URL"
+msgstr ""
+
+#: src/admin/pages/Settings.js:182
+msgid "Verify connection"
+msgstr ""
+
+#: src/admin/pages/Settings.js:197
+msgid "Save settings"
+msgstr ""

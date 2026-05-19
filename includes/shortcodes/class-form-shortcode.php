@@ -16,15 +16,15 @@ class Form_Shortcode {
 	const TAG = 'wp_ai_form';
 
 	public function register() {
-		add_shortcode( self::TAG, [ $this, 'render' ] );
+		add_shortcode( self::TAG, array( $this, 'render' ) );
 	}
 
 	public function render( $atts ) {
 		$atts = shortcode_atts(
-			[
+			array(
 				'id'   => 0,
 				'uuid' => '',
-			],
+			),
 			$atts,
 			self::TAG
 		);

@@ -18,97 +18,100 @@ class Rest_Controller {
 	const NAMESPACE = 'wp-ai-forms/v1';
 
 	public function register() {
-		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
 	public function register_routes() {
 		register_rest_route(
 			self::NAMESPACE,
 			'/forms',
-			[
-				[
+			array(
+				array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'list_forms' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-				[
+					'callback'            => array( $this, 'list_forms' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+				array(
 					'methods'             => \WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'create_form' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-			]
+					'callback'            => array( $this, 'create_form' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			self::NAMESPACE,
 			'/forms/(?P<id>\d+)',
-			[
-				[
+			array(
+				array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_form' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-				[
+					'callback'            => array( $this, 'get_form' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
-					'callback'            => [ $this, 'update_form' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-				[
+					'callback'            => array( $this, 'update_form' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+				array(
 					'methods'             => \WP_REST_Server::DELETABLE,
-					'callback'            => [ $this, 'delete_form' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-			]
+					'callback'            => array( $this, 'delete_form' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			self::NAMESPACE,
 			'/ai/verify',
-			[
+			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'ai_verify' ],
-				'permission_callback' => [ $this, 'can_manage' ],
-			]
+				'callback'            => array( $this, 'ai_verify' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
 		);
 
 		register_rest_route(
 			self::NAMESPACE,
 			'/ai/generate',
-			[
+			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'ai_generate' ],
-				'permission_callback' => [ $this, 'can_manage' ],
-				'args'                => [
-					'prompt' => [ 'type' => 'string', 'required' => true ],
-				],
-			]
+				'callback'            => array( $this, 'ai_generate' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+				'args'                => array(
+					'prompt' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
 		);
 
 		register_rest_route(
 			self::NAMESPACE,
 			'/settings',
-			[
-				[
+			array(
+				array(
 					'methods'             => \WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_settings' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-				[
+					'callback'            => array( $this, 'get_settings' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+				array(
 					'methods'             => \WP_REST_Server::EDITABLE,
-					'callback'            => [ $this, 'update_settings' ],
-					'permission_callback' => [ $this, 'can_manage' ],
-				],
-			]
+					'callback'            => array( $this, 'update_settings' ),
+					'permission_callback' => array( $this, 'can_manage' ),
+				),
+			)
 		);
 
 		register_rest_route(
 			self::NAMESPACE,
 			'/submissions/(?P<uuid>[a-f0-9\-]+)',
-			[
+			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'submit' ],
+				'callback'            => array( $this, 'submit' ),
 				'permission_callback' => '__return_true',
-			]
+			)
 		);
 	}
 
@@ -119,10 +122,10 @@ class Rest_Controller {
 	public function list_forms( $req ) {
 		$repo  = new Form_Repository();
 		$forms = $repo->list(
-			[
+			array(
 				'page'     => (int) $req->get_param( 'page' ) ?: 1,
 				'per_page' => (int) $req->get_param( 'per_page' ) ?: 20,
-			]
+			)
 		);
 		return rest_ensure_response( $forms );
 	}
@@ -131,22 +134,22 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$form = $repo->get( (int) $req['id'] );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), [ 'status' => 404 ] );
+			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( $form );
 	}
 
 	public function create_form( $req ) {
 		$repo = new Form_Repository();
-		$form = $repo->create( $req->get_json_params() ?: [] );
+		$form = $repo->create( $req->get_json_params() ?: array() );
 		return rest_ensure_response( $form );
 	}
 
 	public function update_form( $req ) {
 		$repo = new Form_Repository();
-		$form = $repo->update( (int) $req['id'], $req->get_json_params() ?: [] );
+		$form = $repo->update( (int) $req['id'], $req->get_json_params() ?: array() );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), [ 'status' => 404 ] );
+			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( $form );
 	}
@@ -154,7 +157,7 @@ class Rest_Controller {
 	public function delete_form( $req ) {
 		$repo = new Form_Repository();
 		$ok   = $repo->delete( (int) $req['id'] );
-		return rest_ensure_response( [ 'deleted' => $ok ] );
+		return rest_ensure_response( array( 'deleted' => $ok ) );
 	}
 
 	public function ai_verify( $req ) {
@@ -162,16 +165,16 @@ class Rest_Controller {
 		$manager      = new Provider_Manager();
 		$provider     = $manager->get( $provider_key );
 		if ( ! $provider ) {
-			return new \WP_Error( 'wpaif_unknown_provider', __( 'Unknown provider.', 'wp-ai-forms' ), [ 'status' => 400 ] );
+			return new \WP_Error( 'wpaif_unknown_provider', __( 'Unknown provider.', 'wp-ai-forms' ), array( 'status' => 400 ) );
 		}
 
 		// Merge incoming form values over the saved options so the user can verify
 		// before saving. Empty fields fall back to the stored value (so partial
 		// edits still test the right thing).
 		$settings = $manager->settings();
-		$saved    = isset( $settings['providers'][ $provider_key ] ) ? $settings['providers'][ $provider_key ] : [];
-		$options  = [];
-		foreach ( [ 'api_key', 'base_url', 'model' ] as $field ) {
+		$saved    = isset( $settings['providers'][ $provider_key ] ) ? $settings['providers'][ $provider_key ] : array();
+		$options  = array();
+		foreach ( array( 'api_key', 'base_url', 'model' ) as $field ) {
 			$incoming = $req->get_param( $field );
 			if ( is_string( $incoming ) && '' !== $incoming ) {
 				$options[ $field ] = sanitize_text_field( $incoming );
@@ -185,10 +188,20 @@ class Rest_Controller {
 		$ms     = (int) round( ( microtime( true ) - $start ) * 1000 );
 
 		if ( is_wp_error( $result ) ) {
-			$result->add_data( [ 'status' => 400, 'latency_ms' => $ms ] );
+			$result->add_data(
+				array(
+					'status'     => 400,
+					'latency_ms' => $ms,
+				)
+			);
 			return $result;
 		}
-		return rest_ensure_response( [ 'ok' => true, 'latency_ms' => $ms ] );
+		return rest_ensure_response(
+			array(
+				'ok'         => true,
+				'latency_ms' => $ms,
+			)
+		);
 	}
 
 	public function ai_generate( $req ) {
@@ -197,7 +210,7 @@ class Rest_Controller {
 		$manager        = new Provider_Manager();
 		$schema         = $manager->generate_form_schema( $prompt, is_array( $current_schema ) ? $current_schema : null );
 		if ( is_wp_error( $schema ) ) {
-			$schema->add_data( [ 'status' => 400 ] );
+			$schema->add_data( array( 'status' => 400 ) );
 			return $schema;
 		}
 		return rest_ensure_response( $schema );
@@ -215,9 +228,12 @@ class Rest_Controller {
 				$settings['providers'][ $key ]['api_key_set'] = false;
 			}
 		}
-		$providers = [];
+		$providers = array();
 		foreach ( $manager->all() as $p ) {
-			$providers[] = [ 'key' => $p->key(), 'label' => $p->label() ];
+			$providers[] = array(
+				'key'   => $p->key(),
+				'label' => $p->label(),
+			);
 		}
 		$settings['available_providers'] = $providers;
 		return rest_ensure_response( $settings );
@@ -226,7 +242,7 @@ class Rest_Controller {
 	public function update_settings( $req ) {
 		$manager  = new Provider_Manager();
 		$current  = $manager->settings();
-		$incoming = $req->get_json_params() ?: [];
+		$incoming = $req->get_json_params() ?: array();
 
 		if ( isset( $incoming['active_provider'] ) ) {
 			$current['active_provider'] = sanitize_key( $incoming['active_provider'] );
@@ -255,7 +271,7 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$form = $repo->get_by_uuid( $uuid );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), [ 'status' => 404 ] );
+			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
 		}
 
 		$payload = $req->get_json_params() ?: $req->get_body_params();
@@ -273,12 +289,17 @@ class Rest_Controller {
 		 */
 		do_action( 'wp_ai_forms_submission_created', $id, $form, $data );
 
-		return rest_ensure_response( [ 'ok' => true, 'id' => $id ] );
+		return rest_ensure_response(
+			array(
+				'ok' => true,
+				'id' => $id,
+			)
+		);
 	}
 
 	private function sanitize_submission( array $form, array $payload ) {
-		$out    = [];
-		$fields = $form['schema']['fields'] ?? [];
+		$out    = array();
+		$fields = $form['schema']['fields'] ?? array();
 		foreach ( $fields as $field ) {
 			$name = $field['name'];
 			$type = $field['type'] ?? 'text';
@@ -307,7 +328,7 @@ class Rest_Controller {
 					$value = is_numeric( $value ) ? $value + 0 : null;
 					break;
 				case 'checkbox_group':
-					$allowed = array_column( (array) ( $field['options'] ?? [] ), 'value' );
+					$allowed = array_column( (array) ( $field['options'] ?? array() ), 'value' );
 					$value   = array_values( array_intersect( array_map( 'sanitize_text_field', (array) $value ), $allowed ) );
 					break;
 				default:

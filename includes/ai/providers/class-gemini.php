@@ -22,7 +22,7 @@ class Gemini implements Provider {
 		return __( 'Google Gemini', 'wp-ai-forms' );
 	}
 
-	public function generate_form_schema( $prompt, array $options = [] ) {
+	public function generate_form_schema( $prompt, array $options = array() ) {
 		$api_key = $options['api_key'] ?? '';
 		$model   = $options['model'] ?? 'gemini-2.0-flash';
 
@@ -34,19 +34,22 @@ class Gemini implements Provider {
 
 		$response = wp_remote_post(
 			$url,
-			[
+			array(
 				'timeout' => 60,
-				'headers' => [ 'Content-Type' => 'application/json' ],
+				'headers' => array( 'Content-Type' => 'application/json' ),
 				'body'    => wp_json_encode(
-					[
-						'systemInstruction' => [ 'parts' => [ [ 'text' => Schema_Prompt::system() ] ] ],
-						'contents'          => [
-							[ 'role' => 'user', 'parts' => [ [ 'text' => $prompt ] ] ],
-						],
-						'generationConfig'  => [ 'responseMimeType' => 'application/json' ],
-					]
+					array(
+						'systemInstruction' => array( 'parts' => array( array( 'text' => Schema_Prompt::system() ) ) ),
+						'contents'          => array(
+							array(
+								'role'  => 'user',
+								'parts' => array( array( 'text' => $prompt ) ),
+							),
+						),
+						'generationConfig'  => array( 'responseMimeType' => 'application/json' ),
+					)
 				),
-			]
+			)
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -62,7 +65,7 @@ class Gemini implements Provider {
 		return Schema_Prompt::extract_schema( $text );
 	}
 
-	public function verify( array $options = [] ) {
+	public function verify( array $options = array() ) {
 		$api_key = $options['api_key'] ?? '';
 		$model   = trim( (string) ( $options['model'] ?? '' ) );
 
@@ -72,7 +75,7 @@ class Gemini implements Provider {
 
 		$response = wp_remote_get(
 			'https://generativelanguage.googleapis.com/v1beta/models?key=' . rawurlencode( $api_key ),
-			[ 'timeout' => 15 ]
+			array( 'timeout' => 15 )
 		);
 		if ( is_wp_error( $response ) ) {
 			return $response;
@@ -81,18 +84,18 @@ class Gemini implements Provider {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $code >= 400 ) {
 			$msg = $body['error']['message'] ?? __( 'Google rejected this API key.', 'wp-ai-forms' );
-			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+			return new \WP_Error( 'wpaif_verify_failed', $msg, array( 'http_status' => $code ) );
 		}
 
 		if ( '' !== $model ) {
 			// Gemini returns names like "models/gemini-2.0-flash"; users may enter
 			// either form. Normalize to the bare id for comparison.
-			$ids = array_map(
+			$ids   = array_map(
 				static function ( $m ) {
 					$name = $m['name'] ?? '';
 					return 0 === strpos( $name, 'models/' ) ? substr( $name, 7 ) : $name;
 				},
-				(array) ( $body['models'] ?? [] )
+				(array) ( $body['models'] ?? array() )
 			);
 			$short = 0 === strpos( $model, 'models/' ) ? substr( $model, 7 ) : $model;
 			if ( ! in_array( $short, $ids, true ) ) {

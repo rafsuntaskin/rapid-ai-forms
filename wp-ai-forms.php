@@ -26,7 +26,7 @@ define( 'WP_AI_FORMS_BASENAME', plugin_basename( __FILE__ ) );
 require_once WP_AI_FORMS_PATH . 'includes/class-autoloader.php';
 WP_AI_Forms\Autoloader::register();
 
-register_activation_hook( __FILE__, [ WP_AI_Forms\Activator::class, 'activate' ] );
-register_deactivation_hook( __FILE__, [ WP_AI_Forms\Deactivator::class, 'deactivate' ] );
+register_activation_hook( __FILE__, array( WP_AI_Forms\Activator::class, 'activate' ) );
+register_deactivation_hook( __FILE__, array( WP_AI_Forms\Deactivator::class, 'deactivate' ) );
 
-add_action( 'plugins_loaded', [ WP_AI_Forms\Plugin::class, 'instance' ] );
+add_action( 'plugins_loaded', array( WP_AI_Forms\Plugin::class, 'instance' ) );

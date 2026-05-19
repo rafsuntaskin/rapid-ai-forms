@@ -27,7 +27,7 @@ interface Provider {
 	 * @param array  $options Provider options (api_key, model, etc.)
 	 * @return array|\WP_Error Form schema array or WP_Error on failure.
 	 */
-	public function generate_form_schema( $prompt, array $options = [] );
+	public function generate_form_schema( $prompt, array $options = array() );
 
 	/**
 	 * Lightweight credential check. Should make the cheapest possible
@@ -36,5 +36,5 @@ interface Provider {
 	 * @param array $options Provider options (api_key, model, base_url, etc.)
 	 * @return true|\WP_Error
 	 */
-	public function verify( array $options = [] );
+	public function verify( array $options = array() );
 }

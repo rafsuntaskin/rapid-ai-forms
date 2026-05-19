@@ -19,8 +19,11 @@ function formatRelative( iso ) {
 	const d = new Date( iso.replace( ' ', 'T' ) + 'Z' );
 	const diff = ( Date.now() - d.getTime() ) / 1000;
 	if ( diff < 60 ) return __( 'just now', 'wp-ai-forms' );
+	// translators: %d: number of minutes elapsed
 	if ( diff < 3600 ) return sprintf( _n( '%d minute ago', '%d minutes ago', Math.floor( diff / 60 ), 'wp-ai-forms' ), Math.floor( diff / 60 ) );
+	// translators: %d: number of hours elapsed
 	if ( diff < 86400 ) return sprintf( _n( '%d hour ago', '%d hours ago', Math.floor( diff / 3600 ), 'wp-ai-forms' ), Math.floor( diff / 3600 ) );
+	// translators: %d: number of days elapsed
 	if ( diff < 604800 ) return sprintf( _n( '%d day ago', '%d days ago', Math.floor( diff / 86400 ), 'wp-ai-forms' ), Math.floor( diff / 86400 ) );
 	return d.toLocaleDateString();
 }
@@ -124,6 +127,7 @@ export default function FormsList( { api } ) {
 					/>
 					<span className="wpaif-list__count">
 						{ sprintf(
+							// translators: %d: number of forms shown in the filtered list
 							_n( '%d form', '%d forms', filtered.length, 'wp-ai-forms' ),
 							filtered.length
 						) }
@@ -159,7 +163,11 @@ export default function FormsList( { api } ) {
 						<article key={ f.id } className="wpaif-card">
 							<header className="wpaif-card__head">
 								<a href={ `#/forms/${ f.id }` } className="wpaif-card__title">
-									{ f.title || sprintf( __( 'Untitled form #%d', 'wp-ai-forms' ), f.id ) }
+									{ f.title || sprintf(
+										// translators: %d: form id number used as a placeholder title
+										__( 'Untitled form #%d', 'wp-ai-forms' ),
+										f.id
+									) }
 								</a>
 								<span className={ `wpaif-status wpaif-status--${ f.status }` }>{ f.status }</span>
 							</header>
@@ -199,6 +207,7 @@ export default function FormsList( { api } ) {
 				>
 					<p>
 						{ sprintf(
+							// translators: %s: form title (or "#id" fallback for untitled forms)
 							__( 'Delete "%s"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone.', 'wp-ai-forms' ),
 							deleting.title || `#${ deleting.id }`
 						) }

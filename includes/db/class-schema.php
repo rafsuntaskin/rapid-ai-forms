@@ -30,7 +30,7 @@ class Schema {
 		$forms           = self::forms_table();
 		$submissions     = self::submissions_table();
 
-		$sql = [];
+		$sql = array();
 
 		$sql[] = "CREATE TABLE {$forms} (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

@@ -24,32 +24,38 @@ class Openai_Compatible implements Provider {
 		return __( 'OpenAI-compatible', 'wp-ai-forms' );
 	}
 
-	public function generate_form_schema( $prompt, array $options = [] ) {
+	public function generate_form_schema( $prompt, array $options = array() ) {
 		$api_key  = $options['api_key'] ?? '';
 		$base_url = untrailingslashit( $options['base_url'] ?? 'https://api.openai.com/v1' );
 		$model    = $options['model'] ?? 'gpt-4o-mini';
 
 		$response = wp_remote_post(
 			$base_url . '/chat/completions',
-			[
+			array(
 				'timeout' => 60,
 				'headers' => array_filter(
-					[
+					array(
 						'Content-Type'  => 'application/json',
 						'Authorization' => $api_key ? 'Bearer ' . $api_key : null,
-					]
+					)
 				),
 				'body'    => wp_json_encode(
-					[
+					array(
 						'model'           => $model,
-						'response_format' => [ 'type' => 'json_object' ],
-						'messages'        => [
-							[ 'role' => 'system', 'content' => Schema_Prompt::system() ],
-							[ 'role' => 'user', 'content' => $prompt ],
-						],
-					]
+						'response_format' => array( 'type' => 'json_object' ),
+						'messages'        => array(
+							array(
+								'role'    => 'system',
+								'content' => Schema_Prompt::system(),
+							),
+							array(
+								'role'    => 'user',
+								'content' => $prompt,
+							),
+						),
+					)
 				),
-			]
+			)
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -65,7 +71,7 @@ class Openai_Compatible implements Provider {
 		return Schema_Prompt::extract_schema( $text );
 	}
 
-	public function verify( array $options = [] ) {
+	public function verify( array $options = array() ) {
 		$api_key  = $options['api_key'] ?? '';
 		$base_url = untrailingslashit( $options['base_url'] ?? 'https://api.openai.com/v1' );
 		$model    = trim( (string) ( $options['model'] ?? '' ) );
@@ -77,10 +83,10 @@ class Openai_Compatible implements Provider {
 		// GET /models is cheap (no token usage) and proves auth, endpoint, and model availability.
 		$response = wp_remote_get(
 			$base_url . '/models',
-			[
+			array(
 				'timeout' => 15,
-				'headers' => [ 'Authorization' => 'Bearer ' . $api_key ],
-			]
+				'headers' => array( 'Authorization' => 'Bearer ' . $api_key ),
+			)
 		);
 
 		if ( is_wp_error( $response ) ) {
@@ -90,11 +96,11 @@ class Openai_Compatible implements Provider {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $code >= 400 ) {
 			$msg = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'wp-ai-forms' );
-			return new \WP_Error( 'wpaif_verify_failed', $msg, [ 'http_status' => $code ] );
+			return new \WP_Error( 'wpaif_verify_failed', $msg, array( 'http_status' => $code ) );
 		}
 
 		if ( '' !== $model ) {
-			$ids = array_column( (array) ( $body['data'] ?? [] ), 'id' );
+			$ids = array_column( (array) ( $body['data'] ?? array() ), 'id' );
 			if ( ! in_array( $model, $ids, true ) ) {
 				return new \WP_Error(
 					'wpaif_model_unavailable',

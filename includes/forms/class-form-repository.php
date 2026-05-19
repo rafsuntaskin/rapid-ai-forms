@@ -17,17 +17,17 @@ class Form_Repository {
 		global $wpdb;
 
 		$now = current_time( 'mysql', true );
-		$row = [
+		$row = array(
 			'uuid'        => wp_generate_uuid4(),
 			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
 			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
-			'form_schema' => wp_json_encode( isset( $data['schema'] ) ? $data['schema'] : [] ),
-			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : [] ),
+			'form_schema' => wp_json_encode( isset( $data['schema'] ) ? $data['schema'] : array() ),
+			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : array() ),
 			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
 			'author_id'   => get_current_user_id(),
 			'created_at'  => $now,
 			'updated_at'  => $now,
-		];
+		);
 
 		$wpdb->insert( Schema::forms_table(), $row );
 		$id = (int) $wpdb->insert_id;
@@ -37,7 +37,7 @@ class Form_Repository {
 	public function update( $id, array $data ) {
 		global $wpdb;
 
-		$row = [];
+		$row = array();
 		if ( array_key_exists( 'title', $data ) ) {
 			$row['title'] = sanitize_text_field( $data['title'] );
 		}
@@ -55,42 +55,39 @@ class Form_Repository {
 		}
 		$row['updated_at'] = current_time( 'mysql', true );
 
-		$wpdb->update( Schema::forms_table(), $row, [ 'id' => (int) $id ] );
+		$wpdb->update( Schema::forms_table(), $row, array( 'id' => (int) $id ) );
 		return $this->get( $id );
 	}
 
 	public function delete( $id ) {
 		global $wpdb;
-		return (bool) $wpdb->delete( Schema::forms_table(), [ 'id' => (int) $id ] );
+		return (bool) $wpdb->delete( Schema::forms_table(), array( 'id' => (int) $id ) );
 	}
 
 	public function get( $id ) {
 		global $wpdb;
-		$table = Schema::forms_table();
-		$row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $id ), ARRAY_A );
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', Schema::forms_table(), (int) $id ), ARRAY_A );
 		return $row ? $this->hydrate( $row ) : null;
 	}
 
 	public function get_by_uuid( $uuid ) {
 		global $wpdb;
-		$table = Schema::forms_table();
-		$row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE uuid = %s", $uuid ), ARRAY_A );
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE uuid = %s', Schema::forms_table(), $uuid ), ARRAY_A );
 		return $row ? $this->hydrate( $row ) : null;
 	}
 
-	public function list( array $args = [] ) {
+	public function list( array $args = array() ) {
 		global $wpdb;
-		$table   = Schema::forms_table();
 		$limit   = isset( $args['per_page'] ) ? max( 1, min( 100, (int) $args['per_page'] ) ) : 20;
 		$offset  = isset( $args['page'] ) ? max( 0, ( (int) $args['page'] - 1 ) * $limit ) : 0;
-		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY updated_at DESC LIMIT %d OFFSET %d", $limit, $offset ), ARRAY_A );
-		return array_map( [ $this, 'hydrate' ], $results ?: [] );
+		$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY updated_at DESC LIMIT %d OFFSET %d', Schema::forms_table(), $limit, $offset ), ARRAY_A );
+		return array_map( array( $this, 'hydrate' ), $results ?: array() );
 	}
 
 	private function hydrate( array $row ) {
 		$row['id']       = (int) $row['id'];
-		$row['schema']   = json_decode( $row['form_schema'] ?? '', true ) ?: [];
-		$row['settings'] = json_decode( $row['settings'] ?? '', true ) ?: [];
+		$row['schema']   = json_decode( $row['form_schema'] ?? '', true ) ?: array();
+		$row['settings'] = json_decode( $row['settings'] ?? '', true ) ?: array();
 		unset( $row['form_schema'] );
 		return $row;
 	}

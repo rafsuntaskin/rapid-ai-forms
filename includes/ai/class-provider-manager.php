@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
 class Provider_Manager {
 	const OPTION_KEY = 'wp_ai_forms_ai_settings';
 
-	private $providers = [];
+	private $providers = array();
 
 	public function __construct() {
 		$this->register( new Anthropic() );
@@ -44,16 +44,26 @@ class Provider_Manager {
 	}
 
 	public function settings() {
-		$defaults = [
+		$defaults = array(
 			'active_provider' => 'openai_compatible',
-			'providers'       => [
-				'anthropic'         => [ 'api_key' => '', 'model' => 'claude-sonnet-4-6' ],
-				'gemini'            => [ 'api_key' => '', 'model' => 'gemini-2.0-flash' ],
-				'openai_compatible' => [ 'api_key' => '', 'base_url' => 'https://api.openai.com/v1', 'model' => 'gpt-4o-mini' ],
-			],
-		];
-		$saved = get_option( self::OPTION_KEY, [] );
-		return wp_parse_args( is_array( $saved ) ? $saved : [], $defaults );
+			'providers'       => array(
+				'anthropic'         => array(
+					'api_key' => '',
+					'model'   => 'claude-sonnet-4-6',
+				),
+				'gemini'            => array(
+					'api_key' => '',
+					'model'   => 'gemini-2.0-flash',
+				),
+				'openai_compatible' => array(
+					'api_key'  => '',
+					'base_url' => 'https://api.openai.com/v1',
+					'model'    => 'gpt-4o-mini',
+				),
+			),
+		);
+		$saved    = get_option( self::OPTION_KEY, array() );
+		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
 	}
 
 	public function save_settings( array $settings ) {
@@ -68,7 +78,7 @@ class Provider_Manager {
 			return new \WP_Error( 'wpaif_no_provider', __( 'No AI provider configured.', 'wp-ai-forms' ) );
 		}
 
-		$options = $settings['providers'][ $settings['active_provider'] ] ?? [];
+		$options = $settings['providers'][ $settings['active_provider'] ] ?? array();
 
 		// When editing, prepend the current schema so the model knows what to preserve.
 		if ( is_array( $current_schema ) && ! empty( $current_schema['fields'] ) ) {

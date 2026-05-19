@@ -14,8 +14,8 @@ class Admin {
 	const SETTINGS_SLUG = 'wp-ai-forms-settings';
 
 	public function register() {
-		add_action( 'admin_menu', [ $this, 'register_menu' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'admin_menu', array( $this, 'register_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 	}
 
 	public function register_menu() {
@@ -24,7 +24,7 @@ class Admin {
 			__( 'AI Forms', 'wp-ai-forms' ),
 			'manage_options',
 			self::MENU_SLUG,
-			[ $this, 'render_app_root' ],
+			array( $this, 'render_app_root' ),
 			'dashicons-feedback',
 			30
 		);
@@ -36,7 +36,7 @@ class Admin {
 			__( 'Forms', 'wp-ai-forms' ),
 			'manage_options',
 			self::MENU_SLUG,
-			[ $this, 'render_app_root' ]
+			array( $this, 'render_app_root' )
 		);
 
 		add_submenu_page(
@@ -45,7 +45,7 @@ class Admin {
 			__( 'Settings', 'wp-ai-forms' ),
 			'manage_options',
 			self::SETTINGS_SLUG,
-			[ $this, 'render_app_root' ]
+			array( $this, 'render_app_root' )
 		);
 	}
 
@@ -53,16 +53,22 @@ class Admin {
 		echo '<div class="wrap"><div id="wp-ai-forms-admin-root"></div></div>';
 	}
 
-	public function enqueue_assets( $hook ) {
+	public function enqueue_assets( $hook_suffix ) {
+		// Reading the ?page= slug from an admin URL — no form data, no nonce needed.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( self::MENU_SLUG !== $page && self::SETTINGS_SLUG !== $page ) {
 			return;
 		}
+		unset( $hook_suffix );
 
 		$asset_file = WP_AI_FORMS_PATH . 'build/admin.asset.php';
 		$asset      = file_exists( $asset_file )
 			? require $asset_file
-			: [ 'dependencies' => [ 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n', 'wp-data', 'wp-notices' ], 'version' => WP_AI_FORMS_VERSION ];
+			: array(
+				'dependencies' => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n', 'wp-data', 'wp-notices' ),
+				'version'      => WP_AI_FORMS_VERSION,
+			);
 
 		wp_enqueue_script(
 			'wp-ai-forms-admin',
@@ -75,21 +81,21 @@ class Admin {
 		wp_localize_script(
 			'wp-ai-forms-admin',
 			'WP_AI_FORMS_ADMIN',
-			[
+			array(
 				'restUrl'     => esc_url_raw( rest_url( 'wp-ai-forms/v1/' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'adminUrl'    => admin_url( 'admin.php?page=' . self::MENU_SLUG ),
 				'settingsUrl' => admin_url( 'admin.php?page=' . self::SETTINGS_SLUG ),
 				'pluginUrl'   => WP_AI_FORMS_URL,
 				'page'        => $page,
-			]
+			)
 		);
 
 		wp_enqueue_style( 'wp-components' );
 		wp_enqueue_style(
 			'wp-ai-forms-admin',
 			WP_AI_FORMS_URL . 'build/admin.css',
-			[ 'wp-components' ],
+			array( 'wp-components' ),
 			$asset['version']
 		);
 

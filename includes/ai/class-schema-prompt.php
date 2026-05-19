@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 class Schema_Prompt {
 
 	public static function system() {
-		return <<<EOT
+		return <<<'EOT'
 You are a form schema editor for a WordPress plugin. You output JSON only — no
 prose, no markdown fences.
 
@@ -86,16 +86,16 @@ EOT;
 	}
 
 	public static function sanitize_schema( array $schema ) {
-		$out = [
+		$out = array(
 			'title'        => isset( $schema['title'] ) ? sanitize_text_field( $schema['title'] ) : '',
 			'submit_label' => isset( $schema['submit_label'] ) ? sanitize_text_field( $schema['submit_label'] ) : __( 'Submit', 'wp-ai-forms' ),
 			'show_title'   => ! empty( $schema['show_title'] ),
-			'fields'       => [],
-		];
+			'fields'       => array(),
+		);
 
-		$allowed_types = [ 'text', 'email', 'tel', 'url', 'number', 'date', 'password', 'hidden', 'textarea', 'select', 'radio', 'checkbox', 'checkbox_group' ];
+		$allowed_types = array( 'text', 'email', 'tel', 'url', 'number', 'date', 'password', 'hidden', 'textarea', 'select', 'radio', 'checkbox', 'checkbox_group' );
 
-		foreach ( (array) ( $schema['fields'] ?? [] ) as $field ) {
+		foreach ( (array) ( $schema['fields'] ?? array() ) as $field ) {
 			if ( empty( $field['name'] ) ) {
 				continue;
 			}
@@ -103,17 +103,17 @@ EOT;
 			if ( ! in_array( $type, $allowed_types, true ) ) {
 				$type = 'text';
 			}
-			$entry = [
+			$entry = array(
 				'name'        => sanitize_key( $field['name'] ),
 				'label'       => sanitize_text_field( $field['label'] ?? '' ),
 				'type'        => $type,
 				'required'    => ! empty( $field['required'] ),
 				'placeholder' => sanitize_text_field( $field['placeholder'] ?? '' ),
-			];
+			);
 			if ( 'hidden' === $type && isset( $field['default_value'] ) ) {
 				$entry['default_value'] = sanitize_text_field( $field['default_value'] );
 			}
-			if ( in_array( $type, [ 'select', 'radio', 'checkbox_group' ], true ) && ! empty( $field['options'] ) ) {
+			if ( in_array( $type, array( 'select', 'radio', 'checkbox_group' ), true ) && ! empty( $field['options'] ) ) {
 				$entry['options'] = array_values(
 					array_filter(
 						array_map(
@@ -121,10 +121,10 @@ EOT;
 								if ( ! is_array( $opt ) ) {
 									return null;
 								}
-								return [
+								return array(
 									'label' => sanitize_text_field( $opt['label'] ?? '' ),
 									'value' => sanitize_text_field( $opt['value'] ?? $opt['label'] ?? '' ),
-								];
+								);
 							},
 							(array) $field['options']
 						)
