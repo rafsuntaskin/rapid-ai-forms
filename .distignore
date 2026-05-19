@@ -13,6 +13,7 @@ dist/
 src/
 .claude/
 node_modules/
+vendor/
 
 # Dev configs
 .git/
