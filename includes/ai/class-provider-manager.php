@@ -67,7 +67,10 @@ class Provider_Manager {
 	}
 
 	public function save_settings( array $settings ) {
-		update_option( self::OPTION_KEY, $settings );
+		// Stored autoload=no — API keys aren't needed on every page load,
+		// only when an admin invokes AI features. Keeps the keys out of
+		// the wp_load_alloptions() cache.
+		update_option( self::OPTION_KEY, $settings, false );
 	}
 
 	public function generate_form_schema( $prompt, $current_schema = null ) {

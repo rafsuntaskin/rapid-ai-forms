@@ -266,12 +266,24 @@ class Rest_Controller {
 		return $this->get_settings();
 	}
 
+	const MAX_SUBMISSION_BYTES = 64 * 1024;
+
 	public function submit( $req ) {
 		$uuid = sanitize_text_field( $req['uuid'] );
 		$repo = new Form_Repository();
 		$form = $repo->get_by_uuid( $uuid );
 		if ( ! $form ) {
 			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
+		}
+
+		// Reject oversized payloads before doing any work. Public endpoint, no auth — guard the DB.
+		$raw_body = $req->get_body();
+		if ( is_string( $raw_body ) && strlen( $raw_body ) > self::MAX_SUBMISSION_BYTES ) {
+			return new \WP_Error(
+				'wpaif_payload_too_large',
+				__( 'Submission exceeds the size limit.', 'wp-ai-forms' ),
+				array( 'status' => 413 )
+			);
 		}
 
 		$payload = $req->get_json_params() ?: $req->get_body_params();
