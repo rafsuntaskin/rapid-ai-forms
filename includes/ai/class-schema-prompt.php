@@ -52,7 +52,8 @@ Rules:
   - "enabled": true
   - "to": "" (empty → the site falls back to the site admin email)
   - "subject": a short line like "New <form-purpose> submission" (e.g. "New contact form submission")
-  - "body": a template using mail-tags. Prefer "{all_fields}" on its own line; you may also reference individual fields as {field_name}. Other tags: {form_title}, {site_name}, {site_url}, {admin_email}.
+  - "body": a friendly multi-line email body that reads like a real notification message, not a raw dump. Write a short intro line that names the form's purpose, then summarize the submission. Reference fields with mail-tags using their exact "name" — e.g. {full_name}, {email}, {message}. End the body with "{all_fields}" on its own line as a complete fallback. Other tags: {form_title}, {site_name}, {site_url}, {admin_email}. Example body for a contact form with name/email/message:
+    "You received a new contact form submission on {site_name}.\n\nFrom: {name} <{email}>\n\nMessage:\n{message}\n\n---\nAll fields:\n{all_fields}"
   - "reply_to_field": the "name" of an email-type field in this form when one exists, otherwise "".
 - If the user message includes "Current form schema:", treat the request as an
   EDIT. Return the full updated schema, preserving every existing field, option,

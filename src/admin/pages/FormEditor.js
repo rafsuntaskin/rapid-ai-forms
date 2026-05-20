@@ -47,6 +47,13 @@ export default function FormEditor( { api, formId } ) {
 	const generate = useAsync( ( p, currentSchema ) =>
 		api.post( 'ai/generate', { prompt: p, current_schema: currentSchema } )
 	);
+	const generateBody = useAsync( ( currentSchema ) =>
+		api.post( 'ai/generate', {
+			prompt:
+				'Rewrite ONLY the notifications.body field of this schema. Write a friendly, multi-line email body that a site owner would want to receive when this form is submitted — short intro line naming the form purpose, then the key fields referenced by mail-tags using each field\'s exact "name" attribute, and end with "{all_fields}" on its own line. Do not change any fields, the title, or any other notification setting.',
+			current_schema: currentSchema,
+		} )
+	);
 	const ai = useAiConfigured( api );
 	const settingsUrl = ( window.WP_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 	const save = useAsync( ( payload ) => api.put( `forms/${ formId }`, payload ) );
@@ -78,6 +85,14 @@ export default function FormEditor( { api, formId } ) {
 
 	const updateNotifications = ( patch ) => {
 		updateSchema( { notifications: { ...notifications, ...patch } } );
+	};
+
+	const onGenerateBody = async () => {
+		const schema = await generateBody.run( form.schema );
+		const newBody = schema?.notifications?.body || '';
+		if ( newBody ) {
+			updateNotifications( { body: newBody } );
+		}
 	};
 
 	const emailFieldOptions = [
@@ -389,6 +404,27 @@ export default function FormEditor( { api, formId } ) {
 								onChange={ ( v ) => updateNotifications( { body: v } ) }
 								rows={ 6 }
 							/>
+							<Flex justify="flex-start" gap={ 2 } className="wpaif-mt-sm">
+								<FlexItem>
+									<Button
+										variant="secondary"
+										onClick={ onGenerateBody }
+										isBusy={ generateBody.loading }
+										disabled={
+											generateBody.loading ||
+											( ai.ready && ! ai.configured ) ||
+											( form.schema.fields || [] ).length === 0
+										}
+									>
+										{ __( 'Generate with AI', 'wp-ai-forms' ) }
+									</Button>
+								</FlexItem>
+							</Flex>
+							{ generateBody.error && (
+								<Notice status="error" isDismissible={ false } className="wpaif-mt-sm">
+									{ generateBody.error.message }
+								</Notice>
+							) }
 							<SelectControl
 								label={ __( 'Reply-To field', 'wp-ai-forms' ) }
 								help={ __( 'When set, replies to the notification go to the submitter’s email.', 'wp-ai-forms' ) }
