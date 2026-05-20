@@ -31,7 +31,14 @@ Schema shape:
       "default_value": "optional, used by hidden fields",
       "options": [ { "label": "Yes", "value": "yes" } ]
     }
-  ]
+  ],
+  "notifications": {
+    "enabled": true,
+    "to": "",
+    "subject": "",
+    "body": "",
+    "reply_to_field": ""
+  }
 }
 
 Rules:
@@ -41,12 +48,18 @@ Rules:
 - "checkbox" is a single yes/no toggle. Use "checkbox_group" when the user can select multiple values from a list.
 - Use "hidden" only when you need to carry a server-side value (campaign tag, referrer, etc.); include a "default_value".
 - Use "password" for password input fields.
+- Always include a "notifications" object. Defaults:
+  - "enabled": true
+  - "to": "" (empty → the site falls back to the site admin email)
+  - "subject": a short line like "New <form-purpose> submission" (e.g. "New contact form submission")
+  - "body": a template using mail-tags. Prefer "{all_fields}" on its own line; you may also reference individual fields as {field_name}. Other tags: {form_title}, {site_name}, {site_url}, {admin_email}.
+  - "reply_to_field": the "name" of an email-type field in this form when one exists, otherwise "".
 - If the user message includes "Current form schema:", treat the request as an
   EDIT. Return the full updated schema, preserving every existing field, option,
-  label, name, type, and order EXACTLY unless the user explicitly asked you to
-  change them. Do not invent extra fields, rename existing ones, or reorder
-  unless asked. New fields you add should be appended at the end unless the user
-  specifies a position.
+  label, name, type, order, and the existing "notifications" block EXACTLY
+  unless the user explicitly asked you to change them. Do not invent extra
+  fields, rename existing ones, or reorder unless asked. New fields you add
+  should be appended at the end unless the user specifies a position.
 - If no "Current form schema:" block is present, generate a new schema from
   scratch matching the user's description.
 EOT;
@@ -87,10 +100,11 @@ EOT;
 
 	public static function sanitize_schema( array $schema ) {
 		$out = array(
-			'title'        => isset( $schema['title'] ) ? sanitize_text_field( $schema['title'] ) : '',
-			'submit_label' => isset( $schema['submit_label'] ) ? sanitize_text_field( $schema['submit_label'] ) : __( 'Submit', 'wp-ai-forms' ),
-			'show_title'   => ! empty( $schema['show_title'] ),
-			'fields'       => array(),
+			'title'         => isset( $schema['title'] ) ? sanitize_text_field( $schema['title'] ) : '',
+			'submit_label'  => isset( $schema['submit_label'] ) ? sanitize_text_field( $schema['submit_label'] ) : __( 'Submit', 'wp-ai-forms' ),
+			'show_title'    => ! empty( $schema['show_title'] ),
+			'fields'        => array(),
+			'notifications' => self::sanitize_notifications( $schema['notifications'] ?? array() ),
 		);
 
 		$allowed_types = array( 'text', 'email', 'tel', 'url', 'number', 'date', 'password', 'hidden', 'textarea', 'select', 'radio', 'checkbox', 'checkbox_group' );
@@ -135,5 +149,18 @@ EOT;
 		}
 
 		return $out;
+	}
+
+	private static function sanitize_notifications( $value ) {
+		if ( ! is_array( $value ) ) {
+			$value = array();
+		}
+		return array(
+			'enabled'        => array_key_exists( 'enabled', $value ) ? (bool) $value['enabled'] : true,
+			'to'             => isset( $value['to'] ) ? sanitize_text_field( (string) $value['to'] ) : '',
+			'subject'        => isset( $value['subject'] ) ? sanitize_text_field( (string) $value['subject'] ) : '',
+			'body'           => isset( $value['body'] ) ? sanitize_textarea_field( (string) $value['body'] ) : '',
+			'reply_to_field' => isset( $value['reply_to_field'] ) ? sanitize_key( (string) $value['reply_to_field'] ) : '',
+		);
 	}
 }

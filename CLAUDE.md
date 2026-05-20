@@ -42,7 +42,6 @@ Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submi
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
 - Submissions admin view (data is being stored; UI to come) — v0.2.
-- Email notifications — v0.2.
 - Gutenberg block (thin wrapper around shortcode) — v0.4.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.

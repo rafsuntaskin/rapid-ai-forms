@@ -24,6 +24,7 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * Field types: text, email, password, phone, URL, number, date, textarea, select, radio, single checkbox, checkbox group, hidden
 * Verify provider credentials in one click before saving them
 * Custom DB tables for forms and submissions (built to scale)
+* Per-form email notifications with mail-tag templates (Contact Form 7 style)
 * Click-to-copy shortcode pill for each form
 * Search and delete forms from a modern card-based list
 * REST API and registration with the WordPress Abilities API (6.9+)
@@ -32,6 +33,8 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 == Privacy and external services ==
 
 This plugin makes outbound HTTP requests to whichever AI provider the site administrator configures (Anthropic, Google Gemini, or any OpenAI-compatible endpoint). Each AI request sends only the natural-language prompt the administrator types in the form editor, plus the form's current schema when editing an existing form. No site content, user data, or form submissions are sent to the AI provider. No data is sent until an administrator configures a provider and clicks "Generate" or "Apply changes."
+
+When a visitor submits a form, the plugin can send a notification email through your site's standard `wp_mail()` pipeline (the same mechanism WordPress uses for core notifications). The recipient, subject, and body are configured per-form in the editor and default to the site admin email. Email is delivered by your existing SMTP / mail setup; this plugin does not contact any third party to send it.
 
 == Installation ==
 
@@ -56,7 +59,11 @@ Yes. Every field in the editor is fully editable by hand — the AI is optional.
 
 = Where do form submissions go? =
 
-Into a dedicated `{prefix}ai_form_submissions` database table. A submissions admin view is on the roadmap for v0.2.
+Into a dedicated `{prefix}ai_form_submissions` database table. The site admin (or any address you configure on the form) also gets an email on each submission with the field values. A full submissions admin view is on the roadmap for v0.2.
+
+= How do I customize the notification email? =
+
+Open the form in the editor and scroll to **Email notifications**. You can set the To address (comma-separated for multiple recipients), Subject, and Body. The Body accepts mail-tags like `{all_fields}`, `{field_name}`, `{form_title}`, `{site_name}`, `{site_url}`, and `{admin_email}`. Picking a Reply-To field lets you reply directly to whoever submitted the form.
 
 == Changelog ==
 
@@ -65,6 +72,7 @@ Into a dedicated `{prefix}ai_form_submissions` database table. A submissions adm
 * AI-driven form generation and editing via BYOK providers: Anthropic, Google Gemini, OpenAI-compatible (OpenAI, OpenRouter, Fireworks, Groq, local LLMs).
 * React-based admin SPA built on `@wordpress/element` and `@wordpress/components`.
 * Custom DB tables for forms and submissions.
+* Per-form email notifications with mail-tag templating, comma-separated recipients, and an optional Reply-To field.
 * `[wp_ai_form id="..."]` shortcode renderer with theme-aware submit button.
 * REST API at `/wp-json/wp-ai-forms/v1/`.
 * Registration with the WordPress Abilities API.

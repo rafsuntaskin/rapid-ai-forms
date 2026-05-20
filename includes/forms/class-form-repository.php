@@ -7,6 +7,7 @@
 
 namespace WP_AI_Forms\Forms;
 
+use WP_AI_Forms\Ai\Schema_Prompt;
 use WP_AI_Forms\Db\Schema;
 
 defined( 'ABSPATH' ) || exit;
@@ -21,7 +22,7 @@ class Form_Repository {
 			'uuid'        => wp_generate_uuid4(),
 			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
 			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
-			'form_schema' => wp_json_encode( isset( $data['schema'] ) ? $data['schema'] : array() ),
+			'form_schema' => wp_json_encode( Schema_Prompt::sanitize_schema( isset( $data['schema'] ) && is_array( $data['schema'] ) ? $data['schema'] : array() ) ),
 			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : array() ),
 			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
 			'author_id'   => get_current_user_id(),
@@ -45,7 +46,7 @@ class Form_Repository {
 			$row['status'] = sanitize_key( $data['status'] );
 		}
 		if ( array_key_exists( 'schema', $data ) ) {
-			$row['form_schema'] = wp_json_encode( $data['schema'] );
+			$row['form_schema'] = wp_json_encode( Schema_Prompt::sanitize_schema( is_array( $data['schema'] ) ? $data['schema'] : array() ) );
 		}
 		if ( array_key_exists( 'settings', $data ) ) {
 			$row['settings'] = wp_json_encode( $data['settings'] );

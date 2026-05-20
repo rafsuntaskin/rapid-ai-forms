@@ -68,6 +68,25 @@ export default function FormEditor( { api, formId } ) {
 		setForm( { ...form, schema: { ...form.schema, ...patch } } );
 	};
 
+	const notifications = form.schema.notifications || {
+		enabled: true,
+		to: '',
+		subject: '',
+		body: '',
+		reply_to_field: '',
+	};
+
+	const updateNotifications = ( patch ) => {
+		updateSchema( { notifications: { ...notifications, ...patch } } );
+	};
+
+	const emailFieldOptions = [
+		{ label: __( '— None —', 'wp-ai-forms' ), value: '' },
+		...( form.schema.fields || [] )
+			.filter( ( f ) => f.type === 'email' )
+			.map( ( f ) => ( { label: `${ f.label || f.name } (${ f.name })`, value: f.name } ) ),
+	];
+
 	const updateField = ( idx, patch ) => {
 		const fields = [ ...( form.schema.fields || [] ) ];
 		fields[ idx ] = { ...fields[ idx ], ...patch };
@@ -338,6 +357,47 @@ export default function FormEditor( { api, formId } ) {
 							</CardBody>
 						</Card>
 					) ) }
+				</CardBody>
+			</Card>
+
+			<Card className="wpaif-mt">
+				<CardHeader><strong>{ __( 'Email notifications', 'wp-ai-forms' ) }</strong></CardHeader>
+				<CardBody>
+					<ToggleControl
+						label={ __( 'Send an email when this form is submitted', 'wp-ai-forms' ) }
+						checked={ !! notifications.enabled }
+						onChange={ ( v ) => updateNotifications( { enabled: v } ) }
+					/>
+					{ notifications.enabled && (
+						<>
+							<TextControl
+								label={ __( 'To', 'wp-ai-forms' ) }
+								help={ __( 'Comma-separated email addresses. Leave blank to use the site admin email.', 'wp-ai-forms' ) }
+								value={ notifications.to || '' }
+								onChange={ ( v ) => updateNotifications( { to: v } ) }
+							/>
+							<TextControl
+								label={ __( 'Subject', 'wp-ai-forms' ) }
+								help={ __( 'Mail-tags allowed. Leave blank for "New submission: <form title>".', 'wp-ai-forms' ) }
+								value={ notifications.subject || '' }
+								onChange={ ( v ) => updateNotifications( { subject: v } ) }
+							/>
+							<TextareaControl
+								label={ __( 'Body', 'wp-ai-forms' ) }
+								help={ __( 'Mail-tags: {all_fields}, {field_name}, {form_title}, {site_name}, {site_url}, {admin_email}. Leave blank to send all field values.', 'wp-ai-forms' ) }
+								value={ notifications.body || '' }
+								onChange={ ( v ) => updateNotifications( { body: v } ) }
+								rows={ 6 }
+							/>
+							<SelectControl
+								label={ __( 'Reply-To field', 'wp-ai-forms' ) }
+								help={ __( 'When set, replies to the notification go to the submitter’s email.', 'wp-ai-forms' ) }
+								value={ notifications.reply_to_field || '' }
+								options={ emailFieldOptions }
+								onChange={ ( v ) => updateNotifications( { reply_to_field: v } ) }
+							/>
+						</>
+					) }
 				</CardBody>
 			</Card>
 				</div>

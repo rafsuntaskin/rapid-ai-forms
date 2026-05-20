@@ -11,6 +11,7 @@ use WP_AI_Forms\Abilities\Abilities;
 use WP_AI_Forms\Admin\Admin;
 use WP_AI_Forms\Api\Rest_Controller;
 use WP_AI_Forms\Db\Schema;
+use WP_AI_Forms\Notifications\Email_Notifier;
 use WP_AI_Forms\Shortcodes\Form_Shortcode;
 use WP_AI_Forms\Frontend\Frontend;
 
@@ -37,6 +38,7 @@ class Plugin {
 		( new Form_Shortcode() )->register();
 		( new Frontend() )->register();
 		( new Abilities() )->register();
+		( new Email_Notifier() )->register();
 	}
 
 	private function maybe_migrate() {
