@@ -10,6 +10,7 @@ namespace WP_AI_Forms\Ai;
 use WP_AI_Forms\Ai\Providers\Anthropic;
 use WP_AI_Forms\Ai\Providers\Gemini;
 use WP_AI_Forms\Ai\Providers\Openai_Compatible;
+use WP_AI_Forms\Ai\Providers\Wp_Ai_Client;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -22,6 +23,11 @@ class Provider_Manager {
 		$this->register( new Anthropic() );
 		$this->register( new Gemini() );
 		$this->register( new Openai_Compatible() );
+
+		// Only expose the core AI Client provider on WP 7.0+ with AI support enabled.
+		if ( Wp_Ai_Client::is_available() ) {
+			$this->register( new Wp_Ai_Client() );
+		}
 
 		/**
 		 * Allow third parties to register additional providers.
@@ -62,7 +68,11 @@ class Provider_Manager {
 				),
 			),
 		);
-		$saved    = get_option( self::OPTION_KEY, array() );
+		// Core AI Client has no per-plugin credentials — the connector lives in core.
+		if ( Wp_Ai_Client::is_available() ) {
+			$defaults['providers']['wp_ai_client'] = array();
+		}
+		$saved = get_option( self::OPTION_KEY, array() );
 		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
 	}
 

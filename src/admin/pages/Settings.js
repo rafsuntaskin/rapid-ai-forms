@@ -142,42 +142,56 @@ export default function Settings( { api } ) {
 				<Card className="wpaif-mt">
 					<CardHeader><strong>{ activeProvider.label }</strong></CardHeader>
 					<CardBody>
-						<TextControl
-							label={ __( 'API Key', 'wp-ai-forms' ) }
-							type="password"
-							value={ activeCfg.api_key || '' }
-							placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
-							onChange={ ( v ) => {
-								updateProvider( activeKey, { api_key: v } );
-								setVerifyResult( null );
-							} }
-						/>
-						{ 'model' in activeCfg && (
-							<TextControl
-								label={ __( 'Model', 'wp-ai-forms' ) }
-								value={ activeCfg.model || '' }
-								onChange={ ( v ) => {
-									updateProvider( activeKey, { model: v } );
-									setVerifyResult( null );
-								} }
-							/>
-						) }
-						{ 'base_url' in activeCfg && (
-							<TextControl
-								label={ __( 'Base URL', 'wp-ai-forms' ) }
-								value={ activeCfg.base_url || '' }
-								onChange={ ( v ) => {
-									updateProvider( activeKey, { base_url: v } );
-									setVerifyResult( null );
-								} }
-							/>
+						{ activeKey === 'wp_ai_client' ? (
+							<Notice status="info" isDismissible={ false }>
+								{ __(
+									'This provider uses your site’s WordPress AI Connectors. Configure your API keys under Settings → Connectors. No additional configuration is needed here.',
+									'wp-ai-forms'
+								) }
+							</Notice>
+						) : (
+							<>
+								<TextControl
+									label={ __( 'API Key', 'wp-ai-forms' ) }
+									type="password"
+									value={ activeCfg.api_key || '' }
+									placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'wp-ai-forms' ) : '' }
+									onChange={ ( v ) => {
+										updateProvider( activeKey, { api_key: v } );
+										setVerifyResult( null );
+									} }
+								/>
+								{ 'model' in activeCfg && (
+									<TextControl
+										label={ __( 'Model', 'wp-ai-forms' ) }
+										value={ activeCfg.model || '' }
+										onChange={ ( v ) => {
+											updateProvider( activeKey, { model: v } );
+											setVerifyResult( null );
+										} }
+									/>
+								) }
+								{ 'base_url' in activeCfg && (
+									<TextControl
+										label={ __( 'Base URL', 'wp-ai-forms' ) }
+										value={ activeCfg.base_url || '' }
+										onChange={ ( v ) => {
+											updateProvider( activeKey, { base_url: v } );
+											setVerifyResult( null );
+										} }
+									/>
+								) }
+							</>
 						) }
 						<div className="wpaif-verify">
 							<Button
 								variant="secondary"
 								onClick={ verify }
 								isBusy={ verifying }
-								disabled={ verifying || ( ! activeCfg.api_key && ! activeCfg.api_key_set ) }
+								disabled={
+									verifying ||
+									( activeKey !== 'wp_ai_client' && ! activeCfg.api_key && ! activeCfg.api_key_set )
+								}
 							>
 								{ __( 'Verify connection', 'wp-ai-forms' ) }
 							</Button>
