@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-20T21:40:11+00:00\n"
+"POT-Creation-Date: 2026-05-21T10:39:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: wp-ai-forms\n"
@@ -236,187 +236,195 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:100
+#: src/admin/pages/FormEditor.js:99
 msgid "— None —"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:172
+#: src/admin/pages/FormEditor.js:181
 msgid "Edit form"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:176
+#: src/admin/pages/FormEditor.js:185
 msgid "Embed:"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:182
+#: src/admin/pages/FormEditor.js:191
 msgid "Back"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:186
+#: src/admin/pages/FormEditor.js:195
 msgid "Save"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:192
+#: src/admin/pages/FormEditor.js:201
 msgid "Saved at "
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:201
+#: src/admin/pages/FormEditor.js:210
 msgid "Edit with AI"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:202
-#: src/admin/pages/FormEditor.js:420
+#: src/admin/pages/FormEditor.js:211
+#: src/admin/pages/FormEditor.js:459
 msgid "Generate with AI"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:208
+#: src/admin/pages/FormEditor.js:217
 msgid "No AI key set. Add one in"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:209
+#: src/admin/pages/FormEditor.js:218
 #: src/admin/pages/FormsList.js:108
 msgid "AI Forms → Settings"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:210
+#: src/admin/pages/FormEditor.js:219
 msgid "to enable AI generation. You can still add and edit fields below by hand."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:214
+#: src/admin/pages/FormEditor.js:223
 msgid "Prompt"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:217
+#: src/admin/pages/FormEditor.js:226
 msgid "Describe a change. The AI keeps existing fields and applies only what you ask. Example: \"Add a phone field after email\" or \"Make the message field optional\"."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:218
+#: src/admin/pages/FormEditor.js:227
 msgid "Describe the form you want. Example: \"Contact form with name, email, phone, and a message field.\""
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:231
+#: src/admin/pages/FormEditor.js:240
 msgid "Apply changes"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:232
+#: src/admin/pages/FormEditor.js:241
 msgid "Generate fields"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:243
+#: src/admin/pages/FormEditor.js:252
 msgid "Form details"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:246
+#: src/admin/pages/FormEditor.js:255
 msgid "Title"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:251
+#: src/admin/pages/FormEditor.js:260
 msgid "Submit button label"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:256
+#: src/admin/pages/FormEditor.js:265
 msgid "Status"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:270
+#: src/admin/pages/FormEditor.js:279
 #: src/admin/pages/FormsList.js:176
 msgid "Fields"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:273
+#: src/admin/pages/FormEditor.js:282
 msgid "Add field"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:280
+#: src/admin/pages/FormEditor.js:289
 msgid "No fields yet. Generate with AI or add manually."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:288
-#: src/admin/pages/FormEditor.js:341
+#: src/admin/pages/FormEditor.js:297
+#: src/admin/pages/FormEditor.js:350
 msgid "Label"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:295
+#: src/admin/pages/FormEditor.js:304
 msgid "Name (snake_case)"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:302
+#: src/admin/pages/FormEditor.js:311
 msgid "Type"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:311
+#: src/admin/pages/FormEditor.js:320
 msgid "Required"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:318
+#: src/admin/pages/FormEditor.js:327
 msgid "Default value"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:319
+#: src/admin/pages/FormEditor.js:328
 msgid "This value is submitted with the form. Not visible or editable to visitors."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:327
+#: src/admin/pages/FormEditor.js:336
 msgid "Options"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:329
+#: src/admin/pages/FormEditor.js:338
 msgid "Add option"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:334
+#: src/admin/pages/FormEditor.js:343
 msgid "No options yet. Add at least 2 for the field to render."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:349
+#: src/admin/pages/FormEditor.js:358
 msgid "Value"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:361
+#: src/admin/pages/FormEditor.js:370
 msgid "Remove option"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:371
+#: src/admin/pages/FormEditor.js:388
+msgid "Move field up"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:399
+msgid "Move field down"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:408
 msgid "Remove"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:380
+#: src/admin/pages/FormEditor.js:419
 msgid "Email notifications"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:383
+#: src/admin/pages/FormEditor.js:422
 msgid "Send an email when this form is submitted"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:390
+#: src/admin/pages/FormEditor.js:429
 msgid "To"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:391
+#: src/admin/pages/FormEditor.js:430
 msgid "Comma-separated email addresses. Leave blank to use the site admin email."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:396
+#: src/admin/pages/FormEditor.js:435
 msgid "Subject"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:397
+#: src/admin/pages/FormEditor.js:436
 msgid "Mail-tags allowed. Leave blank for \"New submission: <form title>\"."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:402
+#: src/admin/pages/FormEditor.js:441
 msgid "Body"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:403
+#: src/admin/pages/FormEditor.js:442
 msgid "Mail-tags: {all_fields}, {field_name}, {form_title}, {site_name}, {site_url}, {admin_email}. Leave blank to send all field values."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:430
+#: src/admin/pages/FormEditor.js:469
 msgid "Reply-To field"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:431
+#: src/admin/pages/FormEditor.js:470
 msgid "When set, replies to the notification go to the submitter’s email."
 msgstr ""
 
