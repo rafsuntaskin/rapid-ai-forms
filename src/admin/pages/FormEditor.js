@@ -114,6 +114,16 @@ export default function FormEditor( { api, formId } ) {
 		updateSchema( { fields } );
 	};
 
+	const moveField = ( idx, delta ) => {
+		const fields = [ ...( form.schema.fields || [] ) ];
+		const target = idx + delta;
+		if ( target < 0 || target >= fields.length ) {
+			return;
+		}
+		[ fields[ idx ], fields[ target ] ] = [ fields[ target ], fields[ idx ] ];
+		updateSchema( { fields } );
+	};
+
 	const addField = () => {
 		const fields = [ ...( form.schema.fields || [] ) ];
 		fields.push( { name: `field_${ fields.length + 1 }`, label: 'New field', type: 'text', required: false } );
@@ -366,9 +376,39 @@ export default function FormEditor( { api, formId } ) {
 										) ) }
 									</div>
 								) }
-								<Button variant="link" isDestructive onClick={ () => removeField( i ) }>
-									{ __( 'Remove', 'wp-ai-forms' ) }
-								</Button>
+								<Flex justify="space-between" align="center" className="wpaif-mt-sm">
+									<FlexItem>
+										<Flex gap={ 1 }>
+											<FlexItem>
+												<Button
+													variant="tertiary"
+													size="small"
+													onClick={ () => moveField( i, -1 ) }
+													disabled={ i === 0 }
+													aria-label={ __( 'Move field up', 'wp-ai-forms' ) }
+												>
+													↑
+												</Button>
+											</FlexItem>
+											<FlexItem>
+												<Button
+													variant="tertiary"
+													size="small"
+													onClick={ () => moveField( i, 1 ) }
+													disabled={ i === ( form.schema.fields || [] ).length - 1 }
+													aria-label={ __( 'Move field down', 'wp-ai-forms' ) }
+												>
+													↓
+												</Button>
+											</FlexItem>
+										</Flex>
+									</FlexItem>
+									<FlexItem>
+										<Button variant="link" isDestructive onClick={ () => removeField( i ) }>
+											{ __( 'Remove', 'wp-ai-forms' ) }
+										</Button>
+									</FlexItem>
+								</Flex>
 							</CardBody>
 						</Card>
 					) ) }
