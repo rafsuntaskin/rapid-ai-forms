@@ -69,12 +69,19 @@ class Form_Renderer {
 			echo '</label>';
 		}
 
+		$placeholder      = isset( $field['placeholder'] ) ? (string) $field['placeholder'] : '';
+		$placeholder_attr = '';
+		if ( '' !== $placeholder && in_array( $type, array( 'text', 'textarea', 'email', 'number', 'tel', 'url', 'password' ), true ) ) {
+			$placeholder_attr = ' placeholder="' . esc_attr( $placeholder ) . '"';
+		}
+
 		// Attribute string built from pre-escaped values; safe to echo as-is.
 		$attrs = sprintf(
-			'id="%s" name="%s"%s',
+			'id="%s" name="%s"%s%s',
 			esc_attr( $id ),
 			esc_attr( $name ),
-			$required ? ' required' : ''
+			$required ? ' required' : '',
+			$placeholder_attr
 		);
 
 		switch ( $type ) {
