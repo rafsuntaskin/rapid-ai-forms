@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:       WP AI Forms
- * Plugin URI:        https://example.com/wp-ai-forms
  * Description:       AI-powered form builder for WordPress. Generate forms with natural language and render them via shortcodes. Bring your own AI provider key (Anthropic, Gemini, or any OpenAI-compatible endpoint).
  * Version:           0.1.0
  * Requires at least: 6.4
