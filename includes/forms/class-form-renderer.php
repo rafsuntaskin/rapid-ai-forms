@@ -71,7 +71,16 @@ class Form_Renderer {
 
 		$placeholder      = isset( $field['placeholder'] ) ? (string) $field['placeholder'] : '';
 		$placeholder_attr = '';
-		if ( '' !== $placeholder && in_array( $type, array( 'text', 'textarea', 'email', 'number', 'tel', 'url', 'password' ), true ) ) {
+		/**
+		 * Field types that render the HTML `placeholder` attribute.
+		 *
+		 * @param string[] $types Default list of placeholder-capable field types.
+		 */
+		$placeholder_types = (array) apply_filters(
+			'wp_ai_forms_placeholder_field_types',
+			array( 'text', 'textarea', 'email', 'number', 'tel', 'url', 'password' )
+		);
+		if ( '' !== $placeholder && in_array( $type, $placeholder_types, true ) ) {
 			$placeholder_attr = ' placeholder="' . esc_attr( $placeholder ) . '"';
 		}
 
