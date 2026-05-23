@@ -27,12 +27,21 @@ class Form_Repository {
 	public function create( array $data ) {
 		global $wpdb;
 
+		$schema = Schema_Prompt::sanitize_schema( isset( $data['schema'] ) && is_array( $data['schema'] ) ? $data['schema'] : array() );
+
+		// Seed the notification To with the site admin email at creation time
+		// so editors see a sensible default instead of an empty field. Only
+		// applied on create — clearing the field on a later edit is honored.
+		if ( '' === ( $schema['notifications']['to'] ?? '' ) ) {
+			$schema['notifications']['to'] = (string) get_option( 'admin_email' );
+		}
+
 		$now = current_time( 'mysql', true );
 		$row = array(
 			'uuid'        => wp_generate_uuid4(),
 			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
 			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
-			'form_schema' => wp_json_encode( Schema_Prompt::sanitize_schema( isset( $data['schema'] ) && is_array( $data['schema'] ) ? $data['schema'] : array() ) ),
+			'form_schema' => wp_json_encode( $schema ),
 			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : array() ),
 			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
 			'author_id'   => get_current_user_id(),
