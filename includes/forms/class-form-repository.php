@@ -2,16 +2,26 @@
 /**
  * Form CRUD repository.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Forms;
+namespace Easy_Ai_Forms\Forms;
 
-use WP_AI_Forms\Ai\Schema_Prompt;
-use WP_AI_Forms\Db\Schema;
+use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Easy_Ai_Forms\Db\Schema;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * All queries below run against custom plugin tables (registered in
+ * Schema::install). The schema editor is admin-only and CRUD always
+ * round-trips to the DB, so direct $wpdb calls without an object-cache
+ * layer are intentional. Every SELECT uses $wpdb->prepare() with
+ * placeholders, including %i for identifiers.
+ *
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ */
 class Form_Repository {
 
 	public function create( array $data ) {

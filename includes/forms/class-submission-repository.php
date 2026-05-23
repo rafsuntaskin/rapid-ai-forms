@@ -2,15 +2,23 @@
 /**
  * Submission repository.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Forms;
+namespace Easy_Ai_Forms\Forms;
 
-use WP_AI_Forms\Db\Schema;
+use Easy_Ai_Forms\Db\Schema;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Custom table — direct $wpdb access is intentional. Inserts run on
+ * untrusted public submissions where caching would not apply; reads
+ * are admin-side and need fresh data.
+ *
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ */
 class Submission_Repository {
 
 	public function create( $form_id, array $data, array $meta = array() ) {
