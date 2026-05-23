@@ -50,6 +50,29 @@
 	border-top: 1px solid #f0f0f1;
 }
 
+// Sticky-feeling action bar that sits at the top and bottom of the editor
+// main column, so Save and Back read as part of the editor itself
+// rather than floating away in the page header corner.
+.eaif-editor__actions {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	padding: 10px 14px;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+
+	&--top {
+		margin-bottom: 12px;
+	}
+
+	&--bottom {
+		margin-top: 16px;
+	}
+}
+
+.eaif-editor__saved-status {
+	color: #007017;
+	font-size: 13px;
+}
+
 .eaif-editor {
 	max-width: 1400px;
 

@@ -175,6 +175,32 @@ export default function FormEditor( { api, formId } ) {
 		setSavedAt( new Date().toLocaleTimeString() );
 	};
 
+	const actionBar = ( position ) => (
+		<div className={ `eaif-editor__actions eaif-editor__actions--${ position }` }>
+			<Flex justify="space-between" align="center" gap={ 3 }>
+				<FlexItem>
+					<Button href="#/" variant="tertiary">{ __( '← Back to forms', 'easy-ai-forms' ) }</Button>
+				</FlexItem>
+				<FlexItem>
+					<Flex gap={ 2 } align="center">
+						{ position === 'top' && savedAt && (
+							<FlexItem>
+								<span className="eaif-editor__saved-status">
+									{ __( 'Saved at ', 'easy-ai-forms' ) + savedAt }
+								</span>
+							</FlexItem>
+						) }
+						<FlexItem>
+							<Button variant="primary" onClick={ onSave } isBusy={ save.loading }>
+								{ __( 'Save', 'easy-ai-forms' ) }
+							</Button>
+						</FlexItem>
+					</Flex>
+				</FlexItem>
+			</Flex>
+		</div>
+	);
+
 	return (
 		<div className="eaif-page eaif-editor">
 			<PageHeader
@@ -185,24 +211,12 @@ export default function FormEditor( { api, formId } ) {
 						label={ __( 'Embed:', 'easy-ai-forms' ) }
 					/>
 				}
-				actions={
-					<Flex>
-						<FlexItem>
-							<Button href="#/" variant="tertiary">{ __( 'Back', 'easy-ai-forms' ) }</Button>
-						</FlexItem>
-						<FlexItem>
-							<Button variant="primary" onClick={ onSave } isBusy={ save.loading }>
-								{ __( 'Save', 'easy-ai-forms' ) }
-							</Button>
-						</FlexItem>
-					</Flex>
-				}
 			/>
-			{ savedAt && <Notice status="success" isDismissible>{ __( 'Saved at ', 'easy-ai-forms' ) + savedAt }</Notice> }
 			{ save.error && <Notice status="error" isDismissible={ false }>{ save.error.message }</Notice> }
 
 			<div className="eaif-editor__columns">
 				<div className="eaif-editor__main">
+			{ actionBar( 'top' ) }
 			<Card>
 				<CardHeader>
 					<strong>
@@ -476,6 +490,7 @@ export default function FormEditor( { api, formId } ) {
 					) }
 				</CardBody>
 			</Card>
+			{ actionBar( 'bottom' ) }
 				</div>
 				<aside className="eaif-editor__side">
 					<FormPreview form={ form } />
