@@ -2,18 +2,18 @@
 /**
  * Main plugin orchestrator.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms;
+namespace Easy_Ai_Forms;
 
-use WP_AI_Forms\Abilities\Abilities;
-use WP_AI_Forms\Admin\Admin;
-use WP_AI_Forms\Api\Rest_Controller;
-use WP_AI_Forms\Db\Schema;
-use WP_AI_Forms\Notifications\Email_Notifier;
-use WP_AI_Forms\Shortcodes\Form_Shortcode;
-use WP_AI_Forms\Frontend\Frontend;
+use Easy_Ai_Forms\Abilities\Abilities;
+use Easy_Ai_Forms\Admin\Admin;
+use Easy_Ai_Forms\Api\Rest_Controller;
+use Easy_Ai_Forms\Db\Schema;
+use Easy_Ai_Forms\Notifications\Email_Notifier;
+use Easy_Ai_Forms\Shortcodes\Form_Shortcode;
+use Easy_Ai_Forms\Frontend\Frontend;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -29,8 +29,7 @@ class Plugin {
 	}
 
 	private function boot() {
-		load_plugin_textdomain( 'wp-ai-forms', false, dirname( WP_AI_FORMS_BASENAME ) . '/languages' );
-
+		// Translations: wp.org auto-loads them for hosted plugins (WP 4.6+).
 		$this->maybe_migrate();
 
 		( new Admin() )->register();
@@ -42,7 +41,7 @@ class Plugin {
 	}
 
 	private function maybe_migrate() {
-		if ( get_option( 'wp_ai_forms_db_version' ) !== Schema::DB_VERSION ) {
+		if ( get_option( 'easy_ai_forms_db_version' ) !== Schema::DB_VERSION ) {
 			Schema::install();
 		}
 	}
