@@ -68,9 +68,29 @@
 	}
 }
 
-.eaif-editor__saved-status {
-	color: #007017;
+.eaif-editor__status {
+	display: inline-block;
 	font-size: 13px;
+	font-weight: 500;
+	padding: 4px 10px;
+	border-radius: 999px;
+	line-height: 1.4;
+
+	&--saving {
+		color: #1d4ed8;
+		background: #dbeafe;
+	}
+
+	&--saved {
+		color: #007017;
+		background: #d4edda;
+		animation: eaif-fade-in 200ms ease-out;
+	}
+}
+
+@keyframes eaif-fade-in {
+	from { opacity: 0; transform: translateY(-2px); }
+	to   { opacity: 1; transform: translateY(0); }
 }
 
 .eaif-editor {

@@ -64,6 +64,14 @@ export default function FormEditor( { api, formId } ) {
 			.catch( ( e ) => setLoadError( e.message || 'Failed to load form' ) );
 	}, [ api, formId ] );
 
+	// Auto-clear the saved indicator a few seconds after it appears so it
+	// doesn't linger across subsequent edits.
+	useEffect( () => {
+		if ( ! savedAt ) return;
+		const t = setTimeout( () => setSavedAt( null ), 4000 );
+		return () => clearTimeout( t );
+	}, [ savedAt ] );
+
 	if ( loadError ) {
 		return <Notice status="error" isDismissible={ false }>{ loadError }</Notice>;
 	}
@@ -183,10 +191,17 @@ export default function FormEditor( { api, formId } ) {
 				</FlexItem>
 				<FlexItem>
 					<Flex gap={ 2 } align="center">
-						{ position === 'top' && savedAt && (
+						{ save.loading && (
 							<FlexItem>
-								<span className="eaif-editor__saved-status">
-									{ __( 'Saved at ', 'easy-ai-forms' ) + savedAt }
+								<span className="eaif-editor__status eaif-editor__status--saving">
+									{ __( 'Saving…', 'easy-ai-forms' ) }
+								</span>
+							</FlexItem>
+						) }
+						{ ! save.loading && savedAt && (
+							<FlexItem>
+								<span className="eaif-editor__status eaif-editor__status--saved">
+									{ '✓ ' + __( 'Saved', 'easy-ai-forms' ) + ' ' + savedAt }
 								</span>
 							</FlexItem>
 						) }
