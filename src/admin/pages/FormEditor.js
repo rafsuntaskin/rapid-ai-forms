@@ -376,7 +376,7 @@ export default function FormEditor( { api, formId } ) {
 										) ) }
 									</div>
 								) }
-								<Flex justify="space-between" align="center" className="eaif-mt-sm">
+								<Flex justify="space-between" align="center" className="eaif-field-actions">
 									<FlexItem>
 										<Flex gap={ 1 }>
 											<FlexItem>

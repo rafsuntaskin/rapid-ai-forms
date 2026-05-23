@@ -8,6 +8,46 @@
 	.eaif-mt {
 		margin-top: 16px;
 	}
+
+	.eaif-mt-sm {
+		margin-top: 10px;
+	}
+}
+
+// Most WordPress controls inside our editor cards default to a small
+// bottom margin; bump it slightly so labels and toggle rows have room
+// to breathe instead of stacking on top of each other.
+.eaif-editor,
+.eaif-settings {
+	.components-card__body .components-base-control:not(:last-child) {
+		margin-bottom: 16px;
+	}
+
+	// Toggle rows need a little extra distance from the next field —
+	// the default WP toggle margin-bottom is too tight against an
+	// adjacent label/input.
+	.components-card__body .components-toggle-control {
+		margin-bottom: 16px;
+	}
+
+	// Help text directly under a control should not crowd the next label.
+	.components-card__body .components-base-control__help {
+		margin-bottom: 0;
+	}
+
+	// CardBody itself: enough top-bottom padding that the first/last
+	// controls don't touch the card border.
+	.components-card__body {
+		padding: 16px 16px 20px;
+	}
+}
+
+// Per-field card action row (move up/down + remove). Gives it visible
+// separation from the field's option editor above.
+.eaif-field-actions {
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid #f0f0f1;
 }
 
 .eaif-editor {
