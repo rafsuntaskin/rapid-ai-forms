@@ -1,4 +1,4 @@
-# WP AI Forms — internal roadmap
+# Easy AI Forms — internal roadmap
 
 > Internal-only. Not shipped in the wp.org distribution (see `.distignore`).
 > Keep public-facing copy in `readme.txt` strictly limited to *what already works*.

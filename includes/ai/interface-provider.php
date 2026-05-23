@@ -2,10 +2,10 @@
 /**
  * AI provider contract.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Ai;
+namespace Easy_Ai_Forms\Ai;
 
 defined( 'ABSPATH' ) || exit;
 

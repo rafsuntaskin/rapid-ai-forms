@@ -10,7 +10,7 @@ function PreviewField( { field } ) {
 	if ( ! field.name ) {
 		return null;
 	}
-	const id = `wpaif-preview-${ field.name }`;
+	const id = `eaif-preview-${ field.name }`;
 	const required = !! field.required;
 	const placeholder = field.placeholder || '';
 	const type = field.type || 'text';
@@ -19,9 +19,9 @@ function PreviewField( { field } ) {
 	// Hidden fields are not visible — show a compact dev-only indicator instead.
 	if ( type === 'hidden' ) {
 		return (
-			<div className="wpaif-field wpaif-field--hidden wpaif-preview-hidden">
+			<div className="eaif-field eaif-field--hidden eaif-preview-hidden">
 				<small>
-					{ __( 'Hidden: ', 'wp-ai-forms' ) }
+					{ __( 'Hidden: ', 'easy-ai-forms' ) }
 					<code>{ field.name }</code>
 					{ field.default_value ? ` = ${ field.default_value }` : '' }
 				</small>
@@ -32,7 +32,7 @@ function PreviewField( { field } ) {
 	const label = field.label ? (
 		<label htmlFor={ id }>
 			{ field.label }
-			{ required && <span className="wpaif-required"> *</span> }
+			{ required && <span className="eaif-required"> *</span> }
 		</label>
 	) : null;
 
@@ -61,7 +61,7 @@ function PreviewField( { field } ) {
 	} else if ( type === 'select' ) {
 		control = (
 			<select id={ id } name={ field.name } required={ required } disabled>
-				<option value="">{ __( '— Select —', 'wp-ai-forms' ) }</option>
+				<option value="">{ __( '— Select —', 'easy-ai-forms' ) }</option>
 				{ options.map( ( opt, i ) => (
 					<option key={ i } value={ opt.value || opt.label || '' }>
 						{ opt.label || opt.value || '' }
@@ -71,10 +71,10 @@ function PreviewField( { field } ) {
 		);
 	} else if ( type === 'radio' ) {
 		control = (
-			<div className="wpaif-radio-group">
+			<div className="eaif-radio-group">
 				{ options.length === 0 && (
-					<em className="wpaif-preview-empty">
-						{ __( 'No options yet — add some to the field.', 'wp-ai-forms' ) }
+					<em className="eaif-preview-empty">
+						{ __( 'No options yet — add some to the field.', 'easy-ai-forms' ) }
 					</em>
 				) }
 				{ options.map( ( opt, i ) => (
@@ -91,10 +91,10 @@ function PreviewField( { field } ) {
 		);
 	} else if ( type === 'checkbox_group' ) {
 		control = (
-			<div className="wpaif-checkbox-group">
+			<div className="eaif-checkbox-group">
 				{ options.length === 0 && (
-					<em className="wpaif-preview-empty">
-						{ __( 'No options yet — add some to the field.', 'wp-ai-forms' ) }
+					<em className="eaif-preview-empty">
+						{ __( 'No options yet — add some to the field.', 'easy-ai-forms' ) }
 					</em>
 				) }
 				{ options.map( ( opt, i ) => (
@@ -112,7 +112,7 @@ function PreviewField( { field } ) {
 	}
 
 	return (
-		<div className={ `wpaif-field wpaif-field--${ type }` }>
+		<div className={ `eaif-field eaif-field--${ type }` }>
 			{ label }
 			{ control }
 		</div>
@@ -122,35 +122,35 @@ function PreviewField( { field } ) {
 export default function FormPreview( { form } ) {
 	const schema = form && form.schema ? form.schema : {};
 	const fields = Array.isArray( schema.fields ) ? schema.fields : [];
-	const submitLabel = schema.submit_label || __( 'Submit', 'wp-ai-forms' );
+	const submitLabel = schema.submit_label || __( 'Submit', 'easy-ai-forms' );
 	const showTitle = !! schema.show_title;
 
 	return (
-		<div className="wpaif-preview">
-			<div className="wpaif-preview__header">
-				<strong>{ __( 'Live preview', 'wp-ai-forms' ) }</strong>
-				<span className="wpaif-preview__hint">
-					{ __( 'How the form will appear to visitors.', 'wp-ai-forms' ) }
+		<div className="eaif-preview">
+			<div className="eaif-preview__header">
+				<strong>{ __( 'Live preview', 'easy-ai-forms' ) }</strong>
+				<span className="eaif-preview__hint">
+					{ __( 'How the form will appear to visitors.', 'easy-ai-forms' ) }
 				</span>
 			</div>
 			<form
-				className="wpaif-form wpaif-preview__form"
+				className="eaif-form eaif-preview__form"
 				onSubmit={ ( e ) => e.preventDefault() }
 			>
 				{ showTitle && form.title && (
-					<h3 className="wpaif-form__title">{ form.title }</h3>
+					<h3 className="eaif-form__title">{ form.title }</h3>
 				) }
 				{ fields.length === 0 ? (
-					<p className="wpaif-preview-empty">
-						{ __( 'No fields yet. Generate with AI or add fields to see them here.', 'wp-ai-forms' ) }
+					<p className="eaif-preview-empty">
+						{ __( 'No fields yet. Generate with AI or add fields to see them here.', 'easy-ai-forms' ) }
 					</p>
 				) : (
 					fields.map( ( field, i ) => (
 						<PreviewField key={ field.name || i } field={ field } />
 					) )
 				) }
-				<div className="wpaif-form__actions">
-					<button type="submit" className="wpaif-form__submit" disabled>
+				<div className="eaif-form__actions">
+					<button type="submit" className="eaif-form__submit" disabled>
 						{ submitLabel }
 					</button>
 				</div>

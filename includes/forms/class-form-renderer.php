@@ -2,10 +2,10 @@
 /**
  * Renders a form schema to HTML for frontend output.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Forms;
+namespace Easy_Ai_Forms\Forms;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,21 +19,21 @@ class Form_Renderer {
 
 		ob_start();
 		?>
-		<form class="wpaif-form" data-form-uuid="<?php echo esc_attr( $form['uuid'] ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">
+		<form class="eaif-form" data-form-uuid="<?php echo esc_attr( $form['uuid'] ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">
 			<?php if ( ! empty( $schema['show_title'] ) ) : ?>
-				<h3 class="wpaif-form__title"><?php echo esc_html( $form['title'] ); ?></h3>
+				<h3 class="eaif-form__title"><?php echo esc_html( $form['title'] ); ?></h3>
 			<?php endif; ?>
 
 			<?php foreach ( $fields as $field ) : ?>
 				<?php $this->render_field( $field ); ?>
 			<?php endforeach; ?>
 
-			<div class="wpaif-form__actions wp-block-button">
-				<button type="submit" class="wpaif-form__submit wp-block-button__link wp-element-button">
-					<?php echo esc_html( $schema['submit_label'] ?? __( 'Submit', 'wp-ai-forms' ) ); ?>
+			<div class="eaif-form__actions wp-block-button">
+				<button type="submit" class="eaif-form__submit wp-block-button__link wp-element-button">
+					<?php echo esc_html( $schema['submit_label'] ?? __( 'Submit', 'easy-ai-forms' ) ); ?>
 				</button>
 			</div>
-			<div class="wpaif-form__message" aria-live="polite"></div>
+			<div class="eaif-form__message" aria-live="polite"></div>
 		</form>
 		<?php
 		return ob_get_clean();
@@ -44,7 +44,7 @@ class Form_Renderer {
 		$name     = isset( $field['name'] ) ? sanitize_key( $field['name'] ) : '';
 		$label    = isset( $field['label'] ) ? $field['label'] : '';
 		$required = ! empty( $field['required'] );
-		$id       = 'wpaif-' . $name . '-' . wp_rand( 1000, 9999 );
+		$id       = 'eaif-' . $name . '-' . wp_rand( 1000, 9999 );
 
 		if ( ! $name ) {
 			return;
@@ -60,11 +60,11 @@ class Form_Renderer {
 			return;
 		}
 
-		echo '<div class="wpaif-field wpaif-field--' . esc_attr( $type ) . '">';
+		echo '<div class="eaif-field eaif-field--' . esc_attr( $type ) . '">';
 		if ( $label ) {
 			printf( '<label for="%s">%s', esc_attr( $id ), esc_html( $label ) );
 			if ( $required ) {
-				echo ' <span class="wpaif-required">*</span>';
+				echo ' <span class="eaif-required">*</span>';
 			}
 			echo '</label>';
 		}
@@ -77,7 +77,7 @@ class Form_Renderer {
 		 * @param string[] $types Default list of placeholder-capable field types.
 		 */
 		$placeholder_types = (array) apply_filters(
-			'wp_ai_forms_placeholder_field_types',
+			'easy_ai_forms_placeholder_field_types',
 			array( 'text', 'textarea', 'email', 'number', 'tel', 'url', 'password' )
 		);
 		if ( '' !== $placeholder && in_array( $type, $placeholder_types, true ) ) {
@@ -112,7 +112,7 @@ class Form_Renderer {
 				echo '<input type="checkbox" ' . $attrs . ' value="1" />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is a sprintf of esc_attr()ed values.
 				break;
 			case 'checkbox_group':
-				echo '<div class="wpaif-checkbox-group">';
+				echo '<div class="eaif-checkbox-group">';
 				foreach ( (array) ( $field['options'] ?? array() ) as $opt ) {
 					printf(
 						'<label><input type="checkbox" name="%s[]" value="%s" /> %s</label>',

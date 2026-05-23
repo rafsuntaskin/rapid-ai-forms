@@ -2,16 +2,16 @@
 /**
  * Admin SPA bootstrap.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Admin;
+namespace Easy_Ai_Forms\Admin;
 
 defined( 'ABSPATH' ) || exit;
 
 class Admin {
-	const MENU_SLUG     = 'wp-ai-forms';
-	const SETTINGS_SLUG = 'wp-ai-forms-settings';
+	const MENU_SLUG     = 'easy-ai-forms';
+	const SETTINGS_SLUG = 'easy-ai-forms-settings';
 
 	public function register() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
@@ -20,8 +20,8 @@ class Admin {
 
 	public function register_menu() {
 		add_menu_page(
-			__( 'AI Forms', 'wp-ai-forms' ),
-			__( 'AI Forms', 'wp-ai-forms' ),
+			__( 'AI Forms', 'easy-ai-forms' ),
+			__( 'AI Forms', 'easy-ai-forms' ),
 			'manage_options',
 			self::MENU_SLUG,
 			array( $this, 'render_app_root' ),
@@ -32,8 +32,8 @@ class Admin {
 		// Rename the auto-generated submenu duplicate from "AI Forms" to "Forms".
 		add_submenu_page(
 			self::MENU_SLUG,
-			__( 'Forms', 'wp-ai-forms' ),
-			__( 'Forms', 'wp-ai-forms' ),
+			__( 'Forms', 'easy-ai-forms' ),
+			__( 'Forms', 'easy-ai-forms' ),
 			'manage_options',
 			self::MENU_SLUG,
 			array( $this, 'render_app_root' )
@@ -41,8 +41,8 @@ class Admin {
 
 		add_submenu_page(
 			self::MENU_SLUG,
-			__( 'AI Forms Settings', 'wp-ai-forms' ),
-			__( 'Settings', 'wp-ai-forms' ),
+			__( 'AI Forms Settings', 'easy-ai-forms' ),
+			__( 'Settings', 'easy-ai-forms' ),
 			'manage_options',
 			self::SETTINGS_SLUG,
 			array( $this, 'render_app_root' )
@@ -50,7 +50,7 @@ class Admin {
 	}
 
 	public function render_app_root() {
-		echo '<div class="wrap"><div id="wp-ai-forms-admin-root"></div></div>';
+		echo '<div class="wrap"><div id="easy-ai-forms-admin-root"></div></div>';
 	}
 
 	public function enqueue_assets( $hook_suffix ) {
@@ -62,43 +62,43 @@ class Admin {
 		}
 		unset( $hook_suffix );
 
-		$asset_file = WP_AI_FORMS_PATH . 'build/admin.asset.php';
+		$asset_file = EASY_AI_FORMS_PATH . 'build/admin.asset.php';
 		$asset      = file_exists( $asset_file )
 			? require $asset_file
 			: array(
 				'dependencies' => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n', 'wp-data', 'wp-notices' ),
-				'version'      => WP_AI_FORMS_VERSION,
+				'version'      => EASY_AI_FORMS_VERSION,
 			);
 
 		wp_enqueue_script(
-			'wp-ai-forms-admin',
-			WP_AI_FORMS_URL . 'build/admin.js',
+			'easy-ai-forms-admin',
+			EASY_AI_FORMS_URL . 'build/admin.js',
 			$asset['dependencies'],
 			$asset['version'],
 			true
 		);
 
 		wp_localize_script(
-			'wp-ai-forms-admin',
-			'WP_AI_FORMS_ADMIN',
+			'easy-ai-forms-admin',
+			'EASY_AI_FORMS_ADMIN',
 			array(
-				'restUrl'     => esc_url_raw( rest_url( 'wp-ai-forms/v1/' ) ),
+				'restUrl'     => esc_url_raw( rest_url( 'easy-ai-forms/v1/' ) ),
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 				'adminUrl'    => admin_url( 'admin.php?page=' . self::MENU_SLUG ),
 				'settingsUrl' => admin_url( 'admin.php?page=' . self::SETTINGS_SLUG ),
-				'pluginUrl'   => WP_AI_FORMS_URL,
+				'pluginUrl'   => EASY_AI_FORMS_URL,
 				'page'        => $page,
 			)
 		);
 
 		wp_enqueue_style( 'wp-components' );
 		wp_enqueue_style(
-			'wp-ai-forms-admin',
-			WP_AI_FORMS_URL . 'build/admin.css',
+			'easy-ai-forms-admin',
+			EASY_AI_FORMS_URL . 'build/admin.css',
 			array( 'wp-components' ),
 			$asset['version']
 		);
 
-		wp_set_script_translations( 'wp-ai-forms-admin', 'wp-ai-forms' );
+		wp_set_script_translations( 'easy-ai-forms-admin', 'easy-ai-forms' );
 	}
 }

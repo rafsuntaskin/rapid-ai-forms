@@ -2,10 +2,10 @@
 /**
  * Database schema installer.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Db;
+namespace Easy_Ai_Forms\Db;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -66,6 +66,6 @@ class Schema {
 
 		dbDelta( $sql );
 
-		update_option( 'wp_ai_forms_db_version', self::DB_VERSION );
+		update_option( 'easy_ai_forms_db_version', self::DB_VERSION );
 	}
 }

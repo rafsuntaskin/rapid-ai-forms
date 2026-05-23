@@ -3,18 +3,18 @@
 # Build a distributable copy of the plugin, honoring .distignore.
 #
 # Usage:
-#   bin/dist.sh                       # builds and writes ./dist/wp-ai-forms.zip
-#   bin/dist.sh --to <path>           # builds and copies to <path>/wp-ai-forms/
+#   bin/dist.sh                       # builds and writes ./dist/easy-ai-forms.zip
+#   bin/dist.sh --to <path>           # builds and copies to <path>/easy-ai-forms/
 #   bin/dist.sh --to <path> --no-build  # skip npm run build (use existing build/)
 #   bin/dist.sh --zip <file>          # build and write zip to <file>
 #
 # Examples:
 #   bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins
-#   bin/dist.sh --zip ~/Desktop/wp-ai-forms-0.1.0.zip
+#   bin/dist.sh --zip ~/Desktop/easy-ai-forms-0.1.0.zip
 
 set -euo pipefail
 
-SLUG="wp-ai-forms"
+SLUG="easy-ai-forms"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
@@ -73,7 +73,7 @@ if [[ -f .distignore ]]; then
 fi
 
 # 3. Stage into a temp dir.
-STAGE="$(mktemp -d -t wp-ai-forms-dist.XXXXXX)"
+STAGE="$(mktemp -d -t easy-ai-forms-dist.XXXXXX)"
 trap 'rm -rf "$STAGE"' EXIT
 STAGED="$STAGE/$SLUG"
 mkdir -p "$STAGED"

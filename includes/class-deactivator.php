@@ -2,10 +2,10 @@
 /**
  * Plugin deactivation handler.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms;
+namespace Easy_Ai_Forms;
 
 defined( 'ABSPATH' ) || exit;
 

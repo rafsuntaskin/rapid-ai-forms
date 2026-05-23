@@ -1,4 +1,4 @@
-# Submitting WP AI Forms to WordPress.org
+# Submitting Easy AI Forms to WordPress.org
 
 A practical, checklist-driven guide for getting v0.1.0 onto the WordPress.org plugin directory and then keeping it updated.
 
@@ -14,14 +14,14 @@ npm install
 npm run build                             # must finish without errors
 
 # Generate fresh translations.
-wp i18n make-pot . languages/wp-ai-forms.pot --domain=wp-ai-forms \
+wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms \
   --exclude=build,node_modules,docs,vendor,bin,dist
 
 # Build the upload zip.
-npm run dist                              # writes dist/wp-ai-forms.zip
+npm run dist                              # writes dist/easy-ai-forms.zip
 ```
 
-Upload `dist/wp-ai-forms.zip` at <https://wordpress.org/plugins/developers/add/>. Wait for review (1–14 days). Once approved, SVN access is granted to the assigned slug; push the tagged release there.
+Upload `dist/easy-ai-forms.zip` at <https://wordpress.org/plugins/developers/add/>. Wait for review (1–14 days). Once approved, SVN access is granted to the assigned slug; push the tagged release there.
 
 ---
 
@@ -30,12 +30,12 @@ Upload `dist/wp-ai-forms.zip` at <https://wordpress.org/plugins/developers/add/>
 Run through this top-to-bottom *before* touching the submission form.
 
 ### Plugin identity
-- [ ] `wp-ai-forms.php` Plugin URI is real (or removed if not).
+- [ ] `easy-ai-forms.php` Plugin URI is real (or removed if not).
 - [ ] `Author` and `Author URI` reflect the actual contributor.
-- [ ] `Text Domain: wp-ai-forms` matches the slug exactly.
-- [ ] `Domain Path: /languages` exists and contains `wp-ai-forms.pot`.
+- [ ] `Text Domain: easy-ai-forms` matches the slug exactly.
+- [ ] `Domain Path: /languages` exists and contains `easy-ai-forms.pot`.
 - [ ] License header reads `GPL-2.0-or-later` (or another GPL-compatible).
-- [ ] **Slug `wp-ai-forms` is available** on wp.org — checked manually.
+- [ ] **Slug `easy-ai-forms` is available** on wp.org — checked manually.
 
 ### readme.txt header
 - [ ] `Contributors:` lists real wp.org usernames.
@@ -84,11 +84,11 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 - [ ] No `// TODO`, debug logs, or unused devtools-only code in shipped JS.
 
 ### i18n
-- [ ] Every user-visible PHP string uses `__()`, `_e()`, `esc_html__()`, `esc_attr__()`, `_n()`, `_x()` with the `'wp-ai-forms'` text domain.
-- [ ] Every user-visible JS string uses `@wordpress/i18n`'s `__`, `_n`, `_x`, `sprintf` with the `'wp-ai-forms'` text domain.
+- [ ] Every user-visible PHP string uses `__()`, `_e()`, `esc_html__()`, `esc_attr__()`, `_n()`, `_x()` with the `'easy-ai-forms'` text domain.
+- [ ] Every user-visible JS string uses `@wordpress/i18n`'s `__`, `_n`, `_x`, `sprintf` with the `'easy-ai-forms'` text domain.
 - [ ] Every string containing `%s`, `%d`, `%1$s` etc. has a `/* translators: ... */` comment immediately above it.
-- [ ] `wp_set_script_translations( 'wp-ai-forms-admin', 'wp-ai-forms' )` is called for the admin bundle.
-- [ ] `languages/wp-ai-forms.pot` regenerated and committed.
+- [ ] `wp_set_script_translations( 'easy-ai-forms-admin', 'easy-ai-forms' )` is called for the admin bundle.
+- [ ] `languages/easy-ai-forms.pot` regenerated and committed.
 
 ### Assets (uploaded separately to wp.org, not in the plugin zip)
 - [ ] **Icon** at `assets/icon-128x128.png` and `assets/icon-256x256.png` (or `icon.svg`).
@@ -101,16 +101,16 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 - [ ] Spin up a fresh WordPress 6.4 install (lowest supported).
 - [ ] Install the dist zip, activate.
 - [ ] Confirm no PHP errors in `wp-content/debug.log` with `WP_DEBUG = true`.
-- [ ] Walk the golden path: configure provider → verify connection → create form → generate fields → embed shortcode → submit on frontend → row appears in `wp_ai_form_submissions`.
+- [ ] Walk the golden path: configure provider → verify connection → create form → generate fields → embed shortcode → submit on frontend → row appears in `easy_ai_form_submissions`.
 - [ ] Deactivate. Confirm no fatal errors. Submissions and form rows are preserved (correct behavior).
 - [ ] Re-activate. Confirm everything still works.
 - [ ] Repeat on WordPress 6.9 (latest tested).
 
 ### Build the upload artifact
-- [ ] `npm run dist` produces a zip in `dist/wp-ai-forms.zip`.
+- [ ] `npm run dist` produces a zip in `dist/easy-ai-forms.zip`.
 - [ ] Zip is < 5 MB (we're at ~43 KB).
-- [ ] Zip's top-level entry is exactly `wp-ai-forms/` (verify with `unzip -l dist/wp-ai-forms.zip | head -3`).
-- [ ] Zip contains: `wp-ai-forms.php`, `readme.txt`, `includes/`, `build/`, `languages/`. Nothing else.
+- [ ] Zip's top-level entry is exactly `easy-ai-forms/` (verify with `unzip -l dist/easy-ai-forms.zip | head -3`).
+- [ ] Zip contains: `easy-ai-forms.php`, `readme.txt`, `includes/`, `build/`, `languages/`. Nothing else.
 - [ ] Zip does NOT contain: `src/`, `node_modules/`, `vendor/`, `docs/`, `bin/`, `.git/`, `.claude/`, `.distignore`, `composer.json`, `package.json`, `webpack.config.js`, `phpcs.xml.dist`, `CLAUDE.md`.
 
 ---
@@ -120,9 +120,9 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 1. Sign in at <https://wordpress.org/plugins/developers/> with your wp.org account.
 2. Go to <https://wordpress.org/plugins/developers/add/>.
 3. Fill the form:
-   - **Plugin Name**: `WP AI Forms`
+   - **Plugin Name**: `Easy AI Forms`
    - **Description**: paste the short description from `readme.txt` (line 11).
-   - **Plugin ZIP**: upload `dist/wp-ai-forms.zip`.
+   - **Plugin ZIP**: upload `dist/easy-ai-forms.zip`.
 4. Submit. You'll receive an immediate confirmation email and a tracking link.
 5. The Plugin Review Team will run automated checks first. If those pass, a human reviewer is assigned.
 6. **Review SLA is 1–14 days.** Most replies arrive within 5 business days. Replies come from `plugins@wordpress.org`.
@@ -137,12 +137,12 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 
 ## 3. Once approved: SVN setup
 
-When approved, you'll get an email with the SVN URL: `https://plugins.svn.wordpress.org/wp-ai-forms/`.
+When approved, you'll get an email with the SVN URL: `https://plugins.svn.wordpress.org/easy-ai-forms/`.
 
 ```bash
 # Check out the wp.org SVN (separate from the git repo — keep them in different folders).
-svn checkout https://plugins.svn.wordpress.org/wp-ai-forms ~/wp-org/wp-ai-forms
-cd ~/wp-org/wp-ai-forms
+svn checkout https://plugins.svn.wordpress.org/easy-ai-forms ~/wp-org/easy-ai-forms
+cd ~/wp-org/easy-ai-forms
 
 # Layout (already created by wp.org):
 #   trunk/        ← bleeding-edge code, often matches the next release
@@ -153,12 +153,12 @@ cd ~/wp-org/wp-ai-forms
 ### First release (0.1.0)
 
 ```bash
-cd ~/wp-org/wp-ai-forms
+cd ~/wp-org/easy-ai-forms
 
-# 1. Copy the contents of dist/wp-ai-forms/ into trunk/.
+# 1. Copy the contents of dist/easy-ai-forms/ into trunk/.
 rm -rf trunk/*
-unzip -q /path/to/git-repo/dist/wp-ai-forms.zip -d /tmp/wpaif-release
-cp -R /tmp/wpaif-release/wp-ai-forms/* trunk/
+unzip -q /path/to/git-repo/dist/easy-ai-forms.zip -d /tmp/eaif-release
+cp -R /tmp/eaif-release/easy-ai-forms/* trunk/
 
 # 2. Copy assets (icon, banner, screenshots) into assets/.
 cp /path/to/git-repo/assets/* assets/   # assets dir exists in your git repo
@@ -178,14 +178,14 @@ The release becomes downloadable on wp.org within minutes once the `Stable tag` 
 ### Subsequent updates (0.2.0, etc.)
 
 ```bash
-# Update Stable tag and changelog in readme.txt, bump Version in wp-ai-forms.php.
+# Update Stable tag and changelog in readme.txt, bump Version in easy-ai-forms.php.
 # Rebuild and re-zip in the git repo.
 
 # Sync trunk to the new code.
-cd ~/wp-org/wp-ai-forms
+cd ~/wp-org/easy-ai-forms
 rm -rf trunk/*
-unzip -q /path/to/git-repo/dist/wp-ai-forms.zip -d /tmp/wpaif-release
-cp -R /tmp/wpaif-release/wp-ai-forms/* trunk/
+unzip -q /path/to/git-repo/dist/easy-ai-forms.zip -d /tmp/eaif-release
+cp -R /tmp/eaif-release/easy-ai-forms/* trunk/
 svn add --force trunk
 svn status                              # check
 svn commit -m "0.2.0: <one-line summary>"
@@ -198,7 +198,7 @@ svn commit -m "Tag 0.2.0"
 **Important rules:**
 - Never edit anything in `tags/*` after committing it. If you need to fix a tag, bump the version and release a new one.
 - The `Stable tag` in `trunk/readme.txt` is what wp.org actually serves to users. If `Stable tag: 0.2.0` but no `tags/0.2.0/` exists yet, users see a broken release.
-- Increment `Version` in `wp-ai-forms.php` *and* `Stable tag` in `readme.txt` *and* the changelog entry — all three together.
+- Increment `Version` in `easy-ai-forms.php` *and* `Stable tag` in `readme.txt` *and* the changelog entry — all three together.
 
 ---
 
@@ -238,13 +238,13 @@ Based on the WP plugin guidelines, these will get rejected outright:
 - **Phoning home with site data on activation.** We don't.
 - **Bundling minified code without source.** Reviewers run an automated check. Our `build/*.js` is minified but the `src/` is in git and `package.json` documents the build command — that satisfies the rule.
 - **GPL-incompatible code.** All dependencies are GPL or MIT. Composer dev deps don't ship.
-- **Trademark violations.** `WP AI Forms` doesn't infringe. Provider names appear in feature lists, which is fine; they don't appear in the plugin name.
+- **Trademark violations.** `Easy AI Forms` doesn't infringe. Provider names appear in feature lists, which is fine; they don't appear in the plugin name.
 
 ---
 
 ## 6. Post-launch maintenance
 
-- **Watch the support forum** at `https://wordpress.org/support/plugin/wp-ai-forms/` daily for the first week, weekly after.
+- **Watch the support forum** at `https://wordpress.org/support/plugin/easy-ai-forms/` daily for the first week, weekly after.
 - **Respond to security reports** via `plugins@wordpress.org`, never publicly. Security patches must ship through SVN within 14 days or wp.org may pull the plugin.
 - **Bump `Tested up to`** when each new WP major lands. Run the smoke test on the new version first.
 - **Translation contributions** flow through translate.wordpress.org once approved — no need to merge PRs manually for translations.
@@ -256,9 +256,9 @@ Based on the WP plugin guidelines, these will get rejected outright:
 | Need | Where |
 |---|---|
 | Source code | git repo at the plugin root |
-| Build the dist zip | `npm run dist` → `dist/wp-ai-forms.zip` |
+| Build the dist zip | `npm run dist` → `dist/easy-ai-forms.zip` |
 | Run PHPCS | `composer lint` (auto-fix: `composer lint:fix`) |
-| Regenerate translations | `wp i18n make-pot . languages/wp-ai-forms.pot --domain=wp-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
+| Regenerate translations | `wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
 | Architecture and contracts | [`docs/SPEC.md`](SPEC.md) |
 | Deferred features | [`docs/PLAN-ai-css-editor.md`](PLAN-ai-css-editor.md), SPEC.md §12 roadmap |
 | Agent notes / conventions | `CLAUDE.md` |

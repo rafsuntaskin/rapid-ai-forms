@@ -6,17 +6,17 @@
  * To / Subject / Body templates with mail-tag substitution. Falls back to
  * sensible defaults when fields are left blank.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Notifications;
+namespace Easy_Ai_Forms\Notifications;
 
 defined( 'ABSPATH' ) || exit;
 
 class Email_Notifier {
 
 	public function register() {
-		add_action( 'wp_ai_forms_submission_created', array( $this, 'maybe_send' ), 10, 3 );
+		add_action( 'easy_ai_forms_submission_created', array( $this, 'maybe_send' ), 10, 3 );
 	}
 
 	public function maybe_send( $submission_id, array $form, array $data ) {
@@ -36,7 +36,7 @@ class Email_Notifier {
 		 * @param array $form
 		 * @param array $data
 		 */
-		if ( ! apply_filters( 'wp_ai_forms_send_notification_email', true, $submission_id, $form, $data ) ) {
+		if ( ! apply_filters( 'easy_ai_forms_send_notification_email', true, $submission_id, $form, $data ) ) {
 			return;
 		}
 
@@ -56,7 +56,7 @@ class Email_Notifier {
 		$subject = trim( (string) ( $notifications['subject'] ?? '' ) );
 		if ( '' === $subject ) {
 			/* translators: %s: form title */
-			$subject = sprintf( __( 'New submission: %s', 'wp-ai-forms' ), $form['title'] ?: __( 'Untitled form', 'wp-ai-forms' ) );
+			$subject = sprintf( __( 'New submission: %s', 'easy-ai-forms' ), $form['title'] ?: __( 'Untitled form', 'easy-ai-forms' ) );
 		}
 		$subject = $this->render_template( $subject, $tags );
 
@@ -76,10 +76,10 @@ class Email_Notifier {
 		}
 
 		/** Filters mirror CF7's hooks so site owners can adjust without forking. */
-		$recipients = (array) apply_filters( 'wp_ai_forms_notification_recipients', $recipients, $form, $data );
-		$subject    = (string) apply_filters( 'wp_ai_forms_notification_subject', $subject, $form, $data );
-		$body       = (string) apply_filters( 'wp_ai_forms_notification_body', $body, $form, $data );
-		$headers    = (array) apply_filters( 'wp_ai_forms_notification_headers', $headers, $form, $data );
+		$recipients = (array) apply_filters( 'easy_ai_forms_notification_recipients', $recipients, $form, $data );
+		$subject    = (string) apply_filters( 'easy_ai_forms_notification_subject', $subject, $form, $data );
+		$body       = (string) apply_filters( 'easy_ai_forms_notification_body', $body, $form, $data );
+		$headers    = (array) apply_filters( 'easy_ai_forms_notification_headers', $headers, $form, $data );
 
 		wp_mail( $recipients, wp_strip_all_tags( $subject ), $body, $headers );
 	}

@@ -3,7 +3,7 @@ import App from './App';
 import './admin.scss';
 
 const mount = () => {
-	const root = document.getElementById( 'wp-ai-forms-admin-root' );
+	const root = document.getElementById( 'easy-ai-forms-admin-root' );
 	if ( ! root ) {
 		return;
 	}

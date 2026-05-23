@@ -2,20 +2,20 @@
 /**
  * Registers REST API routes for the plugin.
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms\Api;
+namespace Easy_Ai_Forms\Api;
 
-use WP_AI_Forms\Ai\Provider_Manager;
-use WP_AI_Forms\Ai\Schema_Prompt;
-use WP_AI_Forms\Forms\Form_Repository;
-use WP_AI_Forms\Forms\Submission_Repository;
+use Easy_Ai_Forms\Ai\Provider_Manager;
+use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Easy_Ai_Forms\Forms\Form_Repository;
+use Easy_Ai_Forms\Forms\Submission_Repository;
 
 defined( 'ABSPATH' ) || exit;
 
 class Rest_Controller {
-	const NAMESPACE = 'wp-ai-forms/v1';
+	const NAMESPACE = 'easy-ai-forms/v1';
 
 	public function register() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -146,7 +146,7 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$form = $repo->get( (int) $req['id'] );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'eaif_not_found', __( 'Form not found.', 'easy-ai-forms' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( $form );
 	}
@@ -161,7 +161,7 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$form = $repo->update( (int) $req['id'], $req->get_json_params() ?: array() );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'eaif_not_found', __( 'Form not found.', 'easy-ai-forms' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( $form );
 	}
@@ -177,7 +177,7 @@ class Rest_Controller {
 		$manager      = new Provider_Manager();
 		$provider     = $manager->get( $provider_key );
 		if ( ! $provider ) {
-			return new \WP_Error( 'wpaif_unknown_provider', __( 'Unknown provider.', 'wp-ai-forms' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'eaif_unknown_provider', __( 'Unknown provider.', 'easy-ai-forms' ), array( 'status' => 400 ) );
 		}
 
 		// Merge incoming form values over the saved options so the user can verify
@@ -285,15 +285,15 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$form = $repo->get_by_uuid( $uuid );
 		if ( ! $form ) {
-			return new \WP_Error( 'wpaif_not_found', __( 'Form not found.', 'wp-ai-forms' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'eaif_not_found', __( 'Form not found.', 'easy-ai-forms' ), array( 'status' => 404 ) );
 		}
 
 		// Reject oversized payloads before doing any work. Public endpoint, no auth — guard the DB.
 		$raw_body = $req->get_body();
 		if ( is_string( $raw_body ) && strlen( $raw_body ) > self::MAX_SUBMISSION_BYTES ) {
 			return new \WP_Error(
-				'wpaif_payload_too_large',
-				__( 'Submission exceeds the size limit.', 'wp-ai-forms' ),
+				'eaif_payload_too_large',
+				__( 'Submission exceeds the size limit.', 'easy-ai-forms' ),
 				array( 'status' => 413 )
 			);
 		}
@@ -311,7 +311,7 @@ class Rest_Controller {
 		 * @param array $form
 		 * @param array $data
 		 */
-		do_action( 'wp_ai_forms_submission_created', $id, $form, $data );
+		do_action( 'easy_ai_forms_submission_created', $id, $form, $data );
 
 		return rest_ensure_response(
 			array(

@@ -2,18 +2,18 @@
 /**
  * PSR-4-ish autoloader for the plugin.
  *
- * Maps `WP_AI_Forms\Some\Thing` -> `includes/some/class-thing.php`
- * Maps `WP_AI_Forms\Some\Thing_Interface` -> `includes/some/interface-thing.php`
+ * Maps `Easy_Ai_Forms\Some\Thing` -> `includes/some/class-thing.php`
+ * Maps `Easy_Ai_Forms\Some\Thing_Interface` -> `includes/some/interface-thing.php`
  *
- * @package WP_AI_Forms
+ * @package Easy_Ai_Forms
  */
 
-namespace WP_AI_Forms;
+namespace Easy_Ai_Forms;
 
 defined( 'ABSPATH' ) || exit;
 
 class Autoloader {
-	const NAMESPACE_PREFIX = 'WP_AI_Forms\\';
+	const NAMESPACE_PREFIX = 'Easy_Ai_Forms\\';
 
 	public static function register() {
 		spl_autoload_register( array( __CLASS__, 'load' ) );
@@ -28,7 +28,7 @@ class Autoloader {
 		$parts    = explode( '\\', $relative );
 		$short    = array_pop( $parts );
 
-		$dir = WP_AI_FORMS_PATH . 'includes/';
+		$dir = EASY_AI_FORMS_PATH . 'includes/';
 		foreach ( $parts as $segment ) {
 			$dir .= strtolower( str_replace( '_', '-', $segment ) ) . '/';
 		}

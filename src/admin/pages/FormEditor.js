@@ -55,7 +55,7 @@ export default function FormEditor( { api, formId } ) {
 		} )
 	);
 	const ai = useAiConfigured( api );
-	const settingsUrl = ( window.WP_AI_FORMS_ADMIN || {} ).settingsUrl || '';
+	const settingsUrl = ( window.EASY_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 	const save = useAsync( ( payload ) => api.put( `forms/${ formId }`, payload ) );
 
 	useEffect( () => {
@@ -96,7 +96,7 @@ export default function FormEditor( { api, formId } ) {
 	};
 
 	const emailFieldOptions = [
-		{ label: __( '— None —', 'wp-ai-forms' ), value: '' },
+		{ label: __( '— None —', 'easy-ai-forms' ), value: '' },
 		...( form.schema.fields || [] )
 			.filter( ( f ) => f.type === 'email' )
 			.map( ( f ) => ( { label: `${ f.label || f.name } (${ f.name })`, value: f.name } ) ),
@@ -176,55 +176,55 @@ export default function FormEditor( { api, formId } ) {
 	};
 
 	return (
-		<div className="wpaif-page wpaif-editor">
+		<div className="eaif-page eaif-editor">
 			<PageHeader
-				title={ __( 'Edit form', 'wp-ai-forms' ) }
+				title={ __( 'Edit form', 'easy-ai-forms' ) }
 				description={
 					<ShortcodeCopy
-						shortcode={ `[wp_ai_form id="${ form.id }"]` }
-						label={ __( 'Embed:', 'wp-ai-forms' ) }
+						shortcode={ `[easy_ai_form id="${ form.id }"]` }
+						label={ __( 'Embed:', 'easy-ai-forms' ) }
 					/>
 				}
 				actions={
 					<Flex>
 						<FlexItem>
-							<Button href="#/" variant="tertiary">{ __( 'Back', 'wp-ai-forms' ) }</Button>
+							<Button href="#/" variant="tertiary">{ __( 'Back', 'easy-ai-forms' ) }</Button>
 						</FlexItem>
 						<FlexItem>
 							<Button variant="primary" onClick={ onSave } isBusy={ save.loading }>
-								{ __( 'Save', 'wp-ai-forms' ) }
+								{ __( 'Save', 'easy-ai-forms' ) }
 							</Button>
 						</FlexItem>
 					</Flex>
 				}
 			/>
-			{ savedAt && <Notice status="success" isDismissible>{ __( 'Saved at ', 'wp-ai-forms' ) + savedAt }</Notice> }
+			{ savedAt && <Notice status="success" isDismissible>{ __( 'Saved at ', 'easy-ai-forms' ) + savedAt }</Notice> }
 			{ save.error && <Notice status="error" isDismissible={ false }>{ save.error.message }</Notice> }
 
-			<div className="wpaif-editor__columns">
-				<div className="wpaif-editor__main">
+			<div className="eaif-editor__columns">
+				<div className="eaif-editor__main">
 			<Card>
 				<CardHeader>
 					<strong>
 						{ hasExistingFields
-							? __( 'Edit with AI', 'wp-ai-forms' )
-							: __( 'Generate with AI', 'wp-ai-forms' ) }
+							? __( 'Edit with AI', 'easy-ai-forms' )
+							: __( 'Generate with AI', 'easy-ai-forms' ) }
 					</strong>
 				</CardHeader>
 				<CardBody>
 					{ ai.ready && ! ai.configured && (
 						<Notice status="warning" isDismissible={ false }>
-							{ __( 'No AI key set. Add one in', 'wp-ai-forms' ) }{ ' ' }
-							<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'wp-ai-forms' ) }</a>{ ' ' }
-							{ __( 'to enable AI generation. You can still add and edit fields below by hand.', 'wp-ai-forms' ) }
+							{ __( 'No AI key set. Add one in', 'easy-ai-forms' ) }{ ' ' }
+							<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'easy-ai-forms' ) }</a>{ ' ' }
+							{ __( 'to enable AI generation. You can still add and edit fields below by hand.', 'easy-ai-forms' ) }
 						</Notice>
 					) }
 					<TextareaControl
-						label={ __( 'Prompt', 'wp-ai-forms' ) }
+						label={ __( 'Prompt', 'easy-ai-forms' ) }
 						help={
 							hasExistingFields
-								? __( 'Describe a change. The AI keeps existing fields and applies only what you ask. Example: "Add a phone field after email" or "Make the message field optional".', 'wp-ai-forms' )
-								: __( 'Describe the form you want. Example: "Contact form with name, email, phone, and a message field."', 'wp-ai-forms' )
+								? __( 'Describe a change. The AI keeps existing fields and applies only what you ask. Example: "Add a phone field after email" or "Make the message field optional".', 'easy-ai-forms' )
+								: __( 'Describe the form you want. Example: "Contact form with name, email, phone, and a message field."', 'easy-ai-forms' )
 						}
 						value={ prompt }
 						onChange={ setPrompt }
@@ -237,32 +237,32 @@ export default function FormEditor( { api, formId } ) {
 						disabled={ ! prompt || ( ai.ready && ! ai.configured ) }
 					>
 						{ hasExistingFields
-							? __( 'Apply changes', 'wp-ai-forms' )
-							: __( 'Generate fields', 'wp-ai-forms' ) }
+							? __( 'Apply changes', 'easy-ai-forms' )
+							: __( 'Generate fields', 'easy-ai-forms' ) }
 					</Button>
 					{ generate.error && (
-						<Notice status="error" isDismissible={ false } className="wpaif-mt">
+						<Notice status="error" isDismissible={ false } className="eaif-mt">
 							{ generate.error.message }
 						</Notice>
 					) }
 				</CardBody>
 			</Card>
 
-			<Card className="wpaif-mt">
-				<CardHeader><strong>{ __( 'Form details', 'wp-ai-forms' ) }</strong></CardHeader>
+			<Card className="eaif-mt">
+				<CardHeader><strong>{ __( 'Form details', 'easy-ai-forms' ) }</strong></CardHeader>
 				<CardBody>
 					<TextControl
-						label={ __( 'Title', 'wp-ai-forms' ) }
+						label={ __( 'Title', 'easy-ai-forms' ) }
 						value={ form.title || '' }
 						onChange={ ( v ) => setForm( { ...form, title: v } ) }
 					/>
 					<TextControl
-						label={ __( 'Submit button label', 'wp-ai-forms' ) }
+						label={ __( 'Submit button label', 'easy-ai-forms' ) }
 						value={ form.schema.submit_label || 'Submit' }
 						onChange={ ( v ) => updateSchema( { submit_label: v } ) }
 					/>
 					<SelectControl
-						label={ __( 'Status', 'wp-ai-forms' ) }
+						label={ __( 'Status', 'easy-ai-forms' ) }
 						value={ form.status }
 						options={ [
 							{ label: 'Draft', value: 'draft' },
@@ -273,42 +273,42 @@ export default function FormEditor( { api, formId } ) {
 				</CardBody>
 			</Card>
 
-			<Card className="wpaif-mt">
+			<Card className="eaif-mt">
 				<CardHeader>
 					<Flex>
-						<FlexItem><strong>{ __( 'Fields', 'wp-ai-forms' ) }</strong></FlexItem>
+						<FlexItem><strong>{ __( 'Fields', 'easy-ai-forms' ) }</strong></FlexItem>
 						<FlexItem>
 							<Button variant="secondary" onClick={ addField }>
-								{ __( 'Add field', 'wp-ai-forms' ) }
+								{ __( 'Add field', 'easy-ai-forms' ) }
 							</Button>
 						</FlexItem>
 					</Flex>
 				</CardHeader>
 				<CardBody>
 					{ ( form.schema.fields || [] ).length === 0 && (
-						<p>{ __( 'No fields yet. Generate with AI or add manually.', 'wp-ai-forms' ) }</p>
+						<p>{ __( 'No fields yet. Generate with AI or add manually.', 'easy-ai-forms' ) }</p>
 					) }
 					{ ( form.schema.fields || [] ).map( ( f, i ) => (
-						<Card key={ i } className="wpaif-field-card">
+						<Card key={ i } className="eaif-field-card">
 							<CardBody>
 								<Flex align="flex-start" gap={ 3 }>
 									<FlexItem isBlock>
 										<TextControl
-											label={ __( 'Label', 'wp-ai-forms' ) }
+											label={ __( 'Label', 'easy-ai-forms' ) }
 											value={ f.label || '' }
 											onChange={ ( v ) => updateField( i, { label: v } ) }
 										/>
 									</FlexItem>
 									<FlexItem isBlock>
 										<TextControl
-											label={ __( 'Name (snake_case)', 'wp-ai-forms' ) }
+											label={ __( 'Name (snake_case)', 'easy-ai-forms' ) }
 											value={ f.name || '' }
 											onChange={ ( v ) => updateField( i, { name: v } ) }
 										/>
 									</FlexItem>
 									<FlexItem isBlock>
 										<SelectControl
-											label={ __( 'Type', 'wp-ai-forms' ) }
+											label={ __( 'Type', 'easy-ai-forms' ) }
 											value={ f.type || 'text' }
 											options={ FIELD_TYPES }
 											onChange={ ( v ) => updateField( i, { type: v } ) }
@@ -317,37 +317,37 @@ export default function FormEditor( { api, formId } ) {
 								</Flex>
 								{ f.type !== 'hidden' && (
 									<ToggleControl
-										label={ __( 'Required', 'wp-ai-forms' ) }
+										label={ __( 'Required', 'easy-ai-forms' ) }
 										checked={ !! f.required }
 										onChange={ ( v ) => updateField( i, { required: v } ) }
 									/>
 								) }
 								{ f.type === 'hidden' && (
 									<TextControl
-										label={ __( 'Default value', 'wp-ai-forms' ) }
-										help={ __( 'This value is submitted with the form. Not visible or editable to visitors.', 'wp-ai-forms' ) }
+										label={ __( 'Default value', 'easy-ai-forms' ) }
+										help={ __( 'This value is submitted with the form. Not visible or editable to visitors.', 'easy-ai-forms' ) }
 										value={ f.default_value || '' }
 										onChange={ ( v ) => updateField( i, { default_value: v } ) }
 									/>
 								) }
 								{ TYPES_WITH_OPTIONS.includes( f.type ) && (
-									<div className="wpaif-options">
-										<div className="wpaif-options__header">
-											<strong>{ __( 'Options', 'wp-ai-forms' ) }</strong>
+									<div className="eaif-options">
+										<div className="eaif-options__header">
+											<strong>{ __( 'Options', 'easy-ai-forms' ) }</strong>
 											<Button variant="secondary" size="small" onClick={ () => addOption( i ) }>
-												{ __( 'Add option', 'wp-ai-forms' ) }
+												{ __( 'Add option', 'easy-ai-forms' ) }
 											</Button>
 										</div>
 										{ ( f.options || [] ).length === 0 && (
-											<p className="wpaif-options__empty">
-												{ __( 'No options yet. Add at least 2 for the field to render.', 'wp-ai-forms' ) }
+											<p className="eaif-options__empty">
+												{ __( 'No options yet. Add at least 2 for the field to render.', 'easy-ai-forms' ) }
 											</p>
 										) }
 										{ ( f.options || [] ).map( ( opt, oi ) => (
-											<Flex key={ oi } align="flex-end" gap={ 2 } className="wpaif-options__row">
+											<Flex key={ oi } align="flex-end" gap={ 2 } className="eaif-options__row">
 												<FlexItem isBlock>
 													<TextControl
-														label={ oi === 0 ? __( 'Label', 'wp-ai-forms' ) : '' }
+														label={ oi === 0 ? __( 'Label', 'easy-ai-forms' ) : '' }
 														hideLabelFromVision={ oi !== 0 }
 														value={ opt.label || '' }
 														onChange={ ( v ) => updateOption( i, oi, { label: v } ) }
@@ -355,7 +355,7 @@ export default function FormEditor( { api, formId } ) {
 												</FlexItem>
 												<FlexItem isBlock>
 													<TextControl
-														label={ oi === 0 ? __( 'Value', 'wp-ai-forms' ) : '' }
+														label={ oi === 0 ? __( 'Value', 'easy-ai-forms' ) : '' }
 														hideLabelFromVision={ oi !== 0 }
 														value={ opt.value || '' }
 														onChange={ ( v ) => updateOption( i, oi, { value: v } ) }
@@ -367,7 +367,7 @@ export default function FormEditor( { api, formId } ) {
 														size="small"
 														isDestructive
 														onClick={ () => removeOption( i, oi ) }
-														aria-label={ __( 'Remove option', 'wp-ai-forms' ) }
+														aria-label={ __( 'Remove option', 'easy-ai-forms' ) }
 													>
 														×
 													</Button>
@@ -376,7 +376,7 @@ export default function FormEditor( { api, formId } ) {
 										) ) }
 									</div>
 								) }
-								<Flex justify="space-between" align="center" className="wpaif-mt-sm">
+								<Flex justify="space-between" align="center" className="eaif-mt-sm">
 									<FlexItem>
 										<Flex gap={ 1 }>
 											<FlexItem>
@@ -385,7 +385,7 @@ export default function FormEditor( { api, formId } ) {
 													size="small"
 													onClick={ () => moveField( i, -1 ) }
 													disabled={ i === 0 }
-													aria-label={ __( 'Move field up', 'wp-ai-forms' ) }
+													aria-label={ __( 'Move field up', 'easy-ai-forms' ) }
 												>
 													↑
 												</Button>
@@ -396,7 +396,7 @@ export default function FormEditor( { api, formId } ) {
 													size="small"
 													onClick={ () => moveField( i, 1 ) }
 													disabled={ i === ( form.schema.fields || [] ).length - 1 }
-													aria-label={ __( 'Move field down', 'wp-ai-forms' ) }
+													aria-label={ __( 'Move field down', 'easy-ai-forms' ) }
 												>
 													↓
 												</Button>
@@ -405,7 +405,7 @@ export default function FormEditor( { api, formId } ) {
 									</FlexItem>
 									<FlexItem>
 										<Button variant="link" isDestructive onClick={ () => removeField( i ) }>
-											{ __( 'Remove', 'wp-ai-forms' ) }
+											{ __( 'Remove', 'easy-ai-forms' ) }
 										</Button>
 									</FlexItem>
 								</Flex>
@@ -415,36 +415,36 @@ export default function FormEditor( { api, formId } ) {
 				</CardBody>
 			</Card>
 
-			<Card className="wpaif-mt">
-				<CardHeader><strong>{ __( 'Email notifications', 'wp-ai-forms' ) }</strong></CardHeader>
+			<Card className="eaif-mt">
+				<CardHeader><strong>{ __( 'Email notifications', 'easy-ai-forms' ) }</strong></CardHeader>
 				<CardBody>
 					<ToggleControl
-						label={ __( 'Send an email when this form is submitted', 'wp-ai-forms' ) }
+						label={ __( 'Send an email when this form is submitted', 'easy-ai-forms' ) }
 						checked={ !! notifications.enabled }
 						onChange={ ( v ) => updateNotifications( { enabled: v } ) }
 					/>
 					{ notifications.enabled && (
 						<>
 							<TextControl
-								label={ __( 'To', 'wp-ai-forms' ) }
-								help={ __( 'Comma-separated email addresses. Leave blank to use the site admin email.', 'wp-ai-forms' ) }
+								label={ __( 'To', 'easy-ai-forms' ) }
+								help={ __( 'Comma-separated email addresses. Leave blank to use the site admin email.', 'easy-ai-forms' ) }
 								value={ notifications.to || '' }
 								onChange={ ( v ) => updateNotifications( { to: v } ) }
 							/>
 							<TextControl
-								label={ __( 'Subject', 'wp-ai-forms' ) }
-								help={ __( 'Mail-tags allowed. Leave blank for "New submission: <form title>".', 'wp-ai-forms' ) }
+								label={ __( 'Subject', 'easy-ai-forms' ) }
+								help={ __( 'Mail-tags allowed. Leave blank for "New submission: <form title>".', 'easy-ai-forms' ) }
 								value={ notifications.subject || '' }
 								onChange={ ( v ) => updateNotifications( { subject: v } ) }
 							/>
 							<TextareaControl
-								label={ __( 'Body', 'wp-ai-forms' ) }
-								help={ __( 'Mail-tags: {all_fields}, {field_name}, {form_title}, {site_name}, {site_url}, {admin_email}. Leave blank to send all field values.', 'wp-ai-forms' ) }
+								label={ __( 'Body', 'easy-ai-forms' ) }
+								help={ __( 'Mail-tags: {all_fields}, {field_name}, {form_title}, {site_name}, {site_url}, {admin_email}. Leave blank to send all field values.', 'easy-ai-forms' ) }
 								value={ notifications.body || '' }
 								onChange={ ( v ) => updateNotifications( { body: v } ) }
 								rows={ 6 }
 							/>
-							<Flex justify="flex-start" gap={ 2 } className="wpaif-mt-sm">
+							<Flex justify="flex-start" gap={ 2 } className="eaif-mt-sm">
 								<FlexItem>
 									<Button
 										variant="secondary"
@@ -456,18 +456,18 @@ export default function FormEditor( { api, formId } ) {
 											( form.schema.fields || [] ).length === 0
 										}
 									>
-										{ __( 'Generate with AI', 'wp-ai-forms' ) }
+										{ __( 'Generate with AI', 'easy-ai-forms' ) }
 									</Button>
 								</FlexItem>
 							</Flex>
 							{ generateBody.error && (
-								<Notice status="error" isDismissible={ false } className="wpaif-mt-sm">
+								<Notice status="error" isDismissible={ false } className="eaif-mt-sm">
 									{ generateBody.error.message }
 								</Notice>
 							) }
 							<SelectControl
-								label={ __( 'Reply-To field', 'wp-ai-forms' ) }
-								help={ __( 'When set, replies to the notification go to the submitter’s email.', 'wp-ai-forms' ) }
+								label={ __( 'Reply-To field', 'easy-ai-forms' ) }
+								help={ __( 'When set, replies to the notification go to the submitter’s email.', 'easy-ai-forms' ) }
 								value={ notifications.reply_to_field || '' }
 								options={ emailFieldOptions }
 								onChange={ ( v ) => updateNotifications( { reply_to_field: v } ) }
@@ -477,7 +477,7 @@ export default function FormEditor( { api, formId } ) {
 				</CardBody>
 			</Card>
 				</div>
-				<aside className="wpaif-editor__side">
+				<aside className="eaif-editor__side">
 					<FormPreview form={ form } />
 				</aside>
 			</div>

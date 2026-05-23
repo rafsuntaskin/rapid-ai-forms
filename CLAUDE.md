@@ -1,4 +1,4 @@
-# WP AI Forms — agent notes
+# Easy AI Forms — agent notes
 
 > **For product/technical spec** (data contracts, REST endpoints, AI provider contract, roadmap), see [`docs/SPEC.md`](docs/SPEC.md). This file holds agent-oriented conventions only.
 
@@ -11,17 +11,17 @@ Modes:
 - **BYOK** (MVP): user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
 - **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
 
-Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submissions`) and rendered via the `[wp_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
+Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submissions`) and rendered via the `[easy_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
 
 ## Architecture
 
 ### PHP (`includes/`)
-- Custom PSR-4-ish autoloader. Namespace `WP_AI_Forms\` maps to `includes/`, with `class-` / `interface-` / `trait-` prefixes and `kebab-case` filenames.
+- Custom PSR-4-ish autoloader. Namespace `Easy_Ai_Forms\` maps to `includes/`, with `class-` / `interface-` / `trait-` prefixes and `kebab-case` filenames.
 - `Plugin::instance()` boots feature classes on `plugins_loaded`.
-- AI providers implement `Ai\Provider` and are registered in `Ai\Provider_Manager`. Add new ones via the `wp_ai_forms_register_providers` action.
+- AI providers implement `Ai\Provider` and are registered in `Ai\Provider_Manager`. Add new ones via the `easy_ai_forms_register_providers` action.
 - `Ai\Schema_Prompt` holds the shared system prompt and the JSON sanitizer that every provider funnels into — keep schema validation centralized there.
-- REST routes live under `wp-ai-forms/v1/*`. Management endpoints require `manage_options`; the public submission endpoint is `/submissions/{uuid}`.
-- Secrets in `wp_ai_forms_ai_settings` are never returned over REST; `*_set` booleans signal presence instead.
+- REST routes live under `easy-ai-forms/v1/*`. Management endpoints require `manage_options`; the public submission endpoint is `/submissions/{uuid}`.
+- Secrets in `easy_ai_forms_ai_settings` are never returned over REST; `*_set` booleans signal presence instead.
 
 ### JS (`src/`)
 - Built with `@wordpress/scripts`. Two entries: `admin` and `frontend`. Output → `build/`.
@@ -31,9 +31,9 @@ Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submi
 
 ## Conventions
 - Filenames: `class-foo-bar.php`, `interface-foo.php`, `trait-foo.php` — autoloader depends on this.
-- Hooks/filters are prefixed `wp_ai_forms_*`.
-- DOM/CSS class prefix: `wpaif-`.
-- JS global namespace: `WP_AI_FORMS` (frontend) and `WP_AI_FORMS_ADMIN` (admin) — set via `wp_localize_script`.
+- Hooks/filters are prefixed `easy_ai_forms_*`.
+- DOM/CSS class prefix: `eaif-`.
+- JS global namespace: `EASY_AI_FORMS` (frontend) and `EASY_AI_FORMS_ADMIN` (admin) — set via `wp_localize_script`.
 
 ## Common tasks
 - Add a new AI provider: implement `Ai\Provider`, register in `Provider_Manager::__construct` or via the action hook, add a config block in the Settings React page.

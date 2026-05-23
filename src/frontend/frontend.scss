@@ -1,4 +1,4 @@
-.wpaif-form {
+.eaif-form {
 	display: grid;
 	gap: 12px;
 	max-width: 560px;
@@ -31,7 +31,7 @@
 	}
 }
 
-.wpaif-field {
+.eaif-field {
 	display: grid;
 	gap: 4px;
 
@@ -48,7 +48,7 @@
 		font: inherit;
 	}
 
-	.wpaif-required {
+	.eaif-required {
 		color: #c0392b;
 	}
 }

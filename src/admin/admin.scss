@@ -1,16 +1,16 @@
 // Reuse the frontend form styles so the live preview matches the real render.
 @import '../frontend/frontend.scss';
 
-.wpaif-page {
+.eaif-page {
 	max-width: 960px;
 	margin-top: 16px;
 
-	.wpaif-mt {
+	.eaif-mt {
 		margin-top: 16px;
 	}
 }
 
-.wpaif-editor {
+.eaif-editor {
 	max-width: 1400px;
 
 	&__columns {
@@ -40,7 +40,7 @@
 	}
 }
 
-.wpaif-preview {
+.eaif-preview {
 	border: 1px solid #dcdcde;
 	border-radius: 0;
 	background: #fff;
@@ -75,7 +75,7 @@
 
 		// Frontend submit button defers to the theme; in the admin preview there's
 		// no theme, so apply a neutral stand-in so the button is still visible.
-		.wpaif-form__submit {
+		.eaif-form__submit {
 			padding: 8px 18px;
 			border: 1px solid #1d4ed8;
 			background: #2271b1;
@@ -85,12 +85,12 @@
 	}
 }
 
-.wpaif-preview-empty {
+.eaif-preview-empty {
 	color: #646970;
 	font-style: italic;
 }
 
-.wpaif-page-header {
+.eaif-page-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -108,12 +108,12 @@
 	}
 }
 
-.wpaif-field-card {
+.eaif-field-card {
 	margin-top: 12px;
 	background: #fafafa;
 }
 
-.wpaif-options {
+.eaif-options {
 	margin: 12px 0 8px;
 	padding: 12px;
 	background: #fff;
@@ -142,11 +142,11 @@
 	}
 }
 
-.wpaif-tabs {
+.eaif-tabs {
 	margin-top: 16px;
 }
 
-.wpaif-settings {
+.eaif-settings {
 	max-width: 720px;
 
 	&__footer {
@@ -158,7 +158,7 @@
 	}
 }
 
-.wpaif-verify {
+.eaif-verify {
 	margin-top: 12px;
 
 	&__result {
@@ -184,7 +184,7 @@
 	}
 }
 
-.wpaif-shortcode {
+.eaif-shortcode {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -229,7 +229,7 @@
 	}
 }
 
-.wpaif-list {
+.eaif-list {
 	max-width: 1280px;
 
 	&__toolbar {
@@ -301,7 +301,7 @@
 	}
 }
 
-.wpaif-card {
+.eaif-card {
 	background: #fff;
 	border: 1px solid #e0e0e0;
 	border-radius: 0;
@@ -379,7 +379,7 @@
 	}
 }
 
-.wpaif-status {
+.eaif-status {
 	display: inline-block;
 	padding: 2px 10px;
 	border-radius: 0;
