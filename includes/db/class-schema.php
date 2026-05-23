@@ -10,16 +10,16 @@ namespace Easy_Ai_Forms\Db;
 defined( 'ABSPATH' ) || exit;
 
 class Schema {
-	const DB_VERSION = '1.0.1';
+	const DB_VERSION = '1.0.2';
 
 	public static function forms_table() {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_forms';
+		return $wpdb->prefix . 'easy_ai_forms';
 	}
 
 	public static function submissions_table() {
 		global $wpdb;
-		return $wpdb->prefix . 'ai_form_submissions';
+		return $wpdb->prefix . 'easy_ai_form_submissions';
 	}
 
 	public static function install() {

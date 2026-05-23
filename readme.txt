@@ -79,7 +79,7 @@ Yes. Every field in the editor is fully editable by hand — the AI is optional.
 
 = Where do form submissions go? =
 
-Submissions are stored in a dedicated `{prefix}ai_form_submissions` database table. The site administrator (or any address you configure on the form) also receives a notification email on each submission containing the field values.
+Submissions are stored in a dedicated `{prefix}easy_ai_form_submissions` database table. The site administrator (or any address you configure on the form) also receives a notification email on each submission containing the field values.
 
 = How do I customize the notification email? =
 

@@ -36,7 +36,7 @@ Easy AI Forms is a WordPress plugin that lets site owners build forms from natur
 
 ## 2. Form Schema JSON contract
 
-This is the canonical shape that AI providers must produce and that the editor/renderer consume. It lives in the `schema` column of `easy_ai_forms` (JSON-encoded).
+This is the canonical shape that AI providers must produce and that the editor/renderer consume. It lives in the `form_schema` column of `{prefix}easy_ai_forms` (JSON-encoded).
 
 ### 2.1 Schema
 
@@ -98,7 +98,7 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 
 ## 3. Data model
 
-### 3.1 `{prefix}ai_forms`
+### 3.1 `{prefix}easy_ai_forms`
 
 | Column | Type | Notes |
 |---|---|---|
@@ -115,12 +115,12 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 
 Indexes: `uuid` (unique), `status`, `author_id`.
 
-### 3.2 `{prefix}ai_form_submissions`
+### 3.2 `{prefix}easy_ai_form_submissions`
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `BIGINT UNSIGNED AUTO_INCREMENT` | PK |
-| `form_id` | `BIGINT UNSIGNED` | FK to `ai_forms.id` (not enforced at DB level) |
+| `form_id` | `BIGINT UNSIGNED` | FK to `easy_ai_forms.id` (not enforced at DB level) |
 | `data` | `LONGTEXT` | JSON-encoded sanitized submission |
 | `meta` | `LONGTEXT NULL` | JSON, reserved for future use |
 | `ip_address` | `VARCHAR(45)` | IPv4 or IPv6 |

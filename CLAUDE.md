@@ -11,7 +11,7 @@ Modes:
 - **BYOK** (MVP): user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
 - **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
 
-Forms are stored in custom DB tables (`{prefix}ai_forms`, `{prefix}ai_form_submissions`) and rendered via the `[easy_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
+Forms are stored in custom DB tables (`{prefix}easy_ai_forms`, `{prefix}easy_ai_form_submissions`) and rendered via the `[easy_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
 
 ## Architecture
 
