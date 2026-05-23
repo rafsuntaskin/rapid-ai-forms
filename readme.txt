@@ -1,8 +1,8 @@
-=== WP AI Forms ===
+=== Easy AI Forms ===
 Contributors: rafsuntaskin
-Tags: forms, ai, openai, anthropic, gemini, form builder
+Tags: ai builder, form builder, forms, contact form
 Requires at least: 6.4
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 0.1.0
 License: GPLv2 or later
@@ -12,7 +12,7 @@ AI-powered form builder for WordPress. Describe the form you want in plain Engli
 
 == Description ==
 
-WP AI Forms lets you build forms with natural language. Describe what you need ("contact form with name, email, phone, and a message"), and the plugin asks your selected AI provider to generate the schema for you. Edit, save, and embed anywhere with the `[wp_ai_form id="123"]` shortcode.
+Easy AI Forms lets you build forms with natural language. Describe what you need ("contact form with name, email, phone, and a message"), and the plugin asks your selected AI provider to generate the schema for you. Edit, save, and embed anywhere with the `[easy_ai_form id="123"]` shortcode.
 
 Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compatible endpoint (OpenAI, OpenRouter, Fireworks, Groq, local LLMs, and others).
 
@@ -41,7 +41,7 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * Hidden field values are read from the schema on the server, never from the client
 * Provider API keys are stored with `autoload=no` and never returned over REST (presence is signaled with a boolean)
 * WordPress Coding Standards 3.1 enforced (PHPCS clean, 0 errors / 0 warnings)
-* Translation-ready (`languages/wp-ai-forms.pot`)
+* Translation-ready (`languages/easy-ai-forms.pot`)
 
 == Privacy and external services ==
 
@@ -58,10 +58,10 @@ When a visitor submits a form, the plugin can send a notification email through 
 
 == Installation ==
 
-1. Upload the plugin to `/wp-content/plugins/wp-ai-forms` or install from the WordPress.org plugin directory.
+1. Upload the plugin to `/wp-content/plugins/easy-ai-forms` or install from the WordPress.org plugin directory.
 2. Activate the plugin through the **Plugins** screen.
 3. Visit **AI Forms → Settings** to configure your AI provider and verify the connection.
-4. Create a form under **AI Forms → Forms**, generate fields with a prompt, and embed it with `[wp_ai_form id="123"]`.
+4. Create a form under **AI Forms → Forms**, generate fields with a prompt, and embed it with `[easy_ai_form id="123"]`.
 
 == Frequently Asked Questions ==
 
@@ -98,8 +98,8 @@ Yes. The editor lets you add, edit, reorder, and remove fields by hand. The AI i
 * Custom database tables for forms and submissions.
 * Per-form email notifications with mail-tag templating, comma-separated recipients, and an optional Reply-To field.
 * "Generate with AI" action for the notification body.
-* `[wp_ai_form id="..."]` shortcode renderer with theme-aware submit button.
-* REST API at `/wp-json/wp-ai-forms/v1/` with capability-gated admin routes.
+* `[easy_ai_form id="..."]` shortcode renderer with theme-aware submit button.
+* REST API at `/wp-json/easy-ai-forms/v1/` with capability-gated admin routes.
 * Registration with the WordPress Abilities API.
 * One-click credential verification.
 * Live preview, click-to-copy shortcode, card-based form list with search and delete.
