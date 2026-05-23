@@ -231,13 +231,27 @@ class Rest_Controller {
 	public function get_settings() {
 		$manager  = new Provider_Manager();
 		$settings = $manager->settings();
-		// Mask secrets for safety on the wire.
+		// Mask secrets for safety on the wire and expose a generic
+		// `configured` flag so the admin UI doesn't have to special-case
+		// each provider's storage scheme.
 		foreach ( $settings['providers'] as $key => $cfg ) {
-			if ( ! empty( $cfg['api_key'] ) ) {
-				$settings['providers'][ $key ]['api_key_set'] = true;
+			$has_key = ! empty( $cfg['api_key'] );
+			if ( $has_key ) {
 				$settings['providers'][ $key ]['api_key']     = '';
+				$settings['providers'][ $key ]['api_key_set'] = true;
 			} else {
 				$settings['providers'][ $key ]['api_key_set'] = false;
+			}
+
+			// wp_ai_client routes through core connectors; it's "configured"
+			// when the host supports it (which means at least one connector
+			// is reachable). For everything else, configured ≡ api key saved.
+			if ( 'wp_ai_client' === $key ) {
+				$settings['providers'][ $key ]['configured'] =
+					class_exists( 'Easy_Ai_Forms\\Ai\\Providers\\Wp_Ai_Client' )
+					&& \Easy_Ai_Forms\Ai\Providers\Wp_Ai_Client::is_available();
+			} else {
+				$settings['providers'][ $key ]['configured'] = $has_key;
 			}
 		}
 		$providers = array();

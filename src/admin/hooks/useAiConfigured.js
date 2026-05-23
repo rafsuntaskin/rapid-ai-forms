@@ -1,11 +1,13 @@
 import { useEffect, useState } from '@wordpress/element';
 
 /**
- * Tracks whether the active AI provider has its API key saved.
+ * Tracks whether the active AI provider is ready to use.
  *
  * Returns { ready, configured, providerLabel }:
  *  - ready: settings have been fetched
- *  - configured: api_key_set is true for the active provider
+ *  - configured: the active provider reports it can be used (server-side
+ *    flag — true for BYOK providers when api_key is saved, true for
+ *    wp_ai_client when core connectors are available)
  *  - providerLabel: human label for messaging
  */
 export function useAiConfigured( api ) {
@@ -19,7 +21,10 @@ export function useAiConfigured( api ) {
 				const key = s.active_provider;
 				const cfg = ( s.providers || {} )[ key ] || {};
 				const label = ( s.available_providers || [] ).find( ( p ) => p.key === key )?.label || key;
-				setState( { ready: true, configured: !! cfg.api_key_set, providerLabel: label } );
+				// `configured` is the new server-side flag; fall back to api_key_set
+				// for older servers running an upgraded UI bundle.
+				const configured = cfg.configured !== undefined ? !! cfg.configured : !! cfg.api_key_set;
+				setState( { ready: true, configured, providerLabel: label } );
 			} )
 			.catch( () => {
 				if ( cancelled ) return;
