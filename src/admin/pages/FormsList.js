@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import {
 	Button,
 	Card,
@@ -32,30 +32,58 @@ function fieldCount( form ) {
 	return Array.isArray( form.schema && form.schema.fields ) ? form.schema.fields.length : 0;
 }
 
+const PER_PAGE = 20;
+
 export default function FormsList( { api } ) {
 	const [ forms, setForms ] = useState( null );
 	const [ error, setError ] = useState( null );
 	const [ creating, setCreating ] = useState( false );
 	const [ search, setSearch ] = useState( '' );
 	const [ deleting, setDeleting ] = useState( null );
+	const [ page, setPage ] = useState( 1 );
+	const [ total, setTotal ] = useState( 0 );
+	const [ debouncedSearch, setDebouncedSearch ] = useState( '' );
+	const [ loading, setLoading ] = useState( false );
 	const ai = useAiConfigured( api );
 	const settingsUrl = ( window.WP_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 
+	// Debounce keystrokes so we don't fire a REST query on every character.
 	useEffect( () => {
-		api.get( 'forms' )
-			.then( setForms )
-			.catch( ( e ) => setError( e.message || 'Failed to load forms' ) );
-	}, [ api ] );
+		const t = setTimeout( () => setDebouncedSearch( search.trim() ), 250 );
+		return () => clearTimeout( t );
+	}, [ search ] );
 
-	const filtered = useMemo( () => {
-		if ( ! forms ) return [];
-		const q = search.trim().toLowerCase();
-		if ( ! q ) return forms;
-		return forms.filter( ( f ) => {
-			const hay = `${ f.title || '' } ${ f.uuid || '' } ${ f.id }`.toLowerCase();
-			return hay.includes( q );
-		} );
-	}, [ forms, search ] );
+	// New search query → back to page 1.
+	useEffect( () => {
+		setPage( 1 );
+	}, [ debouncedSearch ] );
+
+	useEffect( () => {
+		let cancelled = false;
+		setLoading( true );
+		const url =
+			`forms?page=${ page }&per_page=${ PER_PAGE }` +
+			( debouncedSearch ? `&search=${ encodeURIComponent( debouncedSearch ) }` : '' );
+		api.getWithHeaders( url )
+			.then( ( { data, headers } ) => {
+				if ( cancelled ) return;
+				setForms( data );
+				const t = parseInt( headers.get( 'X-WP-Total' ) || '0', 10 );
+				setTotal( Number.isFinite( t ) ? t : 0 );
+			} )
+			.catch( ( e ) => {
+				if ( ! cancelled ) setError( e.message || 'Failed to load forms' );
+			} )
+			.finally( () => {
+				if ( ! cancelled ) setLoading( false );
+			} );
+		return () => {
+			cancelled = true;
+		};
+	}, [ api, page, debouncedSearch ] );
+
+	const totalPages = Math.max( 1, Math.ceil( total / PER_PAGE ) );
+	const visibleForms = forms || [];
 
 	const createBlank = async () => {
 		setError( null );
@@ -70,6 +98,7 @@ export default function FormsList( { api } ) {
 				throw new Error( __( 'Form was created but no id was returned.', 'wp-ai-forms' ) );
 			}
 			setForms( ( prev ) => ( prev ? [ form, ...prev ] : [ form ] ) );
+			setTotal( ( t ) => t + 1 );
 			window.location.hash = `#/forms/${ form.id }`;
 		} catch ( e ) {
 			setError( e.message || __( 'Could not create form.', 'wp-ai-forms' ) );
@@ -84,7 +113,16 @@ export default function FormsList( { api } ) {
 		if ( ! target ) return;
 		try {
 			await api.del( `forms/${ target.id }` );
-			setForms( ( prev ) => prev.filter( ( f ) => f.id !== target.id ) );
+			setForms( ( prev ) => {
+				const next = prev.filter( ( f ) => f.id !== target.id );
+				// If the current page is now empty and we're past page 1, step back
+				// so the user doesn't stare at "No forms" when more pages exist.
+				if ( next.length === 0 && page > 1 ) {
+					setPage( ( p ) => p - 1 );
+				}
+				return next;
+			} );
+			setTotal( ( t ) => Math.max( 0, t - 1 ) );
 		} catch ( e ) {
 			setError( e.message || __( 'Could not delete form.', 'wp-ai-forms' ) );
 		}
@@ -116,7 +154,7 @@ export default function FormsList( { api } ) {
 				</Notice>
 			) }
 
-			{ forms !== null && forms.length > 0 && (
+			{ forms !== null && ( forms.length > 0 || debouncedSearch !== '' || search !== '' ) && (
 				<div className="wpaif-list__toolbar">
 					<TextControl
 						label={ __( 'Search forms', 'wp-ai-forms' ) }
@@ -126,20 +164,26 @@ export default function FormsList( { api } ) {
 						onChange={ setSearch }
 					/>
 					<span className="wpaif-list__count">
-						{ sprintf(
-							// translators: %d: number of forms shown in the filtered list
-							_n( '%d form', '%d forms', filtered.length, 'wp-ai-forms' ),
-							filtered.length
-						) }
+						{ debouncedSearch === ''
+							? sprintf(
+									// translators: %d: total number of forms on the site
+									_n( '%d form', '%d forms', total, 'wp-ai-forms' ),
+									total
+								)
+							: sprintf(
+									// translators: %d: number of forms matching the search across the whole site
+									_n( '%d match', '%d matches', total, 'wp-ai-forms' ),
+									total
+								) }
 					</span>
 				</div>
 			) }
 
-			{ forms === null && ! error && (
+			{ ( forms === null || loading ) && ! error && (
 				<div className="wpaif-list__loading"><Spinner /></div>
 			) }
 
-			{ forms && forms.length === 0 && (
+			{ ! loading && forms && forms.length === 0 && debouncedSearch === '' && (
 				<Card className="wpaif-list__empty">
 					<CardBody>
 						<h2>{ __( 'No forms yet', 'wp-ai-forms' ) }</h2>
@@ -151,15 +195,15 @@ export default function FormsList( { api } ) {
 				</Card>
 			) }
 
-			{ forms && forms.length > 0 && filtered.length === 0 && (
+			{ ! loading && forms && forms.length === 0 && debouncedSearch !== '' && (
 				<Card><CardBody>
 					{ __( 'No forms match your search.', 'wp-ai-forms' ) }
 				</CardBody></Card>
 			) }
 
-			{ filtered.length > 0 && (
+			{ visibleForms.length > 0 && (
 				<div className="wpaif-list__grid">
-					{ filtered.map( ( f ) => (
+					{ visibleForms.map( ( f ) => (
 						<article key={ f.id } className="wpaif-card">
 							<header className="wpaif-card__head">
 								<a href={ `#/forms/${ f.id }` } className="wpaif-card__title">
@@ -197,6 +241,33 @@ export default function FormsList( { api } ) {
 						</article>
 					) ) }
 				</div>
+			) }
+
+			{ totalPages > 1 && (
+				<nav className="wpaif-list__pagination" aria-label={ __( 'Forms pagination', 'wp-ai-forms' ) }>
+					<Button
+						variant="secondary"
+						disabled={ page <= 1 || forms === null }
+						onClick={ () => setPage( ( p ) => Math.max( 1, p - 1 ) ) }
+					>
+						{ __( '← Previous', 'wp-ai-forms' ) }
+					</Button>
+					<span className="wpaif-list__pagination-status">
+						{ sprintf(
+							// translators: 1: current page number, 2: total number of pages
+							__( 'Page %1$d of %2$d', 'wp-ai-forms' ),
+							page,
+							totalPages
+						) }
+					</span>
+					<Button
+						variant="secondary"
+						disabled={ page >= totalPages || forms === null }
+						onClick={ () => setPage( ( p ) => Math.min( totalPages, p + 1 ) ) }
+					>
+						{ __( 'Next →', 'wp-ai-forms' ) }
+					</Button>
+				</nav>
 			) }
 
 			{ deleting && (

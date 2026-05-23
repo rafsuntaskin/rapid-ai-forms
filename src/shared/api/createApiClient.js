@@ -18,8 +18,26 @@ export function createApiClient( { restUrl, nonce } ) {
 			...options,
 		} );
 
+	// Returns { data, headers } so callers can read response headers
+	// (e.g. X-WP-Total for paginated collections).
+	const requestWithHeaders = async ( path, options = {} ) => {
+		const response = await apiFetch( {
+			url: `${ trimmed }/${ path.replace( /^\//, '' ) }`,
+			headers: {
+				'Content-Type': 'application/json',
+				'X-WP-Nonce': nonce,
+				...( options.headers || {} ),
+			},
+			parse: false,
+			...options,
+		} );
+		const data = await response.json();
+		return { data, headers: response.headers };
+	};
+
 	return {
 		get: ( path ) => request( path, { method: 'GET' } ),
+		getWithHeaders: ( path ) => requestWithHeaders( path, { method: 'GET' } ),
 		post: ( path, data ) => request( path, { method: 'POST', data } ),
 		put: ( path, data ) => request( path, { method: 'PUT', data } ),
 		del: ( path ) => request( path, { method: 'DELETE' } ),

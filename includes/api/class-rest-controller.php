@@ -120,14 +120,26 @@ class Rest_Controller {
 	}
 
 	public function list_forms( $req ) {
-		$repo  = new Form_Repository();
-		$forms = $repo->list(
-			array(
-				'page'     => (int) $req->get_param( 'page' ) ?: 1,
-				'per_page' => (int) $req->get_param( 'per_page' ) ?: 20,
-			)
+		$repo     = new Form_Repository();
+		$page     = max( 1, (int) $req->get_param( 'page' ) ?: 1 );
+		$per_page = max( 1, min( 100, (int) $req->get_param( 'per_page' ) ?: 20 ) );
+		$search   = sanitize_text_field( (string) $req->get_param( 'search' ) );
+
+		$args = array(
+			'page'     => $page,
+			'per_page' => $per_page,
+			'search'   => $search,
 		);
-		return rest_ensure_response( $forms );
+
+		$forms = $repo->list( $args );
+		$total = $repo->count( array( 'search' => $search ) );
+
+		// Mirrors WP core's wp/v2 collection convention so the admin UI can
+		// read totals without parsing a custom envelope.
+		$response = rest_ensure_response( $forms );
+		$response->header( 'X-WP-Total', (string) $total );
+		$response->header( 'X-WP-TotalPages', (string) max( 1, (int) ceil( $total / $per_page ) ) );
+		return $response;
 	}
 
 	public function get_form( $req ) {

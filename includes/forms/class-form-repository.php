@@ -79,10 +79,43 @@ class Form_Repository {
 
 	public function list( array $args = array() ) {
 		global $wpdb;
-		$limit   = isset( $args['per_page'] ) ? max( 1, min( 100, (int) $args['per_page'] ) ) : 20;
-		$offset  = isset( $args['page'] ) ? max( 0, ( (int) $args['page'] - 1 ) * $limit ) : 0;
-		$results = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY updated_at DESC LIMIT %d OFFSET %d', Schema::forms_table(), $limit, $offset ), ARRAY_A );
+		$limit  = isset( $args['per_page'] ) ? max( 1, min( 100, (int) $args['per_page'] ) ) : 20;
+		$offset = isset( $args['page'] ) ? max( 0, ( (int) $args['page'] - 1 ) * $limit ) : 0;
+		$search = isset( $args['search'] ) ? trim( (string) $args['search'] ) : '';
+
+		if ( '' !== $search ) {
+			$like    = '%' . $wpdb->esc_like( $search ) . '%';
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					'SELECT * FROM %i WHERE title LIKE %s OR uuid LIKE %s ORDER BY updated_at DESC LIMIT %d OFFSET %d',
+					Schema::forms_table(),
+					$like,
+					$like,
+					$limit,
+					$offset
+				),
+				ARRAY_A
+			);
+		} else {
+			$results = $wpdb->get_results(
+				$wpdb->prepare( 'SELECT * FROM %i ORDER BY updated_at DESC LIMIT %d OFFSET %d', Schema::forms_table(), $limit, $offset ),
+				ARRAY_A
+			);
+		}
 		return array_map( array( $this, 'hydrate' ), $results ?: array() );
+	}
+
+	public function count( array $args = array() ) {
+		global $wpdb;
+		$search = isset( $args['search'] ) ? trim( (string) $args['search'] ) : '';
+
+		if ( '' !== $search ) {
+			$like = '%' . $wpdb->esc_like( $search ) . '%';
+			return (int) $wpdb->get_var(
+				$wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE title LIKE %s OR uuid LIKE %s', Schema::forms_table(), $like, $like )
+			);
+		}
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', Schema::forms_table() ) );
 	}
 
 	private function hydrate( array $row ) {
