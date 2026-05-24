@@ -52,17 +52,25 @@ This is the canonical shape that AI providers must produce and that the editor/r
       "type": "text",             // see allowed types below. Required.
       "required": false,
       "placeholder": "",
-      "options": [                // only when type is "select" or "radio"
+      "default_value": "",        // only for "hidden" fields; ignored elsewhere
+      "options": [                // only when type is "select", "radio", or "checkbox_group"
         { "label": "Yes", "value": "yes" }
       ]
     }
-  ]
+  ],
+  "notifications": {              // per-form email notification config
+    "enabled": true,
+    "to": "admin@example.com",    // comma-separated; empty falls back to admin_email at send time
+    "subject": "",                // mail-tag template; empty = "New submission: {form_title}"
+    "body": "",                   // mail-tag template; empty = "{all_fields}"
+    "reply_to_field": ""          // name of an email field whose value becomes Reply-To
+  }
 }
 ```
 
 ### 2.2 Allowed field types
 
-`text`, `email`, `tel`, `url`, `number`, `date`, `textarea`, `select`, `radio`, `checkbox`.
+`text`, `email`, `tel`, `url`, `number`, `date`, `password`, `hidden`, `textarea`, `select`, `radio`, `checkbox`, `checkbox_group`.
 
 Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 
@@ -70,8 +78,14 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 - `name` is required; fields without `name` are dropped during sanitization.
 - `name` is run through `sanitize_key()` — it must be lowercase, alphanumeric, and may contain underscores/hyphens.
 - `submit_label` defaults to `"Submit"` if missing.
-- `options` is only kept for `select` and `radio`.
+- `options` is only kept for `select`, `radio`, and `checkbox_group`.
 - Every `option` produces `{ label, value }`; if `value` is missing, `label` is used.
+- `default_value` is only retained for `hidden` fields. Used as the server-trusted submission value (never read from the client).
+- `notifications` is sanitized on every save:
+  - `enabled` defaults to `true`.
+  - `to` / `subject` / `reply_to_field` → `sanitize_text_field` / `sanitize_key`.
+  - `body` → `sanitize_textarea_field`.
+  - On **create**, an empty `to` is seeded with `get_option('admin_email')` so the editor surfaces a sensible default.
 
 ### 2.4 Example
 
@@ -105,7 +119,7 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 | `id` | `BIGINT UNSIGNED AUTO_INCREMENT` | PK |
 | `uuid` | `VARCHAR(36)` | unique; used for public submission endpoint |
 | `title` | `VARCHAR(255)` | |
-| `status` | `VARCHAR(20)` | `draft` \| `published` |
+| `status` | `VARCHAR(20)` | `draft` \| `published`. **Decorative in v0.1** — the UI does not expose a status control and the shortcode renders regardless. Column retained for future use (e.g. `archived`). |
 | `schema` | `LONGTEXT` | JSON-encoded Form Schema |
 | `settings` | `LONGTEXT` | JSON, per-form settings (notifications, etc. — future use) |
 | `ai_prompt` | `LONGTEXT NULL` | last prompt used to generate this form |
@@ -140,7 +154,8 @@ Indexes: `form_id`, `user_id`, `created_at`.
 
 ### 3.4 Migration policy
 - `Schema::install()` runs on activation via `dbDelta()`.
-- DB version is stored in `easy_ai_forms_db_version`. When `Schema::DB_VERSION` is bumped, the installer is re-run on `plugins_loaded` if the option lags behind. (Hook not yet wired; planned.)
+- DB version is stored in `easy_ai_forms_db_version`. `Plugin::maybe_migrate()` (called on `plugins_loaded`) compares the stored value against `Schema::DB_VERSION` and re-runs `dbDelta()` when they diverge. `dbDelta()` is additive — bumping for new columns or indexes works; renaming or dropping columns requires a manual migration helper (not yet needed).
+- Current `Schema::DB_VERSION` = **`1.0.2`** (table-prefix rename from `{prefix}ai_forms` → `{prefix}easy_ai_forms` landed at this version; pre-launch only, no upgrade path needed).
 
 ---
 
@@ -156,55 +171,68 @@ Authentication: WP cookie + `X-WP-Nonce` header for admin endpoints. Submission 
 | `/forms` | GET, POST | `manage_options` |
 | `/forms/{id}` | GET, PUT, DELETE | `manage_options` |
 | `/ai/generate` | POST | `manage_options` |
+| `/ai/verify` | POST | `manage_options` |
 | `/settings` | GET, PUT | `manage_options` |
-| `/submissions/{uuid}` | POST | public |
+| `/submissions/{uuid}` | POST | public (with payload cap, see §4.2) |
 
 ### 4.2 Endpoints
 
 #### `GET /forms`
-Query params: `page` (default 1), `per_page` (default 20, max 100).
-Returns: array of form objects (see §4.3).
+Query params: `page` (default 1), `per_page` (default 20, max 100), `search` (LIKE on `title` and `uuid`, optional).
+Returns: array of form objects (see §4.3). Response headers carry `X-WP-Total` (total count after search) and `X-WP-TotalPages` (computed against `per_page`), mirroring WP core's `wp/v2` collection convention so the admin UI can render pagination without parsing a custom envelope.
 
 #### `POST /forms`
-Body: partial form object (`title`, `status`, `schema`, `settings`, `ai_prompt`).
+Body: partial form object (`title`, `status`, `schema`, `settings`, `ai_prompt`). Schema is normalized through `Schema_Prompt::sanitize_schema()` on insert, and the notifications block is seeded with `admin_email` when `to` is empty.
 Returns: created form object.
 
 #### `GET /forms/{id}`
 Returns: form object or `404 eaif_not_found`.
 
 #### `PUT /forms/{id}`
-Body: any subset of `title`, `status`, `schema`, `settings`, `ai_prompt`.
+Body: any subset of `title`, `status`, `schema`, `settings`, `ai_prompt`. Schema is normalized through `Schema_Prompt::sanitize_schema()` when present.
 Returns: updated form object.
 
 #### `DELETE /forms/{id}`
 Returns: `{ "deleted": true }`.
 
 #### `POST /ai/generate`
-Body: `{ "prompt": "string" }`.
+Body: `{ "prompt": "string", "current_schema": { /* optional */ } }`.
+When `current_schema.fields` is non-empty, the provider treats the call as an **edit** and is instructed to preserve existing fields/labels/options unless explicitly asked to change them; otherwise it's a from-scratch generation.
 Returns: a sanitized Form Schema (§2). On failure returns `WP_Error` with HTTP 400.
-Error codes: `eaif_no_provider`, `eaif_missing_key`, `eaif_missing_license`, `eaif_empty_response`, `eaif_invalid_json`, plus provider-specific (`eaif_anthropic_error`, `eaif_gemini_error`, `eaif_openai_error`, `eaif_managed_error`, `eaif_no_credits`).
+Error codes: `eaif_no_provider`, `eaif_missing_key`, `eaif_empty_response`, `eaif_invalid_json`, plus provider-specific (`eaif_anthropic_error`, `eaif_gemini_error`, `eaif_openai_error`, `eaif_wp_ai_client_*`).
+
+#### `POST /ai/verify`
+Body: `{ "provider": "anthropic|gemini|openai_compatible|wp_ai_client", "api_key": "...", "base_url": "...", "model": "..." }`. Any empty field falls back to the saved value, so an admin can verify before saving.
+Returns: `{ "ok": true, "latency_ms": 412 }` on success. On failure returns a `WP_Error` with `latency_ms` attached. Used by the Settings UI to gate Save until the credentials are confirmed working. For `wp_ai_client`, "verified" means at least one configured connector reports `is_supported_for_text_generation()` is true.
 
 #### `GET /settings`
-Returns the settings object (§5.1) with **secrets stripped**: `api_key` and `license_key` are always empty strings; `api_key_set` / `license_key_set` booleans indicate whether a secret is stored. Also includes `available_providers: [{ key, label }, ...]`.
+Returns the settings object (§5.1) with **secrets stripped**: `api_key` is always an empty string; `api_key_set` indicates whether a secret is stored. Each provider also carries a generic `configured` boolean:
+- BYOK providers: `configured === api_key_set`.
+- `wp_ai_client`: `configured === Wp_Ai_Client::is_available()` (the core AI Client functions exist and `wp_supports_ai()` returns true). The plugin holds no key for this provider.
+
+The response also includes `available_providers: [{ key, label }, ...]`. Providers are only registered on hosts that support them, so `wp_ai_client` only appears on WordPress 7.0+.
 
 #### `PUT /settings`
-Body: `{ mode, active_provider, providers: { ... } }`.
-Empty `api_key` / `license_key` strings are **ignored** (existing value preserved). Non-empty strings replace.
+Body: `{ active_provider, providers: { ... } }`.
+Empty `api_key` strings are **ignored** (existing value preserved). Non-empty strings replace.
 Returns: the same shape as `GET /settings`.
 
 #### `POST /submissions/{uuid}`
 Public. Body: arbitrary key/value pairs matching the form's `fields[].name`.
 Behavior:
-1. Look up the form by UUID; 404 if missing.
-2. Iterate `fields`; for each known `name`, sanitize the incoming value by type:
+1. Reject payloads larger than `Rest_Controller::MAX_SUBMISSION_BYTES` (64 KB) before any work — returns `413 eaif_payload_too_large`.
+2. Look up the form by UUID; 404 if missing.
+3. Iterate `fields`; for each known `name`, sanitize the incoming value by type:
    - `email` → `sanitize_email`
    - `url` → `esc_url_raw`
    - `textarea` → `sanitize_textarea_field`
    - `number` → numeric coercion (or `null`)
+   - `checkbox_group` → values are intersected against the field's option allowlist
+   - `hidden` → ignored from the client; the value is read from `field.default_value` on the server
    - everything else → `sanitize_text_field` (array values are mapped)
-3. Unknown keys are dropped.
-4. Insert into `ai_form_submissions`.
-5. Fire `do_action( 'easy_ai_forms_submission_created', $submission_id, $form, $data )`.
+4. Unknown keys are dropped.
+5. Insert into `{prefix}easy_ai_form_submissions`.
+6. Fire `do_action( 'easy_ai_forms_submission_created', $submission_id, $form, $data )` — the built-in `Email_Notifier` listens at priority 10.
 
 Returns: `{ "ok": true, "id": 123 }`.
 
@@ -233,16 +261,17 @@ Returns: `{ "ok": true, "id": 123 }`.
 
 ```jsonc
 {
-  "mode": "byok",                       // "byok" | "managed"
   "active_provider": "openai_compatible",
   "providers": {
     "anthropic":         { "api_key": "...", "model": "claude-sonnet-4-6" },
     "gemini":            { "api_key": "...", "model": "gemini-2.0-flash" },
     "openai_compatible": { "api_key": "...", "base_url": "https://api.openai.com/v1", "model": "gpt-4o-mini" },
-    "managed":           { "license_key": "..." }
+    "wp_ai_client":      {}              // present only on WP 7.0+; holds no credentials
   }
 }
 ```
+
+Stored with `update_option(..., false)` (autoload off) so provider keys aren't loaded on every page render — only when an admin invokes AI features.
 
 ### 5.2 Provider contract
 
@@ -251,16 +280,17 @@ interface Provider {
   public function key(): string;     // stable identifier, e.g. "anthropic"
   public function label(): string;   // human-readable name
   public function generate_form_schema( string $prompt, array $options = [] ); // array | WP_Error
+  public function verify( array $options = [] );                                // true | WP_Error
 }
 ```
 
 **Behavior requirements:**
-- Must return either an array conforming to the Form Schema (§2) or a `WP_Error`.
+- `generate_form_schema()` must return either an array conforming to the Form Schema (§2) or a `WP_Error`.
 - Must call `Schema_Prompt::system()` as the system instruction.
 - Must funnel raw model text through `Schema_Prompt::extract_schema()` for validation/sanitization.
 - Must propagate HTTP failures as `WP_Error` (do not throw).
 - HTTP timeout: 60s recommended (current default).
-- Use HTTP `402` to signal credit exhaustion from the managed service → mapped to `eaif_no_credits`.
+- `verify()` must perform the cheapest possible round-trip that proves the credentials/connector work — typically a `GET /models` style probe. Returns `true` on success, `WP_Error` otherwise. The REST `/ai/verify` endpoint calls this and reports `latency_ms` back to the client.
 
 ### 5.3 Built-in providers
 
@@ -269,9 +299,31 @@ interface Provider {
 | `anthropic` | `https://api.anthropic.com/v1/messages` | `x-api-key` header | `anthropic-version: 2023-06-01` |
 | `gemini` | `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` | `?key=` query | Uses `responseMimeType: application/json` |
 | `openai_compatible` | `{base_url}/chat/completions` | `Authorization: Bearer` (optional) | OpenAI, OpenRouter, Groq, Ollama, LM Studio, etc. Uses `response_format: { type: json_object }`. |
-| `managed` | filterable via `easy_ai_forms_managed_endpoint` (default `https://api.example.com/v1/generate-form`) | `Authorization: Bearer {license_key}` | Sends `X-Site-URL` header for license validation |
+| `wp_ai_client` | — (delegates to core `wp_ai_client_prompt()`) | core Connectors (Settings → Connectors) | **WP 7.0+ only.** No plugin-held credentials. Registered iff `function_exists('wp_ai_client_prompt')` and `wp_supports_ai()`. Settings UI special-cases this provider to show a Notice instead of API key / model / base URL fields. |
 
-### 5.4 Extension points
+### 5.4 Email notifications
+
+On `easy_ai_forms_submission_created`, `Email_Notifier::maybe_send()` reads `schema.notifications` and, if `enabled`, sends a `wp_mail()` to the configured recipients.
+
+Supported mail-tags inside `subject` / `body`:
+
+- `{all_fields}` — formatted `Label: value` lines for every field
+- `{<field_name>}` — value of a specific field (e.g. `{full_name}`, `{email}`)
+- `{form_title}`, `{site_name}`, `{site_url}`, `{admin_email}`
+
+The empty `to` field falls back to `get_option('admin_email')` at send time (and is seeded with the same value on form create). If `reply_to_field` is set and the submission contains a valid email at that field, a `Reply-To` header is added.
+
+Filterable hooks:
+
+```php
+apply_filters( 'easy_ai_forms_send_notification_email', $send, $submission_id, $form, $data );
+apply_filters( 'easy_ai_forms_notification_recipients', $recipients, $form, $data );
+apply_filters( 'easy_ai_forms_notification_subject',    $subject,    $form, $data );
+apply_filters( 'easy_ai_forms_notification_body',       $body,       $form, $data );
+apply_filters( 'easy_ai_forms_notification_headers',    $headers,    $form, $data );
+```
+
+### 5.5 Extension points
 
 ```php
 // Register a custom provider:
@@ -540,7 +592,11 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 - Text domain: `easy-ai-forms`.
 - All user-visible strings in PHP use `__()` / `esc_html__()` / `_e()`.
 - JS uses `@wordpress/i18n` (`__`) with `wp_set_script_translations()` registered for the admin bundle.
-- `.pot` generation: TBD (not yet wired).
+- `.pot` lives at `languages/easy-ai-forms.pot` and is regenerated via:
+  ```
+  wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist
+  ```
+- `load_plugin_textdomain()` is **not called** — WordPress.org auto-loads translations for hosted plugins (WP 4.6+).
 
 ---
 
@@ -549,10 +605,14 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 | Task | Command |
 |---|---|
 | Install JS deps | `npm install` |
+| Install PHP dev deps | `composer install` |
 | Production build | `npm run build` |
 | Dev watch | `npm run start` |
-| Lint JS | `npm run lint:js` |
-| Format | `npm run format` |
+| Lint PHP (WPCS 3.1) | `composer lint` (auto-fix: `composer lint:fix`) |
+| Regenerate POT | `wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
+| Build wp.org dist zip | `npm run dist` → `dist/easy-ai-forms.zip` (honors `.distignore`) |
+| Copy dist to local plugins dir | `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build` |
+| Run wp.org Plugin Check | `lando wp plugin check easy-ai-forms` (against the installed copy) |
 
 Build outputs:
 - `build/admin.js`, `build/admin.css`, `build/admin.asset.php`
@@ -573,22 +633,22 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 
 ## 12. Roadmap (with acceptance criteria)
 
-### v0.1 — MVP (BYOK only)
+### v0.1 — MVP (BYOK + core AI Client)
 - [x] BYOK with Anthropic, Gemini, OpenAI-compatible providers.
+- [x] WordPress AI Client provider (WP 7.0+, uses core Settings → Connectors).
 - [x] Form CRUD + custom DB tables.
 - [x] Shortcode renderer + frontend submission.
-- [x] React admin SPA.
+- [x] React admin SPA with paginated forms list, server-side search, and field reorder.
 - [x] Abilities API registration.
+- [x] Per-form email notifications with mail-tag templating + Reply-To.
+- [x] DB migration runner (`Plugin::maybe_migrate()`).
+- [x] One-click credential verification.
 - [ ] Submit to wp.org plugin directory.
   *Done when:* the plugin passes wp.org review and is listed.
 
 ### v0.2 — Operability
 - [ ] Submissions admin view: paginated list per form, JSON & CSV export.
   *Done when:* admin can browse submissions, filter by date, and download a CSV.
-- [ ] Email notification on submission, configurable per form.
-  *Done when:* form's `settings.notifications.to_email` triggers a sanitized email on `easy_ai_forms_submission_created`.
-- [ ] DB migration runner.
-  *Done when:* bumping `Schema::DB_VERSION` runs `dbDelta` on next admin load.
 
 ### v0.3 — Anti-abuse + Styling
 - [ ] Honeypot field auto-injected into the renderer.

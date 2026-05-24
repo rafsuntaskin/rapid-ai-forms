@@ -19,6 +19,12 @@ wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms \
 
 # Build the upload zip.
 npm run dist                              # writes dist/easy-ai-forms.zip
+
+# Run the official Plugin Check ruleset (requires the Plugin Check plugin
+# installed on a local WP — wooDev in our setup).
+bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build
+cd ~/Dev/lando/sites/wooDev && lando wp plugin check easy-ai-forms
+# must report: Success: Checks complete. No errors found.
 ```
 
 Upload `dist/easy-ai-forms.zip` at <https://wordpress.org/plugins/developers/add/>. Wait for review (1–14 days). Once approved, SVN access is granted to the assigned slug; push the tagged release there.
@@ -30,18 +36,21 @@ Upload `dist/easy-ai-forms.zip` at <https://wordpress.org/plugins/developers/add
 Run through this top-to-bottom *before* touching the submission form.
 
 ### Plugin identity
-- [ ] `easy-ai-forms.php` Plugin URI is real (or removed if not).
-- [ ] `Author` and `Author URI` reflect the actual contributor.
+- [ ] **Plugin Name does not contain "WordPress" or "WP"** — wp.org's trademark policy forbids both. We hit this on the original "WP AI Forms" name and had to rebrand. See [Plugin Guidelines §17](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#17-plugins-must-respect-trademarks-copyrights-and-project-names).
+- [ ] `easy-ai-forms.php` has no placeholder `Plugin URI:` (we removed ours — `example.com/...` URIs get flagged).
+- [ ] `Author` is the wp.org **username** (matches `Contributors:` in readme.txt). For us: `rafsuntaskin`.
+- [ ] `Author URI` points at the wp.org profile (`https://profiles.wordpress.org/<user>/`).
 - [ ] `Text Domain: easy-ai-forms` matches the slug exactly.
 - [ ] `Domain Path: /languages` exists and contains `easy-ai-forms.pot`.
+- [ ] `load_plugin_textdomain()` is **not called** — wp.org auto-loads translations for hosted plugins (Plugin Check flags it as discouraged).
 - [ ] License header reads `GPL-2.0-or-later` (or another GPL-compatible).
-- [ ] **Slug `easy-ai-forms` is available** on wp.org — checked manually.
+- [ ] **Slug `easy-ai-forms` is available** on wp.org — re-check at the Add page right before submitting; slugs are first-come, first-served.
 
 ### readme.txt header
 - [ ] `Contributors:` lists real wp.org usernames.
-- [ ] `Tags:` no more than 5, none misleading or competitor names.
+- [ ] `Tags:` no more than 5, none misleading or competitor names. Lead with the highest-intent search term (for us: `contact form`).
 - [ ] `Requires at least: 6.4` matches reality.
-- [ ] `Tested up to: 6.9` (or whatever was actually tested).
+- [ ] `Tested up to: 7.0` — bump to the latest stable WP after smoke-testing on it. Plugin Check raises `outdated_tested_upto_header` if this lags behind the current major release.
 - [ ] `Requires PHP: 7.4` matches `composer.json`.
 - [ ] `Stable tag: 0.1.0` matches the plugin file's Version header.
 - [ ] Short description ≤ 150 characters, no marketing fluff, no upsells.
@@ -68,11 +77,12 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 
 ### Code review
 - [ ] `composer lint` → 0 errors, 0 warnings. (`composer install` first if missing deps.)
+- [ ] `lando wp plugin check easy-ai-forms` → `No errors found.` This is the same ruleset wp.org's automated bot runs against your submission.
 - [ ] No `error_log()`, `var_dump()`, `print_r()`, `console.log()` left in shipped files (search the dist zip after building).
 - [ ] No `eval()`, no `create_function()`, no `assert()` on dynamic input.
 - [ ] All user input is sanitized at the boundary (`sanitize_text_field`, `sanitize_email`, `esc_url_raw`, etc.).
 - [ ] All output is escaped at point of output (`esc_html`, `esc_attr`, `esc_url`).
-- [ ] All `$wpdb` queries use `prepare()` with placeholders (we use `%i` for table names — requires WP 6.2+, we require 6.4+ so fine).
+- [ ] All `$wpdb` queries use `prepare()` with placeholders (we use `%i` for table names — requires WP 6.2+, we require 6.4+ so fine). Custom-table repositories carry a file-level `phpcs:disable WordPress.DB.DirectDatabaseQuery.*` block with a docblock explaining why direct queries are legitimate for plugin-owned tables.
 - [ ] All REST endpoints have a `permission_callback`. The submission endpoint is intentionally public; its permission_callback returns `__return_true` with a comment explaining why.
 - [ ] All admin REST endpoints require `manage_options` or stricter.
 - [ ] All AJAX/REST writes verify a nonce.
@@ -91,27 +101,35 @@ For this plugin: Anthropic, Google Gemini, OpenAI-compatible endpoints. Triggere
 - [ ] `languages/easy-ai-forms.pot` regenerated and committed.
 
 ### Assets (uploaded separately to wp.org, not in the plugin zip)
+
+**Not required for approval.** The Plugin Review Team reviews code, not visuals — submitting without screenshots, icon, or banner won't trigger a hold. These are about how the plugin **page** looks after it's live in the directory. You can add them within minutes of approval via SVN — no plugin re-release needed.
+
 - [ ] **Icon** at `assets/icon-128x128.png` and `assets/icon-256x256.png` (or `icon.svg`).
 - [ ] **Banner** at `assets/banner-772x250.png` and `assets/banner-1544x500.png` (retina).
-- [ ] **Screenshots** at `assets/screenshot-1.png`, `screenshot-2.png`, etc. — numbered to match captions in `readme.txt` (we don't have `== Screenshots ==` yet; add it when screenshots are ready).
+- [ ] **Screenshots** at `assets/screenshot-1.png`, `screenshot-2.png`, etc. — numbered to match captions in `readme.txt` `== Screenshots ==`.
+- [ ] If shipping without a `== Screenshots ==` section initially, **don't leave dangling captions in the readme** — the section renders as plain text under no images. Add the section back when the SVN files are committed.
 - [ ] Screenshots reflect the current UI, not older versions.
 - [ ] No screenshots show "coming soon" or paid-tier mentions.
+
+These files live in **SVN `/assets/`**, not in `trunk/`. The plugin zip excludes the local `assets/` folder via `.distignore`.
 
 ### Smoke test on a clean install
 - [ ] Spin up a fresh WordPress 6.4 install (lowest supported).
 - [ ] Install the dist zip, activate.
 - [ ] Confirm no PHP errors in `wp-content/debug.log` with `WP_DEBUG = true`.
-- [ ] Walk the golden path: configure provider → verify connection → create form → generate fields → embed shortcode → submit on frontend → row appears in `easy_ai_form_submissions`.
+- [ ] Walk the golden path: configure provider → verify connection → create form → generate fields → embed shortcode → submit on frontend → row appears in `wp_easy_ai_form_submissions` → admin notification email is dispatched.
 - [ ] Deactivate. Confirm no fatal errors. Submissions and form rows are preserved (correct behavior).
 - [ ] Re-activate. Confirm everything still works.
-- [ ] Repeat on WordPress 6.9 (latest tested).
+- [ ] Repeat on WordPress 7.0 (`Tested up to`). On 7.0 also confirm the **WordPress AI Client** provider appears in the Settings dropdown and that selecting it shows the Connectors notice instead of API key fields.
 
 ### Build the upload artifact
 - [ ] `npm run dist` produces a zip in `dist/easy-ai-forms.zip`.
-- [ ] Zip is < 5 MB (we're at ~43 KB).
+- [ ] Zip is < 10 MB (we're at ~53 KB).
 - [ ] Zip's top-level entry is exactly `easy-ai-forms/` (verify with `unzip -l dist/easy-ai-forms.zip | head -3`).
 - [ ] Zip contains: `easy-ai-forms.php`, `readme.txt`, `includes/`, `build/`, `languages/`. Nothing else.
-- [ ] Zip does NOT contain: `src/`, `node_modules/`, `vendor/`, `docs/`, `bin/`, `.git/`, `.claude/`, `.distignore`, `composer.json`, `package.json`, `webpack.config.js`, `phpcs.xml.dist`, `CLAUDE.md`.
+- [ ] Zip does NOT contain: `src/`, `assets/`, `node_modules/`, `vendor/`, `docs/`, `bin/`, `.git/`, `.claude/`, `.distignore`, `composer.json`, `package.json`, `webpack.config.js`, `phpcs.xml.dist`, `CLAUDE.md`.
+- [ ] JS bundles are minified (look at `unzip -p ... build/admin.js | head -c 200` — should be a single line of dense code).
+- [ ] No `*.map` source maps in the zip.
 
 ---
 
