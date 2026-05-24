@@ -175,7 +175,6 @@ export default function FormEditor( { api, formId } ) {
 	const onSave = async () => {
 		const updated = await save.run( {
 			title: form.title,
-			status: form.status,
 			schema: form.schema,
 			ai_prompt: form.ai_prompt,
 		} );
@@ -289,15 +288,6 @@ export default function FormEditor( { api, formId } ) {
 						label={ __( 'Submit button label', 'easy-ai-forms' ) }
 						value={ form.schema.submit_label || 'Submit' }
 						onChange={ ( v ) => updateSchema( { submit_label: v } ) }
-					/>
-					<SelectControl
-						label={ __( 'Status', 'easy-ai-forms' ) }
-						value={ form.status }
-						options={ [
-							{ label: 'Draft', value: 'draft' },
-							{ label: 'Published', value: 'published' },
-						] }
-						onChange={ ( v ) => setForm( { ...form, status: v } ) }
 					/>
 				</CardBody>
 			</Card>

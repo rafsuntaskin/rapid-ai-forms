@@ -91,7 +91,6 @@ export default function FormsList( { api } ) {
 		try {
 			const form = await api.post( 'forms', {
 				title: __( 'Untitled form', 'easy-ai-forms' ),
-				status: 'draft',
 				schema: { fields: [], submit_label: 'Submit' },
 			} );
 			if ( ! form || ! form.id ) {
@@ -213,7 +212,6 @@ export default function FormsList( { api } ) {
 										f.id
 									) }
 								</a>
-								<span className={ `eaif-status eaif-status--${ f.status }` }>{ f.status }</span>
 							</header>
 							<dl className="eaif-card__meta">
 								<div>

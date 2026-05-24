@@ -40,7 +40,7 @@ class Form_Repository {
 		$row = array(
 			'uuid'        => wp_generate_uuid4(),
 			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
-			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'draft',
+			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'published',
 			'form_schema' => wp_json_encode( $schema ),
 			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : array() ),
 			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
