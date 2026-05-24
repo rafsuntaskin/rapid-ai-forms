@@ -5,6 +5,9 @@
 docs/
 CLAUDE.md
 
+# wp.org assets live in SVN /assets, not in the plugin folder
+assets/
+
 # Build/dev scripts
 bin/
 dist/

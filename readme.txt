@@ -108,6 +108,14 @@ Open the form in the editor and scroll to **Email notifications**. You can set t
 
 The plugin hands the message to WordPress's `wp_mail()`, which means the site itself has to be able to send mail. If `wp_mail()` does not work elsewhere on the site (e.g. password-reset emails are missing), the most common fix is to install an SMTP plugin and point it at a real mailer. Also confirm the notifications toggle is on for the form and that the *To* field contains a valid address.
 
+== Screenshots ==
+
+1. The Forms list. Cards show each form's title, field count, last update, and the click-to-copy shortcode.
+2. The form editor with a live preview pane on the right. Describe the form in plain English; the AI generates fields and the preview updates as you edit.
+3. The Email notifications panel. Choose recipients, write a subject and body with mail-tags, and optionally pick an email field as the Reply-To.
+4. A finished form rendered on the frontend, picking up the active theme's button styles automatically.
+5. The Settings page. Configure your AI provider once and verify the credentials with one click — or pick the WordPress AI Client on WP 7.0+ to reuse a core connector.
+
 == Changelog ==
 
 = 0.1.0 =
