@@ -5,7 +5,8 @@
  * Version:           0.1.0
  * Requires at least: 6.4
  * Requires PHP:      7.4
- * Author:            Rafsun Taskin
+ * Author:            rafsuntaskin
+ * Author URI:        https://profiles.wordpress.org/rafsuntaskin/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       easy-ai-forms
