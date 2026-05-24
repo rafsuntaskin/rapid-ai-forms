@@ -44,39 +44,17 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * REST API and registration with the WordPress Abilities API (6.9+)
 * No tracking, no telemetry, no advertising, no upsells
 
-**Security and code quality**
-
-* All admin REST endpoints require the `manage_options` capability
-* All user input is sanitized at the boundary (`sanitize_text_field`, `sanitize_email`, `sanitize_textarea_field`, `esc_url_raw`, `sanitize_key`)
-* All output is escaped at the point of output (`esc_html`, `esc_attr`, `esc_url`)
-* All `$wpdb` queries use `prepare()` with placeholders (including `%i` for identifiers)
-* Public submission endpoint enforces a 64 KB payload cap and validates against the form's schema
-* Hidden field values are read from the schema on the server, never from the client
-* Provider API keys are stored with `autoload=no` and never returned over REST (presence is signaled with a boolean)
-* WordPress Coding Standards 3.1 enforced (PHPCS clean, 0 errors / 0 warnings)
-* Translation-ready (`languages/easy-ai-forms.pot`)
-
 == Privacy and external services ==
 
-This plugin makes outbound HTTP requests to whichever AI provider the site administrator configures (Anthropic, Google Gemini, or any OpenAI-compatible endpoint). Each AI request sends only the natural-language prompt the administrator types in the form editor, plus the form's current schema when editing an existing form. No site content, user data, or form submissions are sent to the AI provider. No data is sent until an administrator configures a provider and clicks "Generate" or "Apply changes."
+This plugin contacts a third-party AI service **only** when an administrator clicks **Generate** or **Apply changes** in the form editor. The request is sent to whichever provider the administrator configured: Anthropic ([privacy](https://www.anthropic.com/legal/privacy)), Google Gemini ([privacy](https://policies.google.com/privacy)), OpenAI ([privacy](https://openai.com/policies/privacy-policy)), any OpenAI-compatible endpoint of your choice, or — on WordPress 7.0+ — a connector configured under **Settings → Connectors**. The request body contains only the natural-language prompt the administrator typed, plus the form's current schema when editing an existing form. No site content, user data, or visitor submissions are ever sent to the AI provider.
 
-On WordPress 7.0+, the **WordPress AI Client** provider routes requests through the connector the site owner has configured under **Settings → Connectors** instead of a key stored by this plugin. The same data-disclosure rules apply — only the prompt and (when editing) the current schema leave your site.
-
-Provider documentation and terms:
-
-* Anthropic — https://www.anthropic.com/legal/privacy
-* Google Gemini — https://policies.google.com/privacy
-* OpenAI — https://openai.com/policies/privacy-policy
-* For any other OpenAI-compatible endpoint, refer to that vendor's policy.
-
-When a visitor submits a form, the plugin can send a notification email through your site's standard `wp_mail()` pipeline (the same mechanism WordPress uses for core notifications). The recipient, subject, and body are configured per-form in the editor and default to the site administrator email. Email is delivered by your existing SMTP / mail setup; this plugin does not contact any third party to send it.
+Form submissions stay on your site: they're stored in a custom database table and, if enabled per form, sent as a notification email through WordPress's own `wp_mail()` (no third party involved).
 
 == Installation ==
 
-1. Upload the plugin to `/wp-content/plugins/easy-ai-forms` or install from the WordPress.org plugin directory.
-2. Activate the plugin through the **Plugins** screen.
-3. Visit **AI Forms → Settings** to configure your AI provider (or pick *WordPress AI Client* on WP 7.0+ if you've already set up a connector).
-4. Create a form under **AI Forms → Forms**, generate fields with a prompt, and embed it with `[easy_ai_form id="123"]`.
+1. In your WordPress admin, go to **Plugins → Add New**, search for *Easy AI Forms*, and click **Install Now**, then **Activate**.
+2. Open **AI Forms → Settings** and configure your AI provider.
+3. Create a form under **AI Forms → Forms**, describe what you want, and embed it on any page with `[easy_ai_form id="123"]`.
 
 == Frequently Asked Questions ==
 
