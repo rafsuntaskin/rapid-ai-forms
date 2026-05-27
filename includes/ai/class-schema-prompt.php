@@ -2,10 +2,10 @@
 /**
  * Shared system prompt and JSON extraction helpers for AI providers.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai;
+namespace Rapid_Ai_Forms\Ai;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -74,7 +74,7 @@ EOT;
 	 */
 	public static function extract_schema( $text ) {
 		if ( ! is_string( $text ) || '' === trim( $text ) ) {
-			return new \WP_Error( 'eaif_empty_response', __( 'AI returned an empty response.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_empty_response', __( 'AI returned an empty response.', 'rapid-ai-forms' ) );
 		}
 
 		// Strip markdown fences if present.
@@ -93,7 +93,7 @@ EOT;
 
 		$decoded = json_decode( $text, true );
 		if ( ! is_array( $decoded ) ) {
-			return new \WP_Error( 'eaif_invalid_json', __( 'AI response was not valid JSON.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_invalid_json', __( 'AI response was not valid JSON.', 'rapid-ai-forms' ) );
 		}
 
 		return self::sanitize_schema( $decoded );
@@ -102,7 +102,7 @@ EOT;
 	public static function sanitize_schema( array $schema ) {
 		$out = array(
 			'title'         => isset( $schema['title'] ) ? sanitize_text_field( $schema['title'] ) : '',
-			'submit_label'  => isset( $schema['submit_label'] ) ? sanitize_text_field( $schema['submit_label'] ) : __( 'Submit', 'easy-ai-forms' ),
+			'submit_label'  => isset( $schema['submit_label'] ) ? sanitize_text_field( $schema['submit_label'] ) : __( 'Submit', 'rapid-ai-forms' ),
 			'show_title'    => ! empty( $schema['show_title'] ),
 			'fields'        => array(),
 			'notifications' => self::sanitize_notifications( $schema['notifications'] ?? array() ),

@@ -2,18 +2,18 @@
 /**
  * PSR-4-ish autoloader for the plugin.
  *
- * Maps `Easy_Ai_Forms\Some\Thing` -> `includes/some/class-thing.php`
- * Maps `Easy_Ai_Forms\Some\Thing_Interface` -> `includes/some/interface-thing.php`
+ * Maps `Rapid_Ai_Forms\Some\Thing` -> `includes/some/class-thing.php`
+ * Maps `Rapid_Ai_Forms\Some\Thing_Interface` -> `includes/some/interface-thing.php`
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms;
+namespace Rapid_Ai_Forms;
 
 defined( 'ABSPATH' ) || exit;
 
 class Autoloader {
-	const NAMESPACE_PREFIX = 'Easy_Ai_Forms\\';
+	const NAMESPACE_PREFIX = 'Rapid_Ai_Forms\\';
 
 	public static function register() {
 		spl_autoload_register( array( __CLASS__, 'load' ) );
@@ -28,7 +28,7 @@ class Autoloader {
 		$parts    = explode( '\\', $relative );
 		$short    = array_pop( $parts );
 
-		$dir = EASY_AI_FORMS_PATH . 'includes/';
+		$dir = RAPID_AI_FORMS_PATH . 'includes/';
 		foreach ( $parts as $segment ) {
 			$dir .= strtolower( str_replace( '_', '-', $segment ) ) . '/';
 		}

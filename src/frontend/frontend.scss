@@ -1,4 +1,4 @@
-.eaif-form {
+.raif-form {
 	display: grid;
 	gap: 12px;
 	max-width: 560px;
@@ -31,7 +31,7 @@
 	}
 }
 
-.eaif-field {
+.raif-field {
 	display: grid;
 	gap: 4px;
 
@@ -48,7 +48,7 @@
 		font: inherit;
 	}
 
-	.eaif-required {
+	.raif-required {
 		color: #c0392b;
 	}
 }

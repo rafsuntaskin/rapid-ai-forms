@@ -18,13 +18,13 @@ function formatRelative( iso ) {
 	if ( ! iso ) return '';
 	const d = new Date( iso.replace( ' ', 'T' ) + 'Z' );
 	const diff = ( Date.now() - d.getTime() ) / 1000;
-	if ( diff < 60 ) return __( 'just now', 'easy-ai-forms' );
+	if ( diff < 60 ) return __( 'just now', 'rapid-ai-forms' );
 	// translators: %d: number of minutes elapsed
-	if ( diff < 3600 ) return sprintf( _n( '%d minute ago', '%d minutes ago', Math.floor( diff / 60 ), 'easy-ai-forms' ), Math.floor( diff / 60 ) );
+	if ( diff < 3600 ) return sprintf( _n( '%d minute ago', '%d minutes ago', Math.floor( diff / 60 ), 'rapid-ai-forms' ), Math.floor( diff / 60 ) );
 	// translators: %d: number of hours elapsed
-	if ( diff < 86400 ) return sprintf( _n( '%d hour ago', '%d hours ago', Math.floor( diff / 3600 ), 'easy-ai-forms' ), Math.floor( diff / 3600 ) );
+	if ( diff < 86400 ) return sprintf( _n( '%d hour ago', '%d hours ago', Math.floor( diff / 3600 ), 'rapid-ai-forms' ), Math.floor( diff / 3600 ) );
 	// translators: %d: number of days elapsed
-	if ( diff < 604800 ) return sprintf( _n( '%d day ago', '%d days ago', Math.floor( diff / 86400 ), 'easy-ai-forms' ), Math.floor( diff / 86400 ) );
+	if ( diff < 604800 ) return sprintf( _n( '%d day ago', '%d days ago', Math.floor( diff / 86400 ), 'rapid-ai-forms' ), Math.floor( diff / 86400 ) );
 	return d.toLocaleDateString();
 }
 
@@ -45,7 +45,7 @@ export default function FormsList( { api } ) {
 	const [ debouncedSearch, setDebouncedSearch ] = useState( '' );
 	const [ loading, setLoading ] = useState( false );
 	const ai = useAiConfigured( api );
-	const settingsUrl = ( window.EASY_AI_FORMS_ADMIN || {} ).settingsUrl || '';
+	const settingsUrl = ( window.RAPID_AI_FORMS_ADMIN || {} ).settingsUrl || '';
 
 	// Debounce keystrokes so we don't fire a REST query on every character.
 	useEffect( () => {
@@ -90,17 +90,17 @@ export default function FormsList( { api } ) {
 		setCreating( true );
 		try {
 			const form = await api.post( 'forms', {
-				title: __( 'Untitled form', 'easy-ai-forms' ),
+				title: __( 'Untitled form', 'rapid-ai-forms' ),
 				schema: { fields: [], submit_label: 'Submit' },
 			} );
 			if ( ! form || ! form.id ) {
-				throw new Error( __( 'Form was created but no id was returned.', 'easy-ai-forms' ) );
+				throw new Error( __( 'Form was created but no id was returned.', 'rapid-ai-forms' ) );
 			}
 			setForms( ( prev ) => ( prev ? [ form, ...prev ] : [ form ] ) );
 			setTotal( ( t ) => t + 1 );
 			window.location.hash = `#/forms/${ form.id }`;
 		} catch ( e ) {
-			setError( e.message || __( 'Could not create form.', 'easy-ai-forms' ) );
+			setError( e.message || __( 'Could not create form.', 'rapid-ai-forms' ) );
 		} finally {
 			setCreating( false );
 		}
@@ -123,27 +123,27 @@ export default function FormsList( { api } ) {
 			} );
 			setTotal( ( t ) => Math.max( 0, t - 1 ) );
 		} catch ( e ) {
-			setError( e.message || __( 'Could not delete form.', 'easy-ai-forms' ) );
+			setError( e.message || __( 'Could not delete form.', 'rapid-ai-forms' ) );
 		}
 	};
 
 	return (
-		<div className="eaif-page eaif-list">
+		<div className="raif-page raif-list">
 			<PageHeader
-				title={ __( 'Forms', 'easy-ai-forms' ) }
-				description={ __( 'Create AI-generated forms and embed them anywhere with a shortcode.', 'easy-ai-forms' ) }
+				title={ __( 'Forms', 'rapid-ai-forms' ) }
+				description={ __( 'Create AI-generated forms and embed them anywhere with a shortcode.', 'rapid-ai-forms' ) }
 				actions={
 					<Button variant="primary" onClick={ createBlank } isBusy={ creating } disabled={ creating }>
-						{ __( '+ New form', 'easy-ai-forms' ) }
+						{ __( '+ New form', 'rapid-ai-forms' ) }
 					</Button>
 				}
 			/>
 
 			{ ai.ready && ! ai.configured && (
 				<Notice status="warning" isDismissible={ false }>
-					{ __( 'AI is not connected yet — set an API key in', 'easy-ai-forms' ) }{ ' ' }
-					<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'easy-ai-forms' ) }</a>{ ' ' }
-					{ __( 'to enable form generation. You can still build forms manually.', 'easy-ai-forms' ) }
+					{ __( 'AI is not connected yet — set an API key in', 'rapid-ai-forms' ) }{ ' ' }
+					<a href={ settingsUrl }>{ __( 'AI Forms → Settings', 'rapid-ai-forms' ) }</a>{ ' ' }
+					{ __( 'to enable form generation. You can still build forms manually.', 'rapid-ai-forms' ) }
 				</Notice>
 			) }
 
@@ -154,24 +154,24 @@ export default function FormsList( { api } ) {
 			) }
 
 			{ forms !== null && ( forms.length > 0 || debouncedSearch !== '' || search !== '' ) && (
-				<div className="eaif-list__toolbar">
+				<div className="raif-list__toolbar">
 					<TextControl
-						label={ __( 'Search forms', 'easy-ai-forms' ) }
+						label={ __( 'Search forms', 'rapid-ai-forms' ) }
 						hideLabelFromVision
-						placeholder={ __( 'Search by title, id, or uuid…', 'easy-ai-forms' ) }
+						placeholder={ __( 'Search by title, id, or uuid…', 'rapid-ai-forms' ) }
 						value={ search }
 						onChange={ setSearch }
 					/>
-					<span className="eaif-list__count">
+					<span className="raif-list__count">
 						{ debouncedSearch === ''
 							? sprintf(
 									// translators: %d: total number of forms on the site
-									_n( '%d form', '%d forms', total, 'easy-ai-forms' ),
+									_n( '%d form', '%d forms', total, 'rapid-ai-forms' ),
 									total
 								)
 							: sprintf(
 									// translators: %d: number of forms matching the search across the whole site
-									_n( '%d match', '%d matches', total, 'easy-ai-forms' ),
+									_n( '%d match', '%d matches', total, 'rapid-ai-forms' ),
 									total
 								) }
 					</span>
@@ -179,16 +179,16 @@ export default function FormsList( { api } ) {
 			) }
 
 			{ ( forms === null || loading ) && ! error && (
-				<div className="eaif-list__loading"><Spinner /></div>
+				<div className="raif-list__loading"><Spinner /></div>
 			) }
 
 			{ ! loading && forms && forms.length === 0 && debouncedSearch === '' && (
-				<Card className="eaif-list__empty">
+				<Card className="raif-list__empty">
 					<CardBody>
-						<h2>{ __( 'No forms yet', 'easy-ai-forms' ) }</h2>
-						<p>{ __( 'Create your first AI-powered form. Describe it in plain language and the editor will build the fields for you.', 'easy-ai-forms' ) }</p>
+						<h2>{ __( 'No forms yet', 'rapid-ai-forms' ) }</h2>
+						<p>{ __( 'Create your first AI-powered form. Describe it in plain language and the editor will build the fields for you.', 'rapid-ai-forms' ) }</p>
 						<Button variant="primary" onClick={ createBlank } isBusy={ creating }>
-							{ __( 'Create your first form', 'easy-ai-forms' ) }
+							{ __( 'Create your first form', 'rapid-ai-forms' ) }
 						</Button>
 					</CardBody>
 				</Card>
@@ -196,44 +196,44 @@ export default function FormsList( { api } ) {
 
 			{ ! loading && forms && forms.length === 0 && debouncedSearch !== '' && (
 				<Card><CardBody>
-					{ __( 'No forms match your search.', 'easy-ai-forms' ) }
+					{ __( 'No forms match your search.', 'rapid-ai-forms' ) }
 				</CardBody></Card>
 			) }
 
 			{ visibleForms.length > 0 && (
-				<div className="eaif-list__grid">
+				<div className="raif-list__grid">
 					{ visibleForms.map( ( f ) => (
-						<article key={ f.id } className="eaif-card">
-							<header className="eaif-card__head">
-								<a href={ `#/forms/${ f.id }` } className="eaif-card__title">
+						<article key={ f.id } className="raif-card">
+							<header className="raif-card__head">
+								<a href={ `#/forms/${ f.id }` } className="raif-card__title">
 									{ f.title || sprintf(
 										// translators: %d: form id number used as a placeholder title
-										__( 'Untitled form #%d', 'easy-ai-forms' ),
+										__( 'Untitled form #%d', 'rapid-ai-forms' ),
 										f.id
 									) }
 								</a>
 							</header>
-							<dl className="eaif-card__meta">
+							<dl className="raif-card__meta">
 								<div>
-									<dt>{ __( 'Fields', 'easy-ai-forms' ) }</dt>
+									<dt>{ __( 'Fields', 'rapid-ai-forms' ) }</dt>
 									<dd>{ fieldCount( f ) }</dd>
 								</div>
 								<div>
-									<dt>{ __( 'Updated', 'easy-ai-forms' ) }</dt>
+									<dt>{ __( 'Updated', 'rapid-ai-forms' ) }</dt>
 									<dd title={ f.updated_at }>{ formatRelative( f.updated_at ) }</dd>
 								</div>
 							</dl>
-							<ShortcodeCopy shortcode={ `[easy_ai_form id="${ f.id }"]` } />
-							<footer className="eaif-card__actions">
+							<ShortcodeCopy shortcode={ `[rapid_ai_form id="${ f.id }"]` } />
+							<footer className="raif-card__actions">
 								<Button variant="primary" href={ `#/forms/${ f.id }` }>
-									{ __( 'Edit', 'easy-ai-forms' ) }
+									{ __( 'Edit', 'rapid-ai-forms' ) }
 								</Button>
 								<Button
 									variant="tertiary"
 									isDestructive
 									onClick={ () => setDeleting( f ) }
 								>
-									{ __( 'Delete', 'easy-ai-forms' ) }
+									{ __( 'Delete', 'rapid-ai-forms' ) }
 								</Button>
 							</footer>
 						</article>
@@ -242,18 +242,18 @@ export default function FormsList( { api } ) {
 			) }
 
 			{ totalPages > 1 && (
-				<nav className="eaif-list__pagination" aria-label={ __( 'Forms pagination', 'easy-ai-forms' ) }>
+				<nav className="raif-list__pagination" aria-label={ __( 'Forms pagination', 'rapid-ai-forms' ) }>
 					<Button
 						variant="secondary"
 						disabled={ page <= 1 || forms === null }
 						onClick={ () => setPage( ( p ) => Math.max( 1, p - 1 ) ) }
 					>
-						{ __( '← Previous', 'easy-ai-forms' ) }
+						{ __( '← Previous', 'rapid-ai-forms' ) }
 					</Button>
-					<span className="eaif-list__pagination-status">
+					<span className="raif-list__pagination-status">
 						{ sprintf(
 							// translators: 1: current page number, 2: total number of pages
-							__( 'Page %1$d of %2$d', 'easy-ai-forms' ),
+							__( 'Page %1$d of %2$d', 'rapid-ai-forms' ),
 							page,
 							totalPages
 						) }
@@ -263,30 +263,30 @@ export default function FormsList( { api } ) {
 						disabled={ page >= totalPages || forms === null }
 						onClick={ () => setPage( ( p ) => Math.min( totalPages, p + 1 ) ) }
 					>
-						{ __( 'Next →', 'easy-ai-forms' ) }
+						{ __( 'Next →', 'rapid-ai-forms' ) }
 					</Button>
 				</nav>
 			) }
 
 			{ deleting && (
 				<Modal
-					title={ __( 'Delete form?', 'easy-ai-forms' ) }
+					title={ __( 'Delete form?', 'rapid-ai-forms' ) }
 					onRequestClose={ () => setDeleting( null ) }
-					className="eaif-delete-modal"
+					className="raif-delete-modal"
 				>
 					<p>
 						{ sprintf(
 							// translators: %s: form title (or "#id" fallback for untitled forms)
-							__( 'Delete "%s"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone.', 'easy-ai-forms' ),
+							__( 'Delete "%s"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone.', 'rapid-ai-forms' ),
 							deleting.title || `#${ deleting.id }`
 						) }
 					</p>
 					<Flex justify="flex-end" gap={ 2 }>
 						<Button variant="tertiary" onClick={ () => setDeleting( null ) }>
-							{ __( 'Cancel', 'easy-ai-forms' ) }
+							{ __( 'Cancel', 'rapid-ai-forms' ) }
 						</Button>
 						<Button variant="primary" isDestructive onClick={ confirmDelete }>
-							{ __( 'Delete form', 'easy-ai-forms' ) }
+							{ __( 'Delete form', 'rapid-ai-forms' ) }
 						</Button>
 					</Flex>
 				</Modal>

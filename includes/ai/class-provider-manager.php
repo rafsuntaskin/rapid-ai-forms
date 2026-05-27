@@ -2,20 +2,20 @@
 /**
  * Resolves and dispatches AI requests to the configured provider.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai;
+namespace Rapid_Ai_Forms\Ai;
 
-use Easy_Ai_Forms\Ai\Providers\Anthropic;
-use Easy_Ai_Forms\Ai\Providers\Gemini;
-use Easy_Ai_Forms\Ai\Providers\Openai_Compatible;
-use Easy_Ai_Forms\Ai\Providers\Wp_Ai_Client;
+use Rapid_Ai_Forms\Ai\Providers\Anthropic;
+use Rapid_Ai_Forms\Ai\Providers\Gemini;
+use Rapid_Ai_Forms\Ai\Providers\Openai_Compatible;
+use Rapid_Ai_Forms\Ai\Providers\Wp_Ai_Client;
 
 defined( 'ABSPATH' ) || exit;
 
 class Provider_Manager {
-	const OPTION_KEY = 'easy_ai_forms_ai_settings';
+	const OPTION_KEY = 'rapid_ai_forms_ai_settings';
 
 	private $providers = array();
 
@@ -34,7 +34,7 @@ class Provider_Manager {
 		 *
 		 * @param Provider_Manager $manager
 		 */
-		do_action( 'easy_ai_forms_register_providers', $this );
+		do_action( 'rapid_ai_forms_register_providers', $this );
 	}
 
 	public function register( Provider $provider ) {
@@ -88,7 +88,7 @@ class Provider_Manager {
 		$provider = $this->get( $settings['active_provider'] );
 
 		if ( ! $provider ) {
-			return new \WP_Error( 'eaif_no_provider', __( 'No AI provider configured.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_no_provider', __( 'No AI provider configured.', 'rapid-ai-forms' ) );
 		}
 
 		$options = $settings['providers'][ $settings['active_provider'] ] ?? array();

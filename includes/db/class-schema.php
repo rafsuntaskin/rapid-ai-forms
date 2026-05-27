@@ -2,24 +2,24 @@
 /**
  * Database schema installer.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Db;
+namespace Rapid_Ai_Forms\Db;
 
 defined( 'ABSPATH' ) || exit;
 
 class Schema {
-	const DB_VERSION = '1.0.2';
+	const DB_VERSION = '1.0.3';
 
 	public static function forms_table() {
 		global $wpdb;
-		return $wpdb->prefix . 'easy_ai_forms';
+		return $wpdb->prefix . 'rapid_ai_forms';
 	}
 
 	public static function submissions_table() {
 		global $wpdb;
-		return $wpdb->prefix . 'easy_ai_form_submissions';
+		return $wpdb->prefix . 'rapid_ai_form_submissions';
 	}
 
 	public static function install() {
@@ -66,6 +66,6 @@ class Schema {
 
 		dbDelta( $sql );
 
-		update_option( 'easy_ai_forms_db_version', self::DB_VERSION );
+		update_option( 'rapid_ai_forms_db_version', self::DB_VERSION );
 	}
 }

@@ -1,15 +1,15 @@
 // Reuse the frontend form styles so the live preview matches the real render.
 @import '../frontend/frontend.scss';
 
-.eaif-page {
+.raif-page {
 	max-width: 960px;
 	margin-top: 16px;
 
-	.eaif-mt {
+	.raif-mt {
 		margin-top: 16px;
 	}
 
-	.eaif-mt-sm {
+	.raif-mt-sm {
 		margin-top: 10px;
 	}
 }
@@ -17,8 +17,8 @@
 // Most WordPress controls inside our editor cards default to a small
 // bottom margin; bump it slightly so labels and toggle rows have room
 // to breathe instead of stacking on top of each other.
-.eaif-editor,
-.eaif-settings {
+.raif-editor,
+.raif-settings {
 	.components-card__body .components-base-control:not(:last-child) {
 		margin-bottom: 16px;
 	}
@@ -44,7 +44,7 @@
 
 // Per-field card action row (move up/down + remove). Gives it visible
 // separation from the field's option editor above.
-.eaif-field-actions {
+.raif-field-actions {
 	margin-top: 16px;
 	padding-top: 12px;
 	border-top: 1px solid #f0f0f1;
@@ -53,7 +53,7 @@
 // Sticky-feeling action bar that sits at the top and bottom of the editor
 // main column, so Save and Back read as part of the editor itself
 // rather than floating away in the page header corner.
-.eaif-editor__actions {
+.raif-editor__actions {
 	background: #fff;
 	border: 1px solid #dcdcde;
 	padding: 10px 14px;
@@ -68,7 +68,7 @@
 	}
 }
 
-.eaif-editor__status {
+.raif-editor__status {
 	display: inline-block;
 	font-size: 13px;
 	font-weight: 500;
@@ -84,16 +84,16 @@
 	&--saved {
 		color: #007017;
 		background: #d4edda;
-		animation: eaif-fade-in 200ms ease-out;
+		animation: raif-fade-in 200ms ease-out;
 	}
 }
 
-@keyframes eaif-fade-in {
+@keyframes raif-fade-in {
 	from { opacity: 0; transform: translateY(-2px); }
 	to   { opacity: 1; transform: translateY(0); }
 }
 
-.eaif-editor {
+.raif-editor {
 	max-width: 1400px;
 
 	&__columns {
@@ -123,7 +123,7 @@
 	}
 }
 
-.eaif-preview {
+.raif-preview {
 	border: 1px solid #dcdcde;
 	border-radius: 0;
 	background: #fff;
@@ -158,7 +158,7 @@
 
 		// Frontend submit button defers to the theme; in the admin preview there's
 		// no theme, so apply a neutral stand-in so the button is still visible.
-		.eaif-form__submit {
+		.raif-form__submit {
 			padding: 8px 18px;
 			border: 1px solid #1d4ed8;
 			background: #2271b1;
@@ -168,12 +168,12 @@
 	}
 }
 
-.eaif-preview-empty {
+.raif-preview-empty {
 	color: #646970;
 	font-style: italic;
 }
 
-.eaif-page-header {
+.raif-page-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -191,12 +191,12 @@
 	}
 }
 
-.eaif-field-card {
+.raif-field-card {
 	margin-top: 12px;
 	background: #fafafa;
 }
 
-.eaif-options {
+.raif-options {
 	margin: 12px 0 8px;
 	padding: 12px;
 	background: #fff;
@@ -225,11 +225,11 @@
 	}
 }
 
-.eaif-tabs {
+.raif-tabs {
 	margin-top: 16px;
 }
 
-.eaif-settings {
+.raif-settings {
 	max-width: 720px;
 
 	&__footer {
@@ -241,7 +241,7 @@
 	}
 }
 
-.eaif-verify {
+.raif-verify {
 	margin-top: 12px;
 
 	&__result {
@@ -267,7 +267,7 @@
 	}
 }
 
-.eaif-shortcode {
+.raif-shortcode {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -312,7 +312,7 @@
 	}
 }
 
-.eaif-list {
+.raif-list {
 	max-width: 1280px;
 
 	&__toolbar {
@@ -384,7 +384,7 @@
 	}
 }
 
-.eaif-card {
+.raif-card {
 	background: #fff;
 	border: 1px solid #e0e0e0;
 	border-radius: 0;

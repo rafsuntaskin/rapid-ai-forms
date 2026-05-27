@@ -1,19 +1,19 @@
 <?php
 /**
- * [easy_ai_form] shortcode.
+ * [rapid_ai_form] shortcode.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Shortcodes;
+namespace Rapid_Ai_Forms\Shortcodes;
 
-use Easy_Ai_Forms\Forms\Form_Repository;
-use Easy_Ai_Forms\Forms\Form_Renderer;
+use Rapid_Ai_Forms\Forms\Form_Repository;
+use Rapid_Ai_Forms\Forms\Form_Renderer;
 
 defined( 'ABSPATH' ) || exit;
 
 class Form_Shortcode {
-	const TAG = 'easy_ai_form';
+	const TAG = 'rapid_ai_form';
 
 	public function register() {
 		add_shortcode( self::TAG, array( $this, 'render' ) );
@@ -36,8 +36,8 @@ class Form_Shortcode {
 			return '';
 		}
 
-		wp_enqueue_script( 'easy-ai-forms-frontend' );
-		wp_enqueue_style( 'easy-ai-forms-frontend' );
+		wp_enqueue_script( 'rapid-ai-forms-frontend' );
+		wp_enqueue_style( 'rapid-ai-forms-frontend' );
 
 		$renderer = new Form_Renderer();
 		return $renderer->render( $form );

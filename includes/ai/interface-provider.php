@@ -2,10 +2,10 @@
 /**
  * AI provider contract.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai;
+namespace Rapid_Ai_Forms\Ai;
 
 defined( 'ABSPATH' ) || exit;
 

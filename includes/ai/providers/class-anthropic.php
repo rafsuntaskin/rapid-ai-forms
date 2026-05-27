@@ -2,13 +2,13 @@
 /**
  * Anthropic Claude provider.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai\Providers;
+namespace Rapid_Ai_Forms\Ai\Providers;
 
-use Easy_Ai_Forms\Ai\Provider;
-use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Rapid_Ai_Forms\Ai\Provider;
+use Rapid_Ai_Forms\Ai\Schema_Prompt;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,7 +20,7 @@ class Anthropic implements Provider {
 	}
 
 	public function label() {
-		return __( 'Anthropic (Claude)', 'easy-ai-forms' );
+		return __( 'Anthropic (Claude)', 'rapid-ai-forms' );
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
@@ -28,7 +28,7 @@ class Anthropic implements Provider {
 		$model   = $options['model'] ?? 'claude-sonnet-4-6';
 
 		if ( ! $api_key ) {
-			return new \WP_Error( 'eaif_missing_key', __( 'Anthropic API key is not set.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_missing_key', __( 'Anthropic API key is not set.', 'rapid-ai-forms' ) );
 		}
 
 		$response = wp_remote_post(
@@ -62,7 +62,7 @@ class Anthropic implements Provider {
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( wp_remote_retrieve_response_code( $response ) >= 400 ) {
-			return new \WP_Error( 'eaif_anthropic_error', $body['error']['message'] ?? __( 'Anthropic API error.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_anthropic_error', $body['error']['message'] ?? __( 'Anthropic API error.', 'rapid-ai-forms' ) );
 		}
 
 		$text = $body['content'][0]['text'] ?? '';
@@ -72,7 +72,7 @@ class Anthropic implements Provider {
 	public function verify( array $options = array() ) {
 		$api_key = $options['api_key'] ?? '';
 		if ( ! $api_key ) {
-			return new \WP_Error( 'eaif_missing_key', __( 'API key is required.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_missing_key', __( 'API key is required.', 'rapid-ai-forms' ) );
 		}
 
 		// Anthropic has no public /models list endpoint, so we send the smallest
@@ -107,8 +107,8 @@ class Anthropic implements Provider {
 		$code = wp_remote_retrieve_response_code( $response );
 		if ( $code >= 400 ) {
 			$body = json_decode( wp_remote_retrieve_body( $response ), true );
-			$msg  = $body['error']['message'] ?? __( 'Anthropic rejected this API key.', 'easy-ai-forms' );
-			return new \WP_Error( 'eaif_verify_failed', $msg, array( 'http_status' => $code ) );
+			$msg  = $body['error']['message'] ?? __( 'Anthropic rejected this API key.', 'rapid-ai-forms' );
+			return new \WP_Error( 'raif_verify_failed', $msg, array( 'http_status' => $code ) );
 		}
 		return true;
 	}

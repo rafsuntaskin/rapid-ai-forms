@@ -2,13 +2,13 @@
 /**
  * Form CRUD repository.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Forms;
+namespace Rapid_Ai_Forms\Forms;
 
-use Easy_Ai_Forms\Ai\Schema_Prompt;
-use Easy_Ai_Forms\Db\Schema;
+use Rapid_Ai_Forms\Ai\Schema_Prompt;
+use Rapid_Ai_Forms\Db\Schema;
 
 defined( 'ABSPATH' ) || exit;
 

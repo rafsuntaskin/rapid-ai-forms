@@ -1,4 +1,4 @@
-# Security review — Easy AI Forms v0.1.0
+# Security review — Rapid AI Forms v0.1.0
 
 **Reviewed:** 2026-05-19
 **Status:** Pre-wp.org submission audit.
@@ -27,7 +27,7 @@ This file is **not** shipped to wp.org (`.distignore` excludes `docs/`).
 | Third-party deps | ✅ Composer `require` is empty; only dev tooling. |
 
 Two cheap mitigations added during this audit:
-- `easy_ai_forms_ai_settings` is now saved with `autoload=false`.
+- `rapid_ai_forms_ai_settings` is now saved with `autoload=false`.
 - `/submissions/{uuid}` now returns 413 for payloads > 64 KB.
 
 ---
@@ -51,7 +51,7 @@ All four registered abilities (`generate-form-schema`, `create-form`, `list-form
 
 ### Admin pages
 
-Both `easy-ai-forms` and `easy-ai-forms-settings` are registered with `manage_options` capability. ✅
+Both `rapid-ai-forms` and `rapid-ai-forms-settings` are registered with `manage_options` capability. ✅
 
 ---
 
@@ -124,7 +124,7 @@ This is the same trade-off every contact form plugin makes. The endpoint is idem
 
 ## 5. Direct file access
 
-All 19 PHP files under `includes/` and the main `easy-ai-forms.php` start with `defined( 'ABSPATH' ) || exit;`. Verified via grep. ✅
+All 19 PHP files under `includes/` and the main `rapid-ai-forms.php` start with `defined( 'ABSPATH' ) || exit;`. Verified via grep. ✅
 
 ---
 
@@ -132,7 +132,7 @@ All 19 PHP files under `includes/` and the main `easy-ai-forms.php` start with `
 
 ### Storage
 
-- API keys live in the `easy_ai_forms_ai_settings` WP option.
+- API keys live in the `rapid_ai_forms_ai_settings` WP option.
 - **Updated during this review:** option now stored with `autoload=false` so secrets are not loaded into memory on every page request.
 - They are stored in plaintext, like virtually every WordPress plugin that talks to third-party APIs (Jetpack, Yoast, WPForms, all of them). Encrypting them in a database where the encryption key would also need to live in the database doesn't increase the security posture.
 
@@ -234,7 +234,7 @@ Even if the model produced literal SQL injection strings, they'd never reach a q
 | Verify / generate via REST | `manage_options` | Cost / SSRF surface |
 | Submit a form | none (anonymous) | Intentional |
 
-Using `manage_options` everywhere is the safer default. If editors need form access later, we'll introduce a custom cap (`edit_easy_ai_forms`) mapped from `edit_posts`.
+Using `manage_options` everywhere is the safer default. If editors need form access later, we'll introduce a custom cap (`edit_rapid_ai_forms`) mapped from `edit_posts`.
 
 ---
 

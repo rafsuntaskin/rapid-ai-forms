@@ -1,7 +1,7 @@
 # wp.org plugin assets
 
 These files are uploaded to the **SVN `assets/` folder** at
-`https://plugins.svn.wordpress.org/easy-ai-forms/assets/`, not to
+`https://plugins.svn.wordpress.org/rapid-ai-forms/assets/`, not to
 `trunk/`. They are excluded from the plugin distribution zip via
 `.distignore` so they don't bloat the download.
 

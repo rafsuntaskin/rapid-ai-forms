@@ -26,7 +26,7 @@ The user types: *"Make required fields show a red asterisk, full-width inputs, m
 │                                          │
 │  Styling panel   │   iframe preview      │
 │  ──────────────  │   ──────────────      │
-│  CodeMirror      │   src="/?easy_ai_form_  │
+│  CodeMirror      │   src="/?rapid_ai_form_  │
 │  (current CSS)   │       preview={id}"   │
 │                  │                       │
 │  Prompt box      │   ← renders form      │
@@ -48,7 +48,7 @@ The user types: *"Make required fields show a red asterisk, full-width inputs, m
 
 ## 3. Storage
 
-No new DB columns. Reuse the existing `settings` JSON blob on `easy_ai_forms`:
+No new DB columns. Reuse the existing `settings` JSON blob on `rapid_ai_forms`:
 
 ```jsonc
 {
@@ -66,7 +66,7 @@ No new DB columns. Reuse the existing `settings` JSON blob on `easy_ai_forms`:
 
 `includes/frontend/class-preview.php` (new)
 
-- Registers a query var: `easy_ai_form_preview`.
+- Registers a query var: `rapid_ai_form_preview`.
 - Hooks `template_redirect`. When the var is set:
   1. `current_user_can( 'manage_options' )` — else 403.
   2. Load the form by id.
@@ -79,7 +79,7 @@ No new DB columns. Reuse the existing `settings` JSON blob on `easy_ai_forms`:
        <?php wp_head(); ?>   <!-- theme CSS loads here -->
      </head>
      <body class="<?php echo esc_attr( implode( ' ', get_body_class() ) ); ?>">
-       <div class="eaif-preview-frame">
+       <div class="raif-preview-frame">
          <?php echo $renderer->render( $form ); ?>
        </div>
        <?php wp_footer(); ?>
@@ -88,15 +88,15 @@ No new DB columns. Reuse the existing `settings` JSON blob on `easy_ai_forms`:
      ```
   4. `exit` so no theme template runs.
 
-URL: `/?easy_ai_form_preview={id}`.
+URL: `/?rapid_ai_form_preview={id}`.
 
 ### 4.2 Custom CSS rendering
 
 Extend `Form_Renderer::render()` to emit a scoped style block immediately before the `<form>`:
 
 ```html
-<style id="eaif-css-{uuid}">
-  .eaif-form[data-form-uuid="{uuid}"] {
+<style id="raif-css-{uuid}">
+  .raif-form[data-form-uuid="{uuid}"] {
     <?php echo $sanitized_custom_css; ?>
   }
 </style>
@@ -124,7 +124,7 @@ State: live-edit CSS triggers iframe refresh after a 600ms debounce.
 
 ### 4.5 AI style endpoint
 
-`POST /easy-ai-forms/v1/ai/style`
+`POST /rapid-ai-forms/v1/ai/style`
 
 **Request:**
 ```json
@@ -172,7 +172,7 @@ selectors are listed below. Theme tokens are listed below.
 
 ## 5. Iframe lifecycle
 
-- Initial mount: `iframe src="/?easy_ai_form_preview={id}"`.
+- Initial mount: `iframe src="/?rapid_ai_form_preview={id}"`.
 - On save (`PUT /forms/{id}` succeeds with new `custom_css`): `iframeRef.current.contentWindow.location.reload()`.
 - A "Refresh" button next to the preview for the rare case it gets stuck.
 
@@ -234,7 +234,7 @@ The feature is done when:
 - [ ] A logged-in admin can open the editor and see a working iframe of the form rendered with the active theme's styles.
 - [ ] Editing the manual CSS textarea + clicking Save updates the form and the iframe reloads to reflect changes.
 - [ ] Typing a prompt → clicking Apply → ~3 seconds later the textarea contains new CSS, the iframe shows the change, and the user can click Save to keep it (or undo to revert).
-- [ ] Anonymous visitors hitting `/?easy_ai_form_preview={id}` get a 403.
+- [ ] Anonymous visitors hitting `/?rapid_ai_form_preview={id}` get a 403.
 - [ ] Custom CSS for one form never affects another form on the same page.
 - [ ] Pasting `</style><script>alert(1)</script>` into the CSS textarea results in stripped output, no script execution.
 - [ ] `manage_options` is enforced for the AI endpoint too.

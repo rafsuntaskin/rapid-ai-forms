@@ -51,11 +51,11 @@ export default function Settings( { api } ) {
 			setVerifyResult( {
 				status: 'success',
 				text: res.latency_ms
-					? __( 'Connection works.', 'easy-ai-forms' ) + ` (${ res.latency_ms }ms)`
-					: __( 'Connection works.', 'easy-ai-forms' ),
+					? __( 'Connection works.', 'rapid-ai-forms' ) + ` (${ res.latency_ms }ms)`
+					: __( 'Connection works.', 'rapid-ai-forms' ),
 			} );
 		} catch ( e ) {
-			setVerifyResult( { status: 'error', text: e.message || __( 'Verification failed.', 'easy-ai-forms' ) } );
+			setVerifyResult( { status: 'error', text: e.message || __( 'Verification failed.', 'rapid-ai-forms' ) } );
 		} finally {
 			setVerifying( false );
 		}
@@ -80,13 +80,13 @@ export default function Settings( { api } ) {
 			setVerifyResult( {
 				status: 'success',
 				text: v.latency_ms
-					? __( 'Connection verified.', 'easy-ai-forms' ) + ` (${ v.latency_ms }ms)`
-					: __( 'Connection verified.', 'easy-ai-forms' ),
+					? __( 'Connection verified.', 'rapid-ai-forms' ) + ` (${ v.latency_ms }ms)`
+					: __( 'Connection verified.', 'rapid-ai-forms' ),
 			} );
 		} catch ( e ) {
 			setVerifyResult( {
 				status: 'error',
-				text: __( 'Save blocked — verification failed: ', 'easy-ai-forms' ) + ( e.message || '' ),
+				text: __( 'Save blocked — verification failed: ', 'rapid-ai-forms' ) + ( e.message || '' ),
 			} );
 			setSaving( false );
 			return;
@@ -99,7 +99,7 @@ export default function Settings( { api } ) {
 				providers: settings.providers,
 			} );
 			setSettings( next );
-			setMessage( { type: 'success', text: __( 'Settings saved.', 'easy-ai-forms' ) } );
+			setMessage( { type: 'success', text: __( 'Settings saved.', 'rapid-ai-forms' ) } );
 		} catch ( e ) {
 			setMessage( { type: 'error', text: e.message } );
 		} finally {
@@ -113,10 +113,10 @@ export default function Settings( { api } ) {
 	const activeCfg = settings.providers[ activeKey ] || {};
 
 	return (
-		<div className="eaif-page eaif-settings">
+		<div className="raif-page raif-settings">
 			<PageHeader
-				title={ __( 'AI Settings', 'easy-ai-forms' ) }
-				description={ __( 'Configure the AI provider used to generate form schemas.', 'easy-ai-forms' ) }
+				title={ __( 'AI Settings', 'rapid-ai-forms' ) }
+				description={ __( 'Configure the AI provider used to generate form schemas.', 'rapid-ai-forms' ) }
 			/>
 
 			{ message && (
@@ -125,12 +125,12 @@ export default function Settings( { api } ) {
 				</Notice>
 			) }
 
-			<Card className="eaif-mt">
-				<CardHeader><strong>{ __( 'AI provider', 'easy-ai-forms' ) }</strong></CardHeader>
+			<Card className="raif-mt">
+				<CardHeader><strong>{ __( 'AI provider', 'rapid-ai-forms' ) }</strong></CardHeader>
 				<CardBody>
 					<SelectControl
-						label={ __( 'Active provider', 'easy-ai-forms' ) }
-						help={ __( 'Choose which provider to use. Credentials below apply to the selected provider only.', 'easy-ai-forms' ) }
+						label={ __( 'Active provider', 'rapid-ai-forms' ) }
+						help={ __( 'Choose which provider to use. Credentials below apply to the selected provider only.', 'rapid-ai-forms' ) }
 						value={ activeKey }
 						options={ providers.map( ( p ) => ( { label: p.label, value: p.key } ) ) }
 						onChange={ ( v ) => setSettings( { ...settings, active_provider: v } ) }
@@ -139,23 +139,23 @@ export default function Settings( { api } ) {
 			</Card>
 
 			{ activeProvider && (
-				<Card className="eaif-mt">
+				<Card className="raif-mt">
 					<CardHeader><strong>{ activeProvider.label }</strong></CardHeader>
 					<CardBody>
 						{ activeKey === 'wp_ai_client' ? (
 							<Notice status="info" isDismissible={ false }>
 								{ __(
 									'This provider uses your site’s WordPress AI Connectors. Configure your API keys under Settings → Connectors. No additional configuration is needed here.',
-									'easy-ai-forms'
+									'rapid-ai-forms'
 								) }
 							</Notice>
 						) : (
 							<>
 								<TextControl
-									label={ __( 'API Key', 'easy-ai-forms' ) }
+									label={ __( 'API Key', 'rapid-ai-forms' ) }
 									type="password"
 									value={ activeCfg.api_key || '' }
-									placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'easy-ai-forms' ) : '' }
+									placeholder={ activeCfg.api_key_set ? __( 'Saved — leave blank to keep', 'rapid-ai-forms' ) : '' }
 									onChange={ ( v ) => {
 										updateProvider( activeKey, { api_key: v } );
 										setVerifyResult( null );
@@ -163,7 +163,7 @@ export default function Settings( { api } ) {
 								/>
 								{ 'model' in activeCfg && (
 									<TextControl
-										label={ __( 'Model', 'easy-ai-forms' ) }
+										label={ __( 'Model', 'rapid-ai-forms' ) }
 										value={ activeCfg.model || '' }
 										onChange={ ( v ) => {
 											updateProvider( activeKey, { model: v } );
@@ -173,7 +173,7 @@ export default function Settings( { api } ) {
 								) }
 								{ 'base_url' in activeCfg && (
 									<TextControl
-										label={ __( 'Base URL', 'easy-ai-forms' ) }
+										label={ __( 'Base URL', 'rapid-ai-forms' ) }
 										value={ activeCfg.base_url || '' }
 										onChange={ ( v ) => {
 											updateProvider( activeKey, { base_url: v } );
@@ -183,7 +183,7 @@ export default function Settings( { api } ) {
 								) }
 							</>
 						) }
-						<div className="eaif-verify">
+						<div className="raif-verify">
 							<Button
 								variant="secondary"
 								onClick={ verify }
@@ -193,10 +193,10 @@ export default function Settings( { api } ) {
 									( activeKey !== 'wp_ai_client' && ! activeCfg.api_key && ! activeCfg.api_key_set )
 								}
 							>
-								{ __( 'Verify connection', 'easy-ai-forms' ) }
+								{ __( 'Verify connection', 'rapid-ai-forms' ) }
 							</Button>
 							{ verifyResult && (
-								<p className={ `eaif-verify__result eaif-verify__result--${ verifyResult.status }` }>
+								<p className={ `raif-verify__result raif-verify__result--${ verifyResult.status }` }>
 									{ verifyResult.status === 'success' ? '✓ ' : '✕ ' }
 									{ verifyResult.text }
 								</p>
@@ -206,9 +206,9 @@ export default function Settings( { api } ) {
 				</Card>
 			) }
 
-			<div className="eaif-settings__footer">
+			<div className="raif-settings__footer">
 				<Button variant="primary" onClick={ save } isBusy={ saving }>
-					{ __( 'Save settings', 'easy-ai-forms' ) }
+					{ __( 'Save settings', 'rapid-ai-forms' ) }
 				</Button>
 			</div>
 		</div>

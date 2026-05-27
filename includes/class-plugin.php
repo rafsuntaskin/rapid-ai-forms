@@ -2,18 +2,18 @@
 /**
  * Main plugin orchestrator.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms;
+namespace Rapid_Ai_Forms;
 
-use Easy_Ai_Forms\Abilities\Abilities;
-use Easy_Ai_Forms\Admin\Admin;
-use Easy_Ai_Forms\Api\Rest_Controller;
-use Easy_Ai_Forms\Db\Schema;
-use Easy_Ai_Forms\Notifications\Email_Notifier;
-use Easy_Ai_Forms\Shortcodes\Form_Shortcode;
-use Easy_Ai_Forms\Frontend\Frontend;
+use Rapid_Ai_Forms\Abilities\Abilities;
+use Rapid_Ai_Forms\Admin\Admin;
+use Rapid_Ai_Forms\Api\Rest_Controller;
+use Rapid_Ai_Forms\Db\Schema;
+use Rapid_Ai_Forms\Notifications\Email_Notifier;
+use Rapid_Ai_Forms\Shortcodes\Form_Shortcode;
+use Rapid_Ai_Forms\Frontend\Frontend;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -41,7 +41,7 @@ class Plugin {
 	}
 
 	private function maybe_migrate() {
-		if ( get_option( 'easy_ai_forms_db_version' ) !== Schema::DB_VERSION ) {
+		if ( get_option( 'rapid_ai_forms_db_version' ) !== Schema::DB_VERSION ) {
 			Schema::install();
 		}
 	}

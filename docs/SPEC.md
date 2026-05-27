@@ -1,16 +1,16 @@
-# Easy AI Forms — Technical Specification
+# Rapid AI Forms — Technical Specification
 
 **Version:** 0.1.0
 **Status:** Draft
 **Audience:** developers, integrators, and future contributors
 
-This document specifies the data contracts, APIs, and behaviors of the Easy AI Forms plugin. For agent-oriented conventions (file layout, autoloader rules, naming), see `CLAUDE.md`.
+This document specifies the data contracts, APIs, and behaviors of the Rapid AI Forms plugin. For agent-oriented conventions (file layout, autoloader rules, naming), see `CLAUDE.md`.
 
 ---
 
 ## 1. Product overview
 
-Easy AI Forms is a WordPress plugin that lets site owners build forms from natural-language prompts, then embed them anywhere via shortcodes (Gutenberg block planned).
+Rapid AI Forms is a WordPress plugin that lets site owners build forms from natural-language prompts, then embed them anywhere via shortcodes (Gutenberg block planned).
 
 ### 1.1 AI modes
 
@@ -23,7 +23,7 @@ Easy AI Forms is a WordPress plugin that lets site owners build forms from natur
 
 ### 1.2 Goals
 - Generate working form schemas from a single natural-language prompt.
-- Render forms via shortcode `[easy_ai_form id="..."]`.
+- Render forms via shortcode `[rapid_ai_form id="..."]`.
 - Store submissions in dedicated DB tables for querying and export.
 - Be extensible: third parties can register additional AI providers.
 
@@ -36,7 +36,7 @@ Easy AI Forms is a WordPress plugin that lets site owners build forms from natur
 
 ## 2. Form Schema JSON contract
 
-This is the canonical shape that AI providers must produce and that the editor/renderer consume. It lives in the `form_schema` column of `{prefix}easy_ai_forms` (JSON-encoded).
+This is the canonical shape that AI providers must produce and that the editor/renderer consume. It lives in the `form_schema` column of `{prefix}rapid_ai_forms` (JSON-encoded).
 
 ### 2.1 Schema
 
@@ -112,7 +112,7 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 
 ## 3. Data model
 
-### 3.1 `{prefix}easy_ai_forms`
+### 3.1 `{prefix}rapid_ai_forms`
 
 | Column | Type | Notes |
 |---|---|---|
@@ -129,12 +129,12 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 
 Indexes: `uuid` (unique), `status`, `author_id`.
 
-### 3.2 `{prefix}easy_ai_form_submissions`
+### 3.2 `{prefix}rapid_ai_form_submissions`
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `BIGINT UNSIGNED AUTO_INCREMENT` | PK |
-| `form_id` | `BIGINT UNSIGNED` | FK to `easy_ai_forms.id` (not enforced at DB level) |
+| `form_id` | `BIGINT UNSIGNED` | FK to `rapid_ai_forms.id` (not enforced at DB level) |
 | `data` | `LONGTEXT` | JSON-encoded sanitized submission |
 | `meta` | `LONGTEXT NULL` | JSON, reserved for future use |
 | `ip_address` | `VARCHAR(45)` | IPv4 or IPv6 |
@@ -148,20 +148,20 @@ Indexes: `form_id`, `user_id`, `created_at`.
 
 | Option | Purpose |
 |---|---|
-| `easy_ai_forms_version` | Currently installed plugin version. |
-| `easy_ai_forms_db_version` | Schema version, used to trigger migrations. |
-| `easy_ai_forms_ai_settings` | AI mode + provider configs (see §5.1). |
+| `rapid_ai_forms_version` | Currently installed plugin version. |
+| `rapid_ai_forms_db_version` | Schema version, used to trigger migrations. |
+| `rapid_ai_forms_ai_settings` | AI mode + provider configs (see §5.1). |
 
 ### 3.4 Migration policy
 - `Schema::install()` runs on activation via `dbDelta()`.
-- DB version is stored in `easy_ai_forms_db_version`. `Plugin::maybe_migrate()` (called on `plugins_loaded`) compares the stored value against `Schema::DB_VERSION` and re-runs `dbDelta()` when they diverge. `dbDelta()` is additive — bumping for new columns or indexes works; renaming or dropping columns requires a manual migration helper (not yet needed).
-- Current `Schema::DB_VERSION` = **`1.0.2`** (table-prefix rename from `{prefix}ai_forms` → `{prefix}easy_ai_forms` landed at this version; pre-launch only, no upgrade path needed).
+- DB version is stored in `rapid_ai_forms_db_version`. `Plugin::maybe_migrate()` (called on `plugins_loaded`) compares the stored value against `Schema::DB_VERSION` and re-runs `dbDelta()` when they diverge. `dbDelta()` is additive — bumping for new columns or indexes works; renaming or dropping columns requires a manual migration helper (not yet needed).
+- Current `Schema::DB_VERSION` = **`1.0.3`**. Pre-launch the table prefix moved twice: `{prefix}ai_forms` → `{prefix}easy_ai_forms` (1.0.2) → `{prefix}rapid_ai_forms` (1.0.3). No upgrade-path code is needed because no public release used the older names.
 
 ---
 
 ## 4. REST API
 
-Base URL: `/wp-json/easy-ai-forms/v1/`
+Base URL: `/wp-json/rapid-ai-forms/v1/`
 Authentication: WP cookie + `X-WP-Nonce` header for admin endpoints. Submission endpoint is public.
 
 ### 4.1 Capability matrix
@@ -186,7 +186,7 @@ Body: partial form object (`title`, `status`, `schema`, `settings`, `ai_prompt`)
 Returns: created form object.
 
 #### `GET /forms/{id}`
-Returns: form object or `404 eaif_not_found`.
+Returns: form object or `404 raif_not_found`.
 
 #### `PUT /forms/{id}`
 Body: any subset of `title`, `status`, `schema`, `settings`, `ai_prompt`. Schema is normalized through `Schema_Prompt::sanitize_schema()` when present.
@@ -199,7 +199,7 @@ Returns: `{ "deleted": true }`.
 Body: `{ "prompt": "string", "current_schema": { /* optional */ } }`.
 When `current_schema.fields` is non-empty, the provider treats the call as an **edit** and is instructed to preserve existing fields/labels/options unless explicitly asked to change them; otherwise it's a from-scratch generation.
 Returns: a sanitized Form Schema (§2). On failure returns `WP_Error` with HTTP 400.
-Error codes: `eaif_no_provider`, `eaif_missing_key`, `eaif_empty_response`, `eaif_invalid_json`, plus provider-specific (`eaif_anthropic_error`, `eaif_gemini_error`, `eaif_openai_error`, `eaif_wp_ai_client_*`).
+Error codes: `raif_no_provider`, `raif_missing_key`, `raif_empty_response`, `raif_invalid_json`, plus provider-specific (`raif_anthropic_error`, `raif_gemini_error`, `raif_openai_error`, `raif_wp_ai_client_*`).
 
 #### `POST /ai/verify`
 Body: `{ "provider": "anthropic|gemini|openai_compatible|wp_ai_client", "api_key": "...", "base_url": "...", "model": "..." }`. Any empty field falls back to the saved value, so an admin can verify before saving.
@@ -220,7 +220,7 @@ Returns: the same shape as `GET /settings`.
 #### `POST /submissions/{uuid}`
 Public. Body: arbitrary key/value pairs matching the form's `fields[].name`.
 Behavior:
-1. Reject payloads larger than `Rest_Controller::MAX_SUBMISSION_BYTES` (64 KB) before any work — returns `413 eaif_payload_too_large`.
+1. Reject payloads larger than `Rest_Controller::MAX_SUBMISSION_BYTES` (64 KB) before any work — returns `413 raif_payload_too_large`.
 2. Look up the form by UUID; 404 if missing.
 3. Iterate `fields`; for each known `name`, sanitize the incoming value by type:
    - `email` → `sanitize_email`
@@ -231,8 +231,8 @@ Behavior:
    - `hidden` → ignored from the client; the value is read from `field.default_value` on the server
    - everything else → `sanitize_text_field` (array values are mapped)
 4. Unknown keys are dropped.
-5. Insert into `{prefix}easy_ai_form_submissions`.
-6. Fire `do_action( 'easy_ai_forms_submission_created', $submission_id, $form, $data )` — the built-in `Email_Notifier` listens at priority 10.
+5. Insert into `{prefix}rapid_ai_form_submissions`.
+6. Fire `do_action( 'rapid_ai_forms_submission_created', $submission_id, $form, $data )` — the built-in `Email_Notifier` listens at priority 10.
 
 Returns: `{ "ok": true, "id": 123 }`.
 
@@ -257,7 +257,7 @@ Returns: `{ "ok": true, "id": 123 }`.
 
 ## 5. AI providers
 
-### 5.1 Settings storage (`easy_ai_forms_ai_settings`)
+### 5.1 Settings storage (`rapid_ai_forms_ai_settings`)
 
 ```jsonc
 {
@@ -303,7 +303,7 @@ interface Provider {
 
 ### 5.4 Email notifications
 
-On `easy_ai_forms_submission_created`, `Email_Notifier::maybe_send()` reads `schema.notifications` and, if `enabled`, sends a `wp_mail()` to the configured recipients.
+On `rapid_ai_forms_submission_created`, `Email_Notifier::maybe_send()` reads `schema.notifications` and, if `enabled`, sends a `wp_mail()` to the configured recipients.
 
 Supported mail-tags inside `subject` / `body`:
 
@@ -316,26 +316,26 @@ The empty `to` field falls back to `get_option('admin_email')` at send time (and
 Filterable hooks:
 
 ```php
-apply_filters( 'easy_ai_forms_send_notification_email', $send, $submission_id, $form, $data );
-apply_filters( 'easy_ai_forms_notification_recipients', $recipients, $form, $data );
-apply_filters( 'easy_ai_forms_notification_subject',    $subject,    $form, $data );
-apply_filters( 'easy_ai_forms_notification_body',       $body,       $form, $data );
-apply_filters( 'easy_ai_forms_notification_headers',    $headers,    $form, $data );
+apply_filters( 'rapid_ai_forms_send_notification_email', $send, $submission_id, $form, $data );
+apply_filters( 'rapid_ai_forms_notification_recipients', $recipients, $form, $data );
+apply_filters( 'rapid_ai_forms_notification_subject',    $subject,    $form, $data );
+apply_filters( 'rapid_ai_forms_notification_body',       $body,       $form, $data );
+apply_filters( 'rapid_ai_forms_notification_headers',    $headers,    $form, $data );
 ```
 
 ### 5.5 Extension points
 
 ```php
 // Register a custom provider:
-add_action( 'easy_ai_forms_register_providers', function ( $manager ) {
+add_action( 'rapid_ai_forms_register_providers', function ( $manager ) {
     $manager->register( new My_Custom_Provider() );
 } );
 
 // Point the managed client at your own backend:
-add_filter( 'easy_ai_forms_managed_endpoint', fn() => 'https://my-saas.example/v1/generate-form' );
+add_filter( 'rapid_ai_forms_managed_endpoint', fn() => 'https://my-saas.example/v1/generate-form' );
 
 // Observe submissions:
-add_action( 'easy_ai_forms_submission_created', function ( $id, $form, $data ) {
+add_action( 'rapid_ai_forms_submission_created', function ( $id, $form, $data ) {
     // send email, sync to CRM, etc.
 }, 10, 3 );
 ```
@@ -361,7 +361,7 @@ This section specifies the HTTP contract our hosted backend must implement so th
 
 ### 5A.2 Endpoint: generate form schema
 
-`POST {endpoint}/v1/generate-form` — endpoint URL is filterable in the plugin via `easy_ai_forms_managed_endpoint`; the default is `https://api.example.com/v1/generate-form`.
+`POST {endpoint}/v1/generate-form` — endpoint URL is filterable in the plugin via `rapid_ai_forms_managed_endpoint`; the default is `https://api.example.com/v1/generate-form`.
 
 **Request**
 
@@ -370,7 +370,7 @@ This section specifies the HTTP contract our hosted backend must implement so th
 | `Authorization` | `Bearer {license_key}` |
 | `Content-Type` | `application/json` |
 | `X-Site-URL` | `home_url()` of the calling site |
-| `X-Plugin-Version` | `EASY_AI_FORMS_VERSION` (recommended, for telemetry) |
+| `X-Plugin-Version` | `RAPID_AI_FORMS_VERSION` (recommended, for telemetry) |
 | `X-Idempotency-Key` | optional, ULID/UUID — if present, the backend MUST return the same response for repeated requests within 24h without re-debiting credits |
 
 ```json
@@ -403,12 +403,12 @@ The plugin accepts either `{ schema }` directly or `{ text: "..." }` (where `tex
 
 | HTTP | Plugin maps to | Meaning |
 |---|---|---|
-| `400` | `eaif_managed_error` | Malformed prompt, prompt too long, or schema generation failed validation server-side |
-| `401` | `eaif_managed_error` | License key invalid or revoked |
-| `402` | `eaif_no_credits` | License valid but out of credits |
-| `403` | `eaif_managed_error` | License is locked to a different site URL |
-| `429` | `eaif_managed_error` | Rate-limited; backend SHOULD include `Retry-After` |
-| `5xx` | `eaif_managed_error` | Backend or upstream provider failure |
+| `400` | `raif_managed_error` | Malformed prompt, prompt too long, or schema generation failed validation server-side |
+| `401` | `raif_managed_error` | License key invalid or revoked |
+| `402` | `raif_no_credits` | License valid but out of credits |
+| `403` | `raif_managed_error` | License is locked to a different site URL |
+| `429` | `raif_managed_error` | Rate-limited; backend SHOULD include `Retry-After` |
+| `5xx` | `raif_managed_error` | Backend or upstream provider failure |
 
 Error body:
 ```json
@@ -442,7 +442,7 @@ Used by the plugin's Settings page to display a live "credits remaining" badge. 
 
 When a customer tops up credits or changes plan, the backend MAY POST to a plugin endpoint to refresh local state:
 
-`POST /wp-json/easy-ai-forms/v1/managed/webhook` (to be added)
+`POST /wp-json/rapid-ai-forms/v1/managed/webhook` (to be added)
 
 Body signed with `X-Signature: sha256={hmac}` where the HMAC secret is derived from the license key (so each site has a unique signing key the customer also controls). The plugin verifies and updates a cached `credits_remaining` transient.
 
@@ -459,7 +459,7 @@ Rules the backend MUST enforce (the plugin can't):
 
 ### 5A.6 What the backend implementation needs (out of scope for the plugin repo)
 
-These belong in the separate `easy-ai-forms-backend` service, not this plugin:
+These belong in the separate `rapid-ai-forms-backend` service, not this plugin:
 
 - License issuance & billing (Stripe, Paddle, LemonSqueezy, etc.).
 - Multi-provider routing (try Anthropic first, fall back to OpenAI on rate limit, etc.). Vercel AI Gateway is a natural fit here.
@@ -471,7 +471,7 @@ These belong in the separate `easy-ai-forms-backend` service, not this plugin:
 ### 5A.7 Security checklist before going live
 
 - [ ] All upstream provider keys live only in backend env vars, never in any plugin artifact.
-- [ ] License keys are at least 128 bits of entropy, prefixed for type detection (e.g. `eaif_live_…`).
+- [ ] License keys are at least 128 bits of entropy, prefixed for type detection (e.g. `raif_live_…`).
 - [ ] License keys are hashed at rest (Argon2id / bcrypt) — never stored plaintext server-side.
 - [ ] Site-URL binding enabled for paid plans.
 - [ ] `429`s on per-license, per-IP, and global tiers.
@@ -483,36 +483,36 @@ These belong in the separate `easy-ai-forms-backend` service, not this plugin:
 
 ## 5B. WordPress Abilities API integration
 
-Starting with WordPress 6.9, the [Abilities API](https://developer.wordpress.org/apis/abilities-api/) provides a discovery registry for plugin capabilities. Easy AI Forms registers its high-value verbs there so AI agents, automation tools, and other plugins can find and call them with input/output schema validation and capability checks.
+Starting with WordPress 6.9, the [Abilities API](https://developer.wordpress.org/apis/abilities-api/) provides a discovery registry for plugin capabilities. Rapid AI Forms registers its high-value verbs there so AI agents, automation tools, and other plugins can find and call them with input/output schema validation and capability checks.
 
 Registration is guarded with `function_exists( 'wp_register_ability' )`, so the plugin still loads cleanly on WP < 6.9 — the abilities simply aren't published there.
 
 ### 5B.1 Category
 
 ```
-easy-ai-forms — "AI Forms"
+rapid-ai-forms — "AI Forms"
 ```
 
 ### 5B.2 Registered abilities
 
 | Ability name | Purpose | Permission |
 |---|---|---|
-| `easy-ai-forms/generate-form-schema` | Turn a natural-language prompt into a Form Schema (§2). | `manage_options` |
-| `easy-ai-forms/create-form` | Persist a form (with an optional pre-generated schema). | `manage_options` |
-| `easy-ai-forms/list-forms` | Paginated form list including the shortcode string. | `manage_options` |
-| `easy-ai-forms/get-form` | Fetch a single form by `id` or `uuid`. | `manage_options` |
+| `rapid-ai-forms/generate-form-schema` | Turn a natural-language prompt into a Form Schema (§2). | `manage_options` |
+| `rapid-ai-forms/create-form` | Persist a form (with an optional pre-generated schema). | `manage_options` |
+| `rapid-ai-forms/list-forms` | Paginated form list including the shortcode string. | `manage_options` |
+| `rapid-ai-forms/get-form` | Fetch a single form by `id` or `uuid`. | `manage_options` |
 
 Each ability carries a full `input_schema` / `output_schema` (JSON Schema) so callers can introspect what to send and what they'll get back.
 
 ### 5B.3 Extension point
 
-After Easy AI Forms registers its abilities, it fires:
+After Rapid AI Forms registers its abilities, it fires:
 
 ```php
-do_action( 'easy_ai_forms_abilities_registered' );
+do_action( 'rapid_ai_forms_abilities_registered' );
 ```
 
-Other plugins can use this to register related abilities or extend the `easy-ai-forms` category (e.g. add `easy-ai-forms/export-submissions` from a companion plugin).
+Other plugins can use this to register related abilities or extend the `rapid-ai-forms` category (e.g. add `rapid-ai-forms/export-submissions` from a companion plugin).
 
 ### 5B.4 Not done as abilities (intentional)
 
@@ -530,31 +530,31 @@ The companion [WordPress AI Client SDK](https://make.wordpress.org/ai/2025/11/21
 ### 6.1 Shortcode
 
 ```
-[easy_ai_form id="42"]
-[easy_ai_form uuid="..."]
+[rapid_ai_form id="42"]
+[rapid_ai_form uuid="..."]
 ```
 
 `id` and `uuid` are mutually exclusive (uuid wins if both supplied). Returns an empty string if the form is not found.
 
 ### 6.2 HTML contract
 
-The PHP renderer emits a `<form class="eaif-form" data-form-uuid="..." data-nonce="...">` element. Frontend JS (`build/frontend.js`) auto-binds submission for every `form.eaif-form` not yet flagged with `data-eaif-bound`.
+The PHP renderer emits a `<form class="raif-form" data-form-uuid="..." data-nonce="...">` element. Frontend JS (`build/frontend.js`) auto-binds submission for every `form.raif-form` not yet flagged with `data-raif-bound`.
 
 ### 6.3 Client behavior
 - On submit, JS collects `FormData`, POSTs JSON to `/submissions/{uuid}`, includes the nonce as `X-WP-Nonce`.
-- On success: form is reset and a success message is shown in `.eaif-form__message`.
+- On success: form is reset and a success message is shown in `.raif-form__message`.
 - On error: error message shown; submit button re-enabled.
 
 ### 6.4 Styling
 
-All classes prefixed with `eaif-`. Default styles are minimal and intended to be overridable by the theme.
+All classes prefixed with `raif-`. Default styles are minimal and intended to be overridable by the theme.
 
 ---
 
 ## 7. Admin SPA
 
-- Mounted in `wp-admin` under menu slug `easy-ai-forms` (capability `manage_options`).
-- Single root: `#easy-ai-forms-admin-root`.
+- Mounted in `wp-admin` under menu slug `rapid-ai-forms` (capability `manage_options`).
+- Single root: `#rapid-ai-forms-admin-root`.
 - Hash-based routing: `#/` (forms list), `#/forms/{id}` (editor), `#/settings`.
 - All React via `@wordpress/element` only — no separate React dependency.
 - UI primitives from `@wordpress/components`.
@@ -563,7 +563,7 @@ All classes prefixed with `eaif-`. Default styles are minimal and intended to be
 
 Rules (enforced by convention, see `src/shared/README.md`):
 1. May depend only on `@wordpress/*` packages.
-2. May not read plugin globals (`EASY_AI_FORMS_ADMIN`, etc.) — accept config as props/args.
+2. May not read plugin globals (`RAPID_AI_FORMS_ADMIN`, etc.) — accept config as props/args.
 3. Feature folders (`src/admin/*`, `src/frontend/*`) may import from `shared/`; the reverse is forbidden.
 
 Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins via npm.
@@ -589,12 +589,12 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 
 ## 9. Internationalization
 
-- Text domain: `easy-ai-forms`.
+- Text domain: `rapid-ai-forms`.
 - All user-visible strings in PHP use `__()` / `esc_html__()` / `_e()`.
 - JS uses `@wordpress/i18n` (`__`) with `wp_set_script_translations()` registered for the admin bundle.
-- `.pot` lives at `languages/easy-ai-forms.pot` and is regenerated via:
+- `.pot` lives at `languages/rapid-ai-forms.pot` and is regenerated via:
   ```
-  wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist
+  wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist
   ```
 - `load_plugin_textdomain()` is **not called** — WordPress.org auto-loads translations for hosted plugins (WP 4.6+).
 
@@ -609,10 +609,10 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 | Production build | `npm run build` |
 | Dev watch | `npm run start` |
 | Lint PHP (WPCS 3.1) | `composer lint` (auto-fix: `composer lint:fix`) |
-| Regenerate POT | `wp i18n make-pot . languages/easy-ai-forms.pot --domain=easy-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
-| Build wp.org dist zip | `npm run dist` → `dist/easy-ai-forms.zip` (honors `.distignore`) |
+| Regenerate POT | `wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
+| Build wp.org dist zip | `npm run dist` → `dist/rapid-ai-forms.zip` (honors `.distignore`) |
 | Copy dist to local plugins dir | `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build` |
-| Run wp.org Plugin Check | `lando wp plugin check easy-ai-forms` (against the installed copy) |
+| Run wp.org Plugin Check | `lando wp plugin check rapid-ai-forms` (against the installed copy) |
 
 Build outputs:
 - `build/admin.js`, `build/admin.css`, `build/admin.asset.php`
@@ -624,9 +624,9 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 
 ## 11. Versioning
 
-- Plugin version: `EASY_AI_FORMS_VERSION` constant in `easy-ai-forms.php`.
+- Plugin version: `RAPID_AI_FORMS_VERSION` constant in `rapid-ai-forms.php`.
 - DB schema version: `Schema::DB_VERSION`. Bump when columns change; migration runner is planned.
-- Public REST namespace: `easy-ai-forms/v1`. Breaking changes will move to `/v2`.
+- Public REST namespace: `rapid-ai-forms/v1`. Breaking changes will move to `/v2`.
 - Form Schema contract: changes that drop or rename top-level keys are breaking. Adding optional fields is allowed.
 
 ---
@@ -657,7 +657,7 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [ ] **AI-driven per-form CSS editor with live iframe preview** — see [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
 
 ### v0.4 — Block editor
-- [ ] Gutenberg block `easy-ai-forms/form` selecting a form by id.
+- [ ] Gutenberg block `rapid-ai-forms/form` selecting a form by id.
 - [ ] Server-side render via the existing shortcode renderer.
 
 ### v0.5 — Richer forms
@@ -666,7 +666,7 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [ ] Multi-step forms with progress indicator.
 
 ### v1.0 — Managed service GA (post wp.org launch)
-- [ ] Managed backend live with credit billing (separate `easy-ai-forms-backend` service).
+- [ ] Managed backend live with credit billing (separate `rapid-ai-forms-backend` service).
 - [ ] Settings UI: re-enable mode selector, surface managed card with license key + live credit balance.
 - [ ] Usage dashboard inside the plugin admin.
 - [ ] Webhook receiver for billing → settings sync.
@@ -682,4 +682,4 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - **BYOK** — "Bring Your Own Key." The site owner supplies their own provider API key; the plugin makes the request directly from the WP server.
 - **Managed** — The vendor-hosted service. The plugin calls a single endpoint; credits are tracked and billed centrally.
 - **Form Schema** — The JSON structure defined in §2 that describes a form's fields.
-- **Provider** — A class implementing `Easy_Ai_Forms\Ai\Provider` that knows how to talk to an LLM.
+- **Provider** — A class implementing `Rapid_Ai_Forms\Ai\Provider` that knows how to talk to an LLM.

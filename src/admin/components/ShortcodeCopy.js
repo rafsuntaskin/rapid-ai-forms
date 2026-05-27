@@ -32,24 +32,24 @@ export default function ShortcodeCopy( { shortcode, label } ) {
 	};
 
 	return (
-		<div className="eaif-shortcode" role="group" aria-label={ label || __( 'Embed shortcode', 'easy-ai-forms' ) }>
-			{ label && <span className="eaif-shortcode__label">{ label }</span> }
+		<div className="raif-shortcode" role="group" aria-label={ label || __( 'Embed shortcode', 'rapid-ai-forms' ) }>
+			{ label && <span className="raif-shortcode__label">{ label }</span> }
 			<input
 				ref={ inputRef }
 				type="text"
-				className="eaif-shortcode__input"
+				className="raif-shortcode__input"
 				value={ shortcode }
 				readOnly
 				onFocus={ ( e ) => e.target.select() }
-				aria-label={ __( 'Shortcode', 'easy-ai-forms' ) }
+				aria-label={ __( 'Shortcode', 'rapid-ai-forms' ) }
 			/>
 			<Button
 				variant="secondary"
 				size="small"
 				onClick={ copy }
-				className="eaif-shortcode__btn"
+				className="raif-shortcode__btn"
 			>
-				{ copied ? __( '✓ Copied', 'easy-ai-forms' ) : __( 'Copy', 'easy-ai-forms' ) }
+				{ copied ? __( '✓ Copied', 'rapid-ai-forms' ) : __( 'Copy', 'rapid-ai-forms' ) }
 			</Button>
 		</div>
 	);

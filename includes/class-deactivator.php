@@ -2,10 +2,10 @@
 /**
  * Plugin deactivation handler.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms;
+namespace Rapid_Ai_Forms;
 
 defined( 'ABSPATH' ) || exit;
 

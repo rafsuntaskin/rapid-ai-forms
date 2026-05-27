@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Easy AI Forms">
-	<description>Coding standards for the Easy AI Forms plugin.</description>
+<ruleset name="Rapid AI Forms">
+	<description>Coding standards for the Rapid AI Forms plugin.</description>
 
 	<file>.</file>
 	<exclude-pattern>/build/*</exclude-pattern>
@@ -49,7 +49,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="easy-ai-forms"/>
+				<element value="rapid-ai-forms"/>
 			</property>
 		</properties>
 	</rule>

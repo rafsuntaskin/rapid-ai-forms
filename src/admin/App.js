@@ -5,7 +5,7 @@ import FormEditor from './pages/FormEditor';
 import Settings from './pages/Settings';
 
 export default function App() {
-	const config = window.EASY_AI_FORMS_ADMIN || {};
+	const config = window.RAPID_AI_FORMS_ADMIN || {};
 	const api = useMemo(
 		() => createApiClient( { restUrl: config.restUrl, nonce: config.nonce } ),
 		[ config.restUrl, config.nonce ]
@@ -20,7 +20,7 @@ export default function App() {
 	}, [] );
 
 	// The WP admin page slug determines top-level view.
-	if ( config.page === 'easy-ai-forms-settings' ) {
+	if ( config.page === 'rapid-ai-forms-settings' ) {
 		return <Settings api={ api } />;
 	}
 

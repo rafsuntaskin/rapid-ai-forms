@@ -8,15 +8,15 @@
 import { createApiClient } from '../shared/api/createApiClient';
 import './frontend.scss';
 
-const config = window.EASY_AI_FORMS || {};
+const config = window.RAPID_AI_FORMS || {};
 const api = createApiClient( { restUrl: config.restUrl, nonce: config.nonce } );
 
 const onSubmit = async ( event ) => {
 	event.preventDefault();
 	const form = event.currentTarget;
 	const uuid = form.dataset.formUuid;
-	const message = form.querySelector( '.eaif-form__message' );
-	const submit = form.querySelector( '.eaif-form__submit' );
+	const message = form.querySelector( '.raif-form__message' );
+	const submit = form.querySelector( '.raif-form__submit' );
 
 	const data = {};
 	new FormData( form ).forEach( ( value, rawKey ) => {
@@ -32,7 +32,7 @@ const onSubmit = async ( event ) => {
 
 	submit.disabled = true;
 	message.textContent = '';
-	message.className = 'eaif-form__message';
+	message.className = 'raif-form__message';
 
 	try {
 		await api.post( `submissions/${ uuid }`, data );
@@ -48,7 +48,7 @@ const onSubmit = async ( event ) => {
 };
 
 const bind = () => {
-	document.querySelectorAll( 'form.eaif-form' ).forEach( ( form ) => {
+	document.querySelectorAll( 'form.raif-form' ).forEach( ( form ) => {
 		if ( form.dataset.eaifBound ) return;
 		form.dataset.eaifBound = '1';
 		form.addEventListener( 'submit', onSubmit );

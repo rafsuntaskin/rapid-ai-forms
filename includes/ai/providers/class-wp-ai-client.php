@@ -7,13 +7,13 @@
  * core AI Client is loaded, environment-enabled, and reports the prompt is
  * supported for text generation.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai\Providers;
+namespace Rapid_Ai_Forms\Ai\Providers;
 
-use Easy_Ai_Forms\Ai\Provider;
-use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Rapid_Ai_Forms\Ai\Provider;
+use Rapid_Ai_Forms\Ai\Schema_Prompt;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,7 +24,7 @@ class Wp_Ai_Client implements Provider {
 	}
 
 	public function label() {
-		return __( 'WordPress AI Client (site connector)', 'easy-ai-forms' );
+		return __( 'WordPress AI Client (site connector)', 'rapid-ai-forms' );
 	}
 
 	/**
@@ -42,8 +42,8 @@ class Wp_Ai_Client implements Provider {
 	public function generate_form_schema( $prompt, array $options = array() ) {
 		if ( ! self::is_available() ) {
 			return new \WP_Error(
-				'eaif_wp_ai_client_unavailable',
-				__( 'The WordPress AI Client is not available on this site. Configure a connector under Settings → Connectors, or pick a different provider.', 'easy-ai-forms' )
+				'raif_wp_ai_client_unavailable',
+				__( 'The WordPress AI Client is not available on this site. Configure a connector under Settings → Connectors, or pick a different provider.', 'rapid-ai-forms' )
 			);
 		}
 
@@ -53,8 +53,8 @@ class Wp_Ai_Client implements Provider {
 
 		if ( ! $builder->is_supported_for_text_generation() ) {
 			return new \WP_Error(
-				'eaif_wp_ai_client_not_supported',
-				__( 'No configured connector supports text generation. Add one under Settings → Connectors.', 'easy-ai-forms' )
+				'raif_wp_ai_client_not_supported',
+				__( 'No configured connector supports text generation. Add one under Settings → Connectors.', 'rapid-ai-forms' )
 			);
 		}
 
@@ -69,22 +69,22 @@ class Wp_Ai_Client implements Provider {
 	public function verify( array $options = array() ) {
 		if ( ! function_exists( 'wp_ai_client_prompt' ) ) {
 			return new \WP_Error(
-				'eaif_wp_ai_client_missing',
-				__( 'WordPress 7.0 or later is required to use the AI Client provider.', 'easy-ai-forms' )
+				'raif_wp_ai_client_missing',
+				__( 'WordPress 7.0 or later is required to use the AI Client provider.', 'rapid-ai-forms' )
 			);
 		}
 		if ( function_exists( 'wp_supports_ai' ) && ! wp_supports_ai() ) {
 			return new \WP_Error(
-				'eaif_wp_ai_client_disabled',
-				__( 'AI features are disabled in this environment (WP_AI_SUPPORT is false or filtered off).', 'easy-ai-forms' )
+				'raif_wp_ai_client_disabled',
+				__( 'AI features are disabled in this environment (WP_AI_SUPPORT is false or filtered off).', 'rapid-ai-forms' )
 			);
 		}
 
 		$builder = wp_ai_client_prompt( 'ping' )->as_json_response();
 		if ( ! $builder->is_supported_for_text_generation() ) {
 			return new \WP_Error(
-				'eaif_wp_ai_client_no_connector',
-				__( 'No connector is configured for text generation. Open Settings → Connectors and add one.', 'easy-ai-forms' )
+				'raif_wp_ai_client_no_connector',
+				__( 'No connector is configured for text generation. Open Settings → Connectors and add one.', 'rapid-ai-forms' )
 			);
 		}
 		return true;

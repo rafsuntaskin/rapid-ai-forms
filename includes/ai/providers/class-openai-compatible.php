@@ -4,13 +4,13 @@
  *
  * Works with OpenAI, OpenRouter, local LLMs (Ollama, LM Studio), Groq, etc.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Ai\Providers;
+namespace Rapid_Ai_Forms\Ai\Providers;
 
-use Easy_Ai_Forms\Ai\Provider;
-use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Rapid_Ai_Forms\Ai\Provider;
+use Rapid_Ai_Forms\Ai\Schema_Prompt;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -21,7 +21,7 @@ class Openai_Compatible implements Provider {
 	}
 
 	public function label() {
-		return __( 'OpenAI-compatible', 'easy-ai-forms' );
+		return __( 'OpenAI-compatible', 'rapid-ai-forms' );
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
@@ -64,7 +64,7 @@ class Openai_Compatible implements Provider {
 
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( wp_remote_retrieve_response_code( $response ) >= 400 ) {
-			return new \WP_Error( 'eaif_openai_error', $body['error']['message'] ?? __( 'AI API error.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_openai_error', $body['error']['message'] ?? __( 'AI API error.', 'rapid-ai-forms' ) );
 		}
 
 		$text = $body['choices'][0]['message']['content'] ?? '';
@@ -77,7 +77,7 @@ class Openai_Compatible implements Provider {
 		$model    = trim( (string) ( $options['model'] ?? '' ) );
 
 		if ( ! $api_key ) {
-			return new \WP_Error( 'eaif_missing_key', __( 'API key is required.', 'easy-ai-forms' ) );
+			return new \WP_Error( 'raif_missing_key', __( 'API key is required.', 'rapid-ai-forms' ) );
 		}
 
 		// GET /models is cheap (no token usage) and proves auth, endpoint, and model availability.
@@ -95,18 +95,18 @@ class Openai_Compatible implements Provider {
 		$code = wp_remote_retrieve_response_code( $response );
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( $code >= 400 ) {
-			$msg = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'easy-ai-forms' );
-			return new \WP_Error( 'eaif_verify_failed', $msg, array( 'http_status' => $code ) );
+			$msg = $body['error']['message'] ?? __( 'The endpoint rejected this API key.', 'rapid-ai-forms' );
+			return new \WP_Error( 'raif_verify_failed', $msg, array( 'http_status' => $code ) );
 		}
 
 		if ( '' !== $model ) {
 			$ids = array_column( (array) ( $body['data'] ?? array() ), 'id' );
 			if ( ! in_array( $model, $ids, true ) ) {
 				return new \WP_Error(
-					'eaif_model_unavailable',
+					'raif_model_unavailable',
 					sprintf(
 						/* translators: %s: model id */
-						__( 'Model "%s" is not available to this API key. Check the model id or pick one your account can access.', 'easy-ai-forms' ),
+						__( 'Model "%s" is not available to this API key. Check the model id or pick one your account can access.', 'rapid-ai-forms' ),
 						$model
 					)
 				);

@@ -6,19 +6,19 @@
  * via a standardized registry. Guarded with function_exists so the plugin still
  * works on WP < 6.9.
  *
- * @package Easy_Ai_Forms
+ * @package Rapid_Ai_Forms
  */
 
-namespace Easy_Ai_Forms\Abilities;
+namespace Rapid_Ai_Forms\Abilities;
 
-use Easy_Ai_Forms\Ai\Provider_Manager;
-use Easy_Ai_Forms\Forms\Form_Repository;
-use Easy_Ai_Forms\Ai\Schema_Prompt;
+use Rapid_Ai_Forms\Ai\Provider_Manager;
+use Rapid_Ai_Forms\Forms\Form_Repository;
+use Rapid_Ai_Forms\Ai\Schema_Prompt;
 
 defined( 'ABSPATH' ) || exit;
 
 class Abilities {
-	const CATEGORY = 'easy-ai-forms';
+	const CATEGORY = 'rapid-ai-forms';
 
 	public function register() {
 		add_action( 'wp_abilities_api_categories_init', array( $this, 'register_category' ) );
@@ -32,8 +32,8 @@ class Abilities {
 		wp_register_ability_category(
 			self::CATEGORY,
 			array(
-				'label'       => __( 'AI Forms', 'easy-ai-forms' ),
-				'description' => __( 'Build, fetch, and submit AI-generated forms.', 'easy-ai-forms' ),
+				'label'       => __( 'AI Forms', 'rapid-ai-forms' ),
+				'description' => __( 'Build, fetch, and submit AI-generated forms.', 'rapid-ai-forms' ),
 			)
 		);
 	}
@@ -81,10 +81,10 @@ class Abilities {
 		$can_manage = static fn() => current_user_can( 'manage_options' );
 
 		wp_register_ability(
-			'easy-ai-forms/generate-form-schema',
+			'rapid-ai-forms/generate-form-schema',
 			array(
-				'label'               => __( 'Generate or edit a form schema from a prompt', 'easy-ai-forms' ),
-				'description'         => __( 'Use the configured AI provider to produce a form schema. If a current_schema is supplied, the model edits it in place, preserving fields the user did not ask to change.', 'easy-ai-forms' ),
+				'label'               => __( 'Generate or edit a form schema from a prompt', 'rapid-ai-forms' ),
+				'description'         => __( 'Use the configured AI provider to produce a form schema. If a current_schema is supplied, the model edits it in place, preserving fields the user did not ask to change.', 'rapid-ai-forms' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -104,15 +104,15 @@ class Abilities {
 					$current = isset( $input['current_schema'] ) && is_array( $input['current_schema'] ) ? $input['current_schema'] : null;
 					return $manager->generate_form_schema( (string) ( $input['prompt'] ?? '' ), $current );
 				},
-				'meta'                => array( 'plugin' => 'easy-ai-forms' ),
+				'meta'                => array( 'plugin' => 'rapid-ai-forms' ),
 			)
 		);
 
 		wp_register_ability(
-			'easy-ai-forms/create-form',
+			'rapid-ai-forms/create-form',
 			array(
-				'label'               => __( 'Create a form', 'easy-ai-forms' ),
-				'description'         => __( 'Persist a form (with an optional pre-generated schema).', 'easy-ai-forms' ),
+				'label'               => __( 'Create a form', 'rapid-ai-forms' ),
+				'description'         => __( 'Persist a form (with an optional pre-generated schema).', 'rapid-ai-forms' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -140,17 +140,17 @@ class Abilities {
 					return $form ? array(
 						'id'   => $form['id'],
 						'uuid' => $form['uuid'],
-					) : new \WP_Error( 'eaif_create_failed', __( 'Could not create form.', 'easy-ai-forms' ) );
+					) : new \WP_Error( 'raif_create_failed', __( 'Could not create form.', 'rapid-ai-forms' ) );
 				},
-				'meta'                => array( 'plugin' => 'easy-ai-forms' ),
+				'meta'                => array( 'plugin' => 'rapid-ai-forms' ),
 			)
 		);
 
 		wp_register_ability(
-			'easy-ai-forms/list-forms',
+			'rapid-ai-forms/list-forms',
 			array(
-				'label'               => __( 'List forms', 'easy-ai-forms' ),
-				'description'         => __( 'Return a paginated list of forms with their shortcodes.', 'easy-ai-forms' ),
+				'label'               => __( 'List forms', 'rapid-ai-forms' ),
+				'description'         => __( 'Return a paginated list of forms with their shortcodes.', 'rapid-ai-forms' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -194,20 +194,20 @@ class Abilities {
 							'uuid'      => $f['uuid'],
 							'title'     => $f['title'],
 							'status'    => $f['status'],
-							'shortcode' => sprintf( '[easy_ai_form id="%d"]', (int) $f['id'] ),
+							'shortcode' => sprintf( '[rapid_ai_form id="%d"]', (int) $f['id'] ),
 						),
 						$forms
 					);
 				},
-				'meta'                => array( 'plugin' => 'easy-ai-forms' ),
+				'meta'                => array( 'plugin' => 'rapid-ai-forms' ),
 			)
 		);
 
 		wp_register_ability(
-			'easy-ai-forms/get-form',
+			'rapid-ai-forms/get-form',
 			array(
-				'label'               => __( 'Get a form', 'easy-ai-forms' ),
-				'description'         => __( 'Fetch a single form (and its schema) by id or uuid.', 'easy-ai-forms' ),
+				'label'               => __( 'Get a form', 'rapid-ai-forms' ),
+				'description'         => __( 'Fetch a single form (and its schema) by id or uuid.', 'rapid-ai-forms' ),
 				'category'            => self::CATEGORY,
 				'input_schema'        => array(
 					'type'       => 'object',
@@ -232,16 +232,16 @@ class Abilities {
 					$form = ! empty( $input['uuid'] )
 						? $repo->get_by_uuid( (string) $input['uuid'] )
 						: $repo->get( (int) ( $input['id'] ?? 0 ) );
-					return $form ?: new \WP_Error( 'eaif_not_found', __( 'Form not found.', 'easy-ai-forms' ) );
+					return $form ?: new \WP_Error( 'raif_not_found', __( 'Form not found.', 'rapid-ai-forms' ) );
 				},
-				'meta'                => array( 'plugin' => 'easy-ai-forms' ),
+				'meta'                => array( 'plugin' => 'rapid-ai-forms' ),
 			)
 		);
 
 		/**
-		 * Fires after Easy AI Forms registers its abilities. Other plugins can
+		 * Fires after Rapid AI Forms registers its abilities. Other plugins can
 		 * register related abilities or extend the category here.
 		 */
-		do_action( 'easy_ai_forms_abilities_registered' );
+		do_action( 'rapid_ai_forms_abilities_registered' );
 	}
 }
