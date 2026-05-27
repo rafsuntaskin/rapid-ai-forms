@@ -12,13 +12,15 @@ assets/
 bin/
 dist/
 
-# Build sources (only the built `build/` output ships)
-src/
+# Note: src/ IS shipped in the dist zip so reviewers and users can see the
+# un-minified JSX/SCSS source that produced build/. wp.org Guideline 4
+# requires source for any compiled/minified assets to be either bundled or
+# linked from the readme; we bundle.
 .claude/
 node_modules/
 vendor/
 
-# Dev configs
+# Dev configs we don't ship.
 .git/
 .gitignore
 .distignore
@@ -26,14 +28,17 @@ vendor/
 .eslintrc*
 .prettierrc*
 .stylelintrc*
-package.json
-package-lock.json
+
+# composer + phpcs are dev-only tooling; the shipped plugin doesn't need them.
 composer.json
 composer.lock
-webpack.config.js
 phpcs.xml*
 phpunit.xml*
 tests/
+
+# NOTE: package.json, package-lock.json, and webpack.config.js ARE included
+# in the dist zip so users / reviewers can run `npm install && npm run build`
+# to regenerate the minified JS from src/ — satisfies wp.org Guideline 4.
 
 # OS / IDE
 .DS_Store

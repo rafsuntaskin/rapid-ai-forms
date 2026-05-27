@@ -1,4 +1,4 @@
-=== Easy AI Forms ===
+=== Rapid AI Forms ===
 Contributors: rafsuntaskin
 Tags: contact form, ai builder, form builder, forms
 Requires at least: 6.4
@@ -12,7 +12,7 @@ AI-powered contact form builder. Describe the form you need and let AI build it 
 
 == Description ==
 
-Easy AI Forms is a contact form builder that uses AI to do the boring part. Instead of dragging fields around, you describe the form you want in plain English — *"contact form with name, email, phone, and a short message"* — and the plugin generates the fields, labels, and validation for you. Edit anything by hand, drop it on any page with a shortcode, and start receiving submissions.
+Rapid AI Forms is a contact form builder that uses AI to do the boring part. Instead of dragging fields around, you describe the form you want in plain English — *"contact form with name, email, phone, and a short message"* — and the plugin generates the fields, labels, and validation for you. Edit anything by hand, drop it on any page with a shortcode, and start receiving submissions.
 
 Every form sends a notification email to whoever you choose, with a fully customizable Subject and Body using mail-tags (Contact Form 7 style). Replies go straight to the visitor's email address when you pick a Reply-To field.
 
@@ -52,9 +52,9 @@ Form submissions stay on your site: they're stored in a custom database table an
 
 == Installation ==
 
-1. In your WordPress admin, go to **Plugins → Add New**, search for *Easy AI Forms*, and click **Install Now**, then **Activate**.
+1. In your WordPress admin, go to **Plugins → Add New**, search for *Rapid AI Forms*, and click **Install Now**, then **Activate**.
 2. Open **AI Forms → Settings** and configure your AI provider.
-3. Create a form under **AI Forms → Forms**, describe what you want, and embed it on any page with `[easy_ai_form id="123"]`.
+3. Create a form under **AI Forms → Forms**, describe what you want, and embed it on any page with `[rapid_ai_form id="123"]`.
 
 == Frequently Asked Questions ==
 
@@ -76,7 +76,7 @@ No. Submissions stay in your own database. Only the prompts you type in the form
 
 = Where do form submissions go? =
 
-Into a dedicated `{prefix}easy_ai_form_submissions` database table. The site administrator (or any address you configure on the form) also receives a notification email on each submission with the field values.
+Into a dedicated `{prefix}rapid_ai_form_submissions` database table. The site administrator (or any address you configure on the form) also receives a notification email on each submission with the field values.
 
 = How do I customize the notification email? =
 
@@ -85,6 +85,16 @@ Open the form in the editor and scroll to **Email notifications**. You can set t
 = I'm not receiving notification emails. What should I check? =
 
 The plugin hands the message to WordPress's `wp_mail()`, which means the site itself has to be able to send mail. If `wp_mail()` does not work elsewhere on the site (e.g. password-reset emails are missing), the most common fix is to install an SMTP plugin and point it at a real mailer. Also confirm the notifications toggle is on for the form and that the *To* field contains a valid address.
+
+== Development ==
+
+The full plugin source — including the un-minified JSX/SCSS that produces the files in `build/` — ships inside this plugin under `src/`, along with `package.json`, `package-lock.json`, and `webpack.config.js`. You can rebuild the compiled assets at any time:
+
+`npm install && npm run build`
+
+This regenerates `build/admin.js`, `build/admin.css`, `build/frontend.js`, `build/frontend.css`, and the matching `.asset.php` dependency manifests. No third-party libraries are bundled inside the compiled output — every external dependency is referenced via WordPress's own `wp.element` / `wp.components` / `wp.apiFetch` / `wp.i18n` globals, which WordPress loads separately.
+
+Development happens on GitHub at https://github.com/rafsuntaskin/wp-ai-forms — issues, pull requests, and discussions are welcome there.
 
 == Changelog ==
 
@@ -96,8 +106,8 @@ The plugin hands the message to WordPress's `wp_mail()`, which means the site it
 * Custom database tables for forms and submissions.
 * Per-form email notifications with mail-tag templating, comma-separated recipients, and an optional Reply-To field.
 * "Generate with AI" action for the notification body.
-* `[easy_ai_form id="..."]` shortcode renderer with theme-aware submit button.
-* REST API at `/wp-json/easy-ai-forms/v1/` with capability-gated admin routes.
+* `[rapid_ai_form id="..."]` shortcode renderer with theme-aware submit button.
+* REST API at `/wp-json/rapid-ai-forms/v1/` with capability-gated admin routes.
 * Registration with the WordPress Abilities API.
 * One-click credential verification.
 * Live preview, click-to-copy shortcode, card-based form list with search, pagination, and delete.
