@@ -94,7 +94,7 @@ The full plugin source — including the un-minified JSX/SCSS that produces the 
 
 This regenerates `build/admin.js`, `build/admin.css`, `build/frontend.js`, `build/frontend.css`, and the matching `.asset.php` dependency manifests. No third-party libraries are bundled inside the compiled output — every external dependency is referenced via WordPress's own `wp.element` / `wp.components` / `wp.apiFetch` / `wp.i18n` globals, which WordPress loads separately.
 
-Development happens on GitHub at https://github.com/rafsuntaskin/wp-ai-forms — issues, pull requests, and discussions are welcome there.
+Development happens on GitHub at https://github.com/rafsuntaskin/rapid-ai-forms — issues, pull requests, and discussions are welcome there.
 
 == Changelog ==
 
