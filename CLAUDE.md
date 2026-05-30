@@ -9,6 +9,7 @@ A WordPress plugin that builds forms from natural-language prompts.
 
 Modes:
 - **BYOK** (MVP): user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
+- **WP AI Client** (MVP, WP 7.0+): registers a fourth provider that delegates to core's `wp_ai_client_prompt()`. No plugin-held credentials — the site owner uses **Settings → Connectors**. Auto-hidden on older WP via `Wp_Ai_Client::is_available()`.
 - **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
 
 Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_ai_form_submissions`) and rendered via the `[rapid_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
@@ -22,12 +23,15 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - `Ai\Schema_Prompt` holds the shared system prompt and the JSON sanitizer that every provider funnels into — keep schema validation centralized there.
 - REST routes live under `rapid-ai-forms/v1/*`. Management endpoints require `manage_options`; the public submission endpoint is `/submissions/{uuid}`.
 - Secrets in `rapid_ai_forms_ai_settings` are never returned over REST; `*_set` booleans signal presence instead.
+- `Notifications\Email_Notifier` listens on `rapid_ai_forms_submission_created` and sends per-form email via `wp_mail()`. Mail-tags resolved in `Email_Notifier::build_tags()`; recipient defaults to `admin_email` (seeded at form-create time in `Form_Repository::create()`).
+- `Forms\Form_Repository::list()` / `count()` accept `page`, `per_page`, and `search`. The REST `/forms` endpoint reads `X-WP-Total` / `X-WP-TotalPages` headers so the React list can paginate without a custom envelope.
 
 ### JS (`src/`)
 - Built with `@wordpress/scripts`. Two entries: `admin` and `frontend`. Output → `build/`.
 - All React goes through `@wordpress/element` (the bundled wp.element React). Do **not** add a separate React dep.
 - UI uses `@wordpress/components`.
 - `src/shared/` is intentionally plugin-agnostic — see its README. Anything in there must not import plugin globals or feature folders. The goal is to lift this folder into a shared npm package across plugins later.
+- **`src/` ships in the wp.org dist zip** (alongside `package.json`, `package-lock.json`, `webpack.config.js`) so reviewers can verify Guideline 4 (public source access for compiled assets). Don't add `src/` to `.distignore`.
 
 ## Conventions
 - Filenames: `class-foo-bar.php`, `interface-foo.php`, `trait-foo.php` — autoloader depends on this.
@@ -36,14 +40,20 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - JS global namespace: `RAPID_AI_FORMS` (frontend) and `RAPID_AI_FORMS_ADMIN` (admin) — set via `wp_localize_script`.
 
 ## Common tasks
-- Add a new AI provider: implement `Ai\Provider`, register in `Provider_Manager::__construct` or via the action hook, add a config block in the Settings React page.
-- Add a new field type: extend `Form_Renderer::render_field` (PHP), the `FIELD_TYPES` array in `FormEditor.js`, and the allowed types in `Schema_Prompt::sanitize_schema`.
+- Add a new AI provider: implement `Ai\Provider` (including `verify()`), register in `Provider_Manager::__construct` or via the `rapid_ai_forms_register_providers` action, add a config block in the Settings React page.
+- Add a new field type: extend `Form_Renderer::render_field` (PHP), `Rest_Controller::sanitize_submission()` (per-type submit sanitization), the `FIELD_TYPES` array in `FormEditor.js`, the allowed types in `Schema_Prompt::sanitize_schema()`, and (if the type takes a `placeholder`) `wp_ai_forms_placeholder_field_types`.
 - Build: `npm run build`. Dev watch: `npm run start`.
+- Lint PHP: `composer lint` (auto-fix: `composer lint:fix`).
+- Regenerate translations: `wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist`.
+- Build dist zip: `npm run dist` → `dist/rapid-ai-forms.zip` (honors `.distignore`).
+- Deploy to local wooDev: `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build`.
+- Run wp.org Plugin Check against the installed copy: `lando wp plugin check rapid-ai-forms`. Must report `Success: Checks complete. No errors found.` before submitting.
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
 - Submissions admin view (data is being stored; UI to come) — v0.2.
+- Honeypot + per-IP rate limit on `/submissions/{uuid}` — v0.3.
+- AI-driven per-form CSS editor — v0.3 (see `docs/PLAN-ai-css-editor.md`).
 - Gutenberg block (thin wrapper around shortcode) — v0.4.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.
 - Managed service (UI + backend) — v1.0, post wp.org launch.
-- WP AI Client SDK adoption — future, once SDK stabilizes / lands in WP 7.0 core.
