@@ -36,7 +36,9 @@ Upload `dist/rapid-ai-forms.zip` at <https://wordpress.org/plugins/developers/ad
 Run through this top-to-bottom *before* touching the submission form.
 
 ### Plugin identity
-- [ ] **Plugin Name does not contain "WordPress" or "WP"** — wp.org's trademark policy forbids both. We hit this on the original "WP AI Forms" name and had to rebrand. See [Plugin Guidelines §17](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#17-plugins-must-respect-trademarks-copyrights-and-project-names).
+- [ ] **Plugin Name does not contain "WordPress" or "WP"** — wp.org's trademark policy forbids both. We hit this on the original "WP AI Forms" name and had to rebrand.
+- [ ] **Plugin Name does not lead with a generic adjective.** The review bot also rejects names that start with common adjectives like *Easy*, *Simple*, *Advanced*, *Best*, *Ultimate*, *Smart* — it treats them as non-distinctive and as potential trademark-lookalikes. We hit this on "Easy AI Forms" → bounced for "Easy AI" reading like a brand. Lead with a coined term or your personal-brand prefix instead.
+- [ ] **Code prefix is at least 4 characters and not a common word.** The bot flags `easy_*`, `simple_*`, etc. as too generic. Derive a short prefix from the plugin name (we use `raif`) for CSS classes and error codes, and use the full slug for namespaces, hooks, and options. See [Plugin Guidelines §17](https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/#17-plugins-must-respect-trademarks-copyrights-and-project-names).
 - [ ] `rapid-ai-forms.php` has no placeholder `Plugin URI:` (we removed ours — `example.com/...` URIs get flagged).
 - [ ] `Author` is the wp.org **username** (matches `Contributors:` in readme.txt). For us: `rafsuntaskin`.
 - [ ] `Author URI` points at the wp.org profile (`https://profiles.wordpress.org/<user>/`).
@@ -124,12 +126,20 @@ These files live in **SVN `/assets/`**, not in `trunk/`. The plugin zip excludes
 
 ### Build the upload artifact
 - [ ] `npm run dist` produces a zip in `dist/rapid-ai-forms.zip`.
-- [ ] Zip is < 10 MB (we're at ~53 KB).
+- [ ] Zip is < 10 MB (we're at ~253 KB with source bundled).
 - [ ] Zip's top-level entry is exactly `rapid-ai-forms/` (verify with `unzip -l dist/rapid-ai-forms.zip | head -3`).
-- [ ] Zip contains: `rapid-ai-forms.php`, `readme.txt`, `includes/`, `build/`, `languages/`. Nothing else.
-- [ ] Zip does NOT contain: `src/`, `assets/`, `node_modules/`, `vendor/`, `docs/`, `bin/`, `.git/`, `.claude/`, `.distignore`, `composer.json`, `package.json`, `webpack.config.js`, `phpcs.xml.dist`, `CLAUDE.md`.
+- [ ] Zip contains: `rapid-ai-forms.php`, `readme.txt`, `LICENSE`, `includes/`, `build/`, `languages/`, **`src/`**, **`package.json`**, **`package-lock.json`**, **`webpack.config.js`**. The `src/` + build tooling is bundled to satisfy wp.org Guideline 4 (public source access for compiled assets) — see the "Source code accessibility" callout below.
+- [ ] Zip does NOT contain: `assets/`, `node_modules/`, `vendor/`, `docs/`, `bin/`, `.git/`, `.claude/`, `.distignore`, `composer.json`, `phpcs.xml.dist`, `CLAUDE.md`.
 - [ ] JS bundles are minified (look at `unzip -p ... build/admin.js | head -c 200` — should be a single line of dense code).
 - [ ] No `*.map` source maps in the zip.
+
+### Source code accessibility (Guideline 4)
+wp.org's review bot specifically flags `build/*.js` as minified artifacts with no discoverable source counterpart. There are two ways to satisfy this. We do **both** for belt-and-suspenders:
+
+- [ ] **Bundle source in the zip.** `src/`, `package.json`, `package-lock.json`, and `webpack.config.js` ship inside the plugin so `npm install && npm run build` reproduces `build/` from a fresh extract. The `== Development ==` section of `readme.txt` documents this.
+- [ ] **Public repo URL in the readme.** The `== Development ==` section links to `https://github.com/rafsuntaskin/rapid-ai-forms`. The repo must be public — a private repo URL fails the check silently when the reviewer clicks through.
+- [ ] **`Plugin URI:` header** also points at the public repo so the link is visible directly from the Plugins screen in wp-admin.
+- [ ] **`LICENSE` file** at the plugin root (canonical GPL-2.0 text). Plugin Check doesn't require it, but GitHub uses it to auto-detect the project license; the wp.org review team appreciates seeing it too.
 
 ---
 
@@ -155,7 +165,14 @@ These files live in **SVN `/assets/`**, not in `trunk/`. The plugin zip excludes
 
 ## 3. Once approved: SVN setup
 
-When approved, you'll get an email with the SVN URL: `https://plugins.svn.wordpress.org/rapid-ai-forms/`.
+> **You are here (2026-05-31).** v0.1.0 was approved by the wp.org Plugin Review Team and SVN access has been granted at `https://plugins.svn.wordpress.org/rapid-ai-forms/`. The next concrete step is the first SVN commit using the workflow below.
+
+Pre-flight (before the first svn commit):
+
+- [ ] `dist/rapid-ai-forms.zip` is the freshly built artifact — same one approved by the review team, or a strict superset (we can include the LICENSE addition and any post-approval doc tweaks).
+- [ ] `Stable tag: 0.1.0` in `readme.txt` matches what we're about to tag.
+- [ ] Screenshots are ready (see §4). They go in SVN `assets/`, not `trunk/`, and can be added/updated independently without re-releasing.
+- [ ] Confirm the SVN URL in the approval email matches: `https://plugins.svn.wordpress.org/rapid-ai-forms/`. wp.org sends the URL once; the slug is locked at this point and cannot be changed.
 
 ```bash
 # Check out the wp.org SVN (separate from the git repo — keep them in different folders).
@@ -179,7 +196,11 @@ unzip -q /path/to/git-repo/dist/rapid-ai-forms.zip -d /tmp/raif-release
 cp -R /tmp/raif-release/rapid-ai-forms/* trunk/
 
 # 2. Copy assets (icon, banner, screenshots) into assets/.
-cp /path/to/git-repo/assets/* assets/   # assets dir exists in your git repo
+#    Local assets/ folder is excluded from the plugin zip via .distignore,
+#    so this is the first time these files leave the dev repo.
+cp /path/to/git-repo/assets/screenshot-*.png assets/
+cp /path/to/git-repo/assets/icon-*.png assets/      # or icon.svg
+cp /path/to/git-repo/assets/banner-*.png assets/
 
 # 3. Add new files, then commit trunk + assets.
 svn add --force trunk assets

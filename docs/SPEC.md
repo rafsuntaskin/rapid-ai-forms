@@ -155,7 +155,7 @@ Indexes: `form_id`, `user_id`, `created_at`.
 ### 3.4 Migration policy
 - `Schema::install()` runs on activation via `dbDelta()`.
 - DB version is stored in `rapid_ai_forms_db_version`. `Plugin::maybe_migrate()` (called on `plugins_loaded`) compares the stored value against `Schema::DB_VERSION` and re-runs `dbDelta()` when they diverge. `dbDelta()` is additive — bumping for new columns or indexes works; renaming or dropping columns requires a manual migration helper (not yet needed).
-- Current `Schema::DB_VERSION` = **`1.0.3`**. Pre-launch the table prefix moved twice: `{prefix}ai_forms` → `{prefix}easy_ai_forms` (1.0.2) → `{prefix}rapid_ai_forms` (1.0.3). No upgrade-path code is needed because no public release used the older names.
+- Current `Schema::DB_VERSION` = **`1.0.3`**. The table prefix moved twice during pre-wp.org rebranding (initial `{prefix}ai_forms` → `{prefix}easy_ai_forms` at 1.0.2 → `{prefix}rapid_ai_forms` at 1.0.3). No public release used the older names, so no upgrade-path helper is needed. For any **post-launch** schema change, write a one-shot migration helper next to `Schema::install()` and gate it on the stored version.
 
 ---
 
