@@ -7,6 +7,8 @@
 #   bin/dist.sh --to <path>           # builds and copies to <path>/rapid-ai-forms/
 #   bin/dist.sh --to <path> --no-build  # skip npm run build (use existing build/)
 #   bin/dist.sh --zip <file>          # build and write zip to <file>
+#   bin/dist.sh --stage <dir>         # build and emit the clean staged tree to <dir>/
+#                                     #   (used by bin/svn-deploy.sh to sync trunk/)
 #
 # Examples:
 #   bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins
@@ -20,6 +22,7 @@ cd "$REPO_ROOT"
 
 TARGET_DIR=""
 ZIP_PATH=""
+STAGE_OUT=""
 RUN_BUILD=1
 
 while [[ $# -gt 0 ]]; do
@@ -30,6 +33,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--zip)
 			ZIP_PATH="$2"
+			shift 2
+			;;
+		--stage)
+			STAGE_OUT="$2"
 			shift 2
 			;;
 		--no-build)
@@ -47,8 +54,8 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-# Default: write a zip into ./dist/
-if [[ -z "$TARGET_DIR" && -z "$ZIP_PATH" ]]; then
+# Default: write a zip into ./dist/ (only when no other output was requested).
+if [[ -z "$TARGET_DIR" && -z "$ZIP_PATH" && -z "$STAGE_OUT" ]]; then
 	ZIP_PATH="$REPO_ROOT/dist/$SLUG.zip"
 fi
 
@@ -95,6 +102,15 @@ if [[ -n "$ZIP_PATH" ]]; then
 	rm -f "$ZIP_PATH"
 	echo "▶ zip → $ZIP_PATH"
 	( cd "$STAGE" && zip -qr "$ZIP_PATH" "$SLUG" )
+fi
+
+# Emit the clean staged plugin tree (contents of the rapid-ai-forms/ folder) into
+# STAGE_OUT. Used by bin/svn-deploy.sh to sync trunk/ without round-tripping a zip.
+if [[ -n "$STAGE_OUT" ]]; then
+	echo "▶ stage → $STAGE_OUT"
+	rm -rf "$STAGE_OUT"
+	mkdir -p "$STAGE_OUT"
+	cp -R "$STAGED/." "$STAGE_OUT/"
 fi
 
 echo "✓ done"

@@ -214,22 +214,59 @@ svn commit -m "Tag 0.1.0"
 
 The release becomes downloadable on wp.org within minutes once the `Stable tag` in `trunk/readme.txt` matches the tag folder name.
 
-### Subsequent updates (0.2.0, etc.)
+### Subsequent updates (0.2.0, etc.) — use `bin/svn-deploy.sh`
+
+Day-to-day releases go through the guarded deploy script rather than hand-typed `svn`
+commands. It is **verify-only** (you bump the version in source; it refuses to run unless
+everything agrees) and **dry-run by default** (nothing is committed without `--commit`).
 
 ```bash
-# Update Stable tag and changelog in readme.txt, bump Version in rapid-ai-forms.php.
-# Rebuild and re-zip in the git repo.
+# 1. Bump all three in the git repo, in one commit:
+#      - Version: header in rapid-ai-forms.php
+#      - Stable tag: in readme.txt
+#      - a new "= X.Y.Z =" entry at the top of the readme changelog
+#    Then commit (and optionally `git tag vX.Y.Z`).
 
-# Sync trunk to the new code.
+# 2. Confirm the official ruleset passes against the installed copy.
+bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build
+cd ~/Dev/lando/sites/wooDev && lando wp plugin check rapid-ai-forms   # No errors found.
+
+# 3. Dry-run the deploy from the git repo. Reviews the pending svn change set; commits nothing.
+cd /path/to/git-repo
+npm run deploy                          # ≡ bash bin/svn-deploy.sh
+
+# 4. Happy with the `svn status` output? Push it.
+npm run deploy -- --commit
+```
+
+What the script does for you (see `bin/svn-deploy.sh --help`):
+- Asserts the **version triad** (plugin header == `Stable tag` == top changelog entry) and
+  that a changelog entry exists — aborts otherwise.
+- Refuses to run with an **unclean git tree** (only committed code ships).
+- Runs `composer lint` and a fresh `npm run build` (via `bin/dist.sh --stage`), so trunk
+  always reflects a clean build.
+- Syncs `trunk/` **deletion-safe** — files dropped from the new build are `svn rm`'d, not
+  left behind (the classic SVN footgun).
+- Syncs SVN `assets/` from the repo's `assets/` (icon/banner/screenshots), skipping cleanly
+  if there are none.
+- **Refuses to overwrite an existing `tags/X.Y.Z`**, then creates the tag after committing trunk.
+
+Default SVN checkout is `~/wp-org/rapid-ai-forms` (override with `--svn-dir`); it checks out
+the repo there on first run.
+
+#### Manual fallback
+
+If you ever need to bypass the script (e.g. svn-side conflict surgery), the raw flow is:
+
+```bash
 cd ~/wp-org/rapid-ai-forms
 rm -rf trunk/*
 unzip -q /path/to/git-repo/dist/rapid-ai-forms.zip -d /tmp/raif-release
 cp -R /tmp/raif-release/rapid-ai-forms/* trunk/
 svn add --force trunk
+svn status | awk '/^!/ {print $2}' | xargs -r svn rm   # remove files gone from the build
 svn status                              # check
 svn commit -m "0.2.0: <one-line summary>"
-
-# Tag it.
 svn copy trunk tags/0.2.0
 svn commit -m "Tag 0.2.0"
 ```

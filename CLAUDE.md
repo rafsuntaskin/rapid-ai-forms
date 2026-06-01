@@ -47,6 +47,7 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Regenerate translations: `wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist`.
 - Build dist zip: `npm run dist` → `dist/rapid-ai-forms.zip` (honors `.distignore`).
 - Deploy to local wooDev: `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build`.
+- Release to wp.org SVN: `npm run deploy` (dry-run) → `npm run deploy -- --commit`. Verify-only, deletion-safe, tag-guarded. See [`docs/DEPLOY.md`](docs/DEPLOY.md).
 - Run wp.org Plugin Check against the installed copy: `lando wp plugin check rapid-ai-forms`. Must report `Success: Checks complete. No errors found.` before submitting.
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)

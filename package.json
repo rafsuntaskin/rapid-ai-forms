@@ -8,7 +8,8 @@
     "start": "wp-scripts start",
     "lint:js": "wp-scripts lint-js src",
     "format": "wp-scripts format src",
-    "dist": "bash bin/dist.sh"
+    "dist": "bash bin/dist.sh",
+    "deploy": "bash bin/svn-deploy.sh"
   },
   "devDependencies": {
     "@wordpress/scripts": "^30.0.0"
