@@ -134,12 +134,11 @@ These files live in **SVN `/assets/`**, not in `trunk/`. The plugin zip excludes
 - [ ] No `*.map` source maps in the zip.
 
 ### Source code accessibility (Guideline 4)
-wp.org's review bot specifically flags `build/*.js` as minified artifacts with no discoverable source counterpart. There are two ways to satisfy this. We do **both** for belt-and-suspenders:
+wp.org's review bot specifically flags `build/*.js` as minified artifacts with no discoverable source counterpart. There are two ways to satisfy this. **We satisfy it by bundling source in the zip** — we deliberately do *not* advertise a public repo URL (see note below):
 
-- [ ] **Bundle source in the zip.** `src/`, `package.json`, `package-lock.json`, and `webpack.config.js` ship inside the plugin so `npm install && npm run build` reproduces `build/` from a fresh extract. The `== Development ==` section of `readme.txt` documents this.
-- [ ] **Public repo URL in the readme.** The `== Development ==` section links to `https://github.com/rafsuntaskin/rapid-ai-forms`. The repo must be public — a private repo URL fails the check silently when the reviewer clicks through.
-- [ ] **`Plugin URI:` header** also points at the public repo so the link is visible directly from the Plugins screen in wp-admin.
-- [ ] **`LICENSE` file** at the plugin root (canonical GPL-2.0 text). Plugin Check doesn't require it, but GitHub uses it to auto-detect the project license; the wp.org review team appreciates seeing it too.
+- [ ] **Bundle source in the zip.** `src/`, `package.json`, `package-lock.json`, and `webpack.config.js` ship inside the plugin so `npm install && npm run build` reproduces `build/` from a fresh extract. The `== Development ==` section of `readme.txt` documents this. **This alone satisfies Guideline 4** — no external repo link is required.
+- [ ] **No GitHub/repo URL in shipped files.** We intentionally do not expose the source repo: the `== Development ==` section carries no repo link, and the `Plugin URI:` header points at the wp.org directory page (`https://wordpress.org/plugins/rapid-ai-forms/`), not a code host. *Rationale: we don't publicise the repo. If you ever re-add a public repo link as belt-and-suspenders, the repo must actually be public or the bot fails the check silently when the reviewer clicks through.*
+- [ ] **`LICENSE` file** at the plugin root (canonical GPL-2.0 text). Plugin Check doesn't require it, but the wp.org review team appreciates seeing it.
 
 ---
 

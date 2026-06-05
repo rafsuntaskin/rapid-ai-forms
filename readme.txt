@@ -86,6 +86,14 @@ Open the form in the editor and scroll to **Email notifications**. You can set t
 
 The plugin hands the message to WordPress's `wp_mail()`, which means the site itself has to be able to send mail. If `wp_mail()` does not work elsewhere on the site (e.g. password-reset emails are missing), the most common fix is to install an SMTP plugin and point it at a real mailer. Also confirm the notifications toggle is on for the form and that the *To* field contains a valid address.
 
+== Screenshots ==
+
+1. The card-based forms list with search, pagination, and a click-to-copy shortcode on each form.
+2. The form editor generating fields from a natural-language prompt, with the live preview pane.
+3. Per-form email notifications: To, Subject, and a mail-tag Body with an optional Reply-To field.
+4. A generated form rendered on the frontend, matching the active theme's button styles.
+5. The Settings page with the AI provider dropdown and one-click credential verification.
+
 == Development ==
 
 The full plugin source — including the un-minified JSX/SCSS that produces the files in `build/` — ships inside this plugin under `src/`, along with `package.json`, `package-lock.json`, and `webpack.config.js`. You can rebuild the compiled assets at any time:
@@ -93,8 +101,6 @@ The full plugin source — including the un-minified JSX/SCSS that produces the 
 `npm install && npm run build`
 
 This regenerates `build/admin.js`, `build/admin.css`, `build/frontend.js`, `build/frontend.css`, and the matching `.asset.php` dependency manifests. No third-party libraries are bundled inside the compiled output — every external dependency is referenced via WordPress's own `wp.element` / `wp.components` / `wp.apiFetch` / `wp.i18n` globals, which WordPress loads separately.
-
-Development happens on GitHub at https://github.com/rafsuntaskin/rapid-ai-forms — issues, pull requests, and discussions are welcome there.
 
 == Changelog ==
 
