@@ -12,6 +12,8 @@ AI-powered contact form builder. Describe the form you need and let AI build it 
 
 == Description ==
 
+https://vimeo.com/1198809051
+
 Rapid AI Forms is a contact form builder that uses AI to do the boring part. Instead of dragging fields around, you describe the form you want in plain English — *"contact form with name, email, phone, and a short message"* — and the plugin generates the fields, labels, and validation for you. Edit anything by hand, drop it on any page with a shortcode, and start receiving submissions.
 
 Every form sends a notification email to whoever you choose, with a fully customizable Subject and Body using mail-tags (Contact Form 7 style). Replies go straight to the visitor's email address when you pick a Reply-To field.
@@ -93,14 +95,6 @@ The plugin hands the message to WordPress's `wp_mail()`, which means the site it
 3. Per-form email notifications: To, Subject, and a mail-tag Body with an optional Reply-To field.
 4. A generated form rendered on the frontend, matching the active theme's button styles.
 5. The Settings page with the AI provider dropdown and one-click credential verification.
-
-== Development ==
-
-The full plugin source — including the un-minified JSX/SCSS that produces the files in `build/` — ships inside this plugin under `src/`, along with `package.json`, `package-lock.json`, and `webpack.config.js`. You can rebuild the compiled assets at any time:
-
-`npm install && npm run build`
-
-This regenerates `build/admin.js`, `build/admin.css`, `build/frontend.js`, `build/frontend.css`, and the matching `.asset.php` dependency manifests. No third-party libraries are bundled inside the compiled output — every external dependency is referenced via WordPress's own `wp.element` / `wp.components` / `wp.apiFetch` / `wp.i18n` globals, which WordPress loads separately.
 
 == Changelog ==
 
