@@ -647,12 +647,15 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
   *Done when:* the plugin passes wp.org review and is listed.
 
 ### v0.2 — Operability
+- [ ] **Required-field server-side enforcement** (422 + field-level errors; no junk rows) — higher priority. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part A.
+  *Done when:* a submit missing a `required` field returns 422 and writes no row; the renderer marks required inputs and the frontend shows inline errors.
 - [ ] Submissions admin view: paginated list per form, JSON & CSV export.
   *Done when:* admin can browse submissions, filter by date, and download a CSV.
 
 ### v0.3 — Anti-abuse + Styling
-- [ ] Honeypot field auto-injected into the renderer.
-- [ ] Optional Cloudflare Turnstile / hCaptcha integration.
+- [ ] **Submission-origin validation** — signed, cache-safe per-render token via a never-cached `GET /form-token/{uuid}` endpoint, validated on submit; + Origin/Referer check. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part B.
+- [ ] Honeypot field auto-injected into the renderer + time-trap.
+- [ ] Optional Cloudflare Turnstile / hCaptcha integration (pluggable hook; external calls disclosed in readme privacy section).
 - [ ] Per-IP submission rate limit (configurable).
 - [ ] **AI-driven per-form CSS editor with live iframe preview** — see [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
 

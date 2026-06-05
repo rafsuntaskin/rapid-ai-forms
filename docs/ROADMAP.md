@@ -19,11 +19,16 @@ in-product help text, or the plugin description.
 
 ## v0.2 (next)
 
+- **Required-field server-side enforcement** (422 + field-level errors; no junk
+  rows) — higher priority. See [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part A.
 - Submissions admin view (data is already stored; UI to come).
 - Database migration runner for schema changes.
 
 ## v0.3
 
+- Anti-abuse / submission-origin validation: signed cache-safe per-render token,
+  honeypot + time-trap, per-IP rate limit, pluggable CAPTCHA/Akismet hook — see
+  [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part B.
 - Per-form custom CSS with iframe preview and AI-prompt-driven editing — see
   [`PLAN-ai-css-editor.md`](PLAN-ai-css-editor.md).
 
