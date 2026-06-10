@@ -17,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
 import { useAsync } from '../../shared/hooks/useAsync';
 import FormPreview from '../components/FormPreview';
+import StylingPanel from '../components/StylingPanel';
 import ShortcodeCopy from '../components/ShortcodeCopy';
 import { useAiConfigured } from '../hooks/useAiConfigured';
 
@@ -176,6 +177,7 @@ export default function FormEditor( { api, formId } ) {
 		const updated = await save.run( {
 			title: form.title,
 			schema: form.schema,
+			settings: form.settings,
 			ai_prompt: form.ai_prompt,
 		} );
 		setForm( updated );
@@ -495,6 +497,16 @@ export default function FormEditor( { api, formId } ) {
 					) }
 				</CardBody>
 			</Card>
+
+			<StylingPanel
+				css={ ( form.settings && form.settings.custom_css ) || '' }
+				onChange={ ( v ) =>
+					setForm( {
+						...form,
+						settings: { ...form.settings, custom_css: v },
+					} )
+				}
+			/>
 			{ actionBar( 'bottom' ) }
 				</div>
 				<aside className="raif-editor__side">

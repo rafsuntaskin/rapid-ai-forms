@@ -17,7 +17,22 @@ class Form_Renderer {
 
 		$nonce = wp_create_nonce( 'wp_rest' );
 
+		// Re-sanitized at render time as defense in depth (it is also
+		// sanitized on every write in Form_Repository).
+		$custom_css = Css_Sanitizer::sanitize( $form['settings']['custom_css'] ?? '' );
+
 		ob_start();
+		if ( '' !== $custom_css ) :
+			// The CSS-nesting wrapper scopes even un-prefixed rules to this
+			// one form instance, so one form's CSS can't leak into another.
+			?>
+		<style id="raif-css-<?php echo esc_attr( $form['uuid'] ); ?>">
+			.raif-form[data-form-uuid="<?php echo esc_attr( $form['uuid'] ); ?>"] {
+				<?php echo $custom_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Css_Sanitizer strips style/script breakout tokens; HTML-escaping would corrupt valid CSS selectors. ?>
+			}
+		</style>
+			<?php
+		endif;
 		?>
 		<form class="raif-form" data-form-uuid="<?php echo esc_attr( $form['uuid'] ); ?>" data-nonce="<?php echo esc_attr( $nonce ); ?>">
 			<?php if ( ! empty( $schema['show_title'] ) ) : ?>

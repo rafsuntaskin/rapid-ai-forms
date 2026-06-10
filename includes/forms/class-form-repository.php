@@ -42,7 +42,7 @@ class Form_Repository {
 			'title'       => isset( $data['title'] ) ? sanitize_text_field( $data['title'] ) : '',
 			'status'      => isset( $data['status'] ) ? sanitize_key( $data['status'] ) : 'published',
 			'form_schema' => wp_json_encode( $schema ),
-			'settings'    => wp_json_encode( isset( $data['settings'] ) ? $data['settings'] : array() ),
+			'settings'    => wp_json_encode( self::sanitize_settings( isset( $data['settings'] ) ? $data['settings'] : array() ) ),
 			'ai_prompt'   => isset( $data['ai_prompt'] ) ? wp_kses_post( $data['ai_prompt'] ) : null,
 			'author_id'   => get_current_user_id(),
 			'created_at'  => $now,
@@ -68,7 +68,7 @@ class Form_Repository {
 			$row['form_schema'] = wp_json_encode( Schema_Prompt::sanitize_schema( is_array( $data['schema'] ) ? $data['schema'] : array() ) );
 		}
 		if ( array_key_exists( 'settings', $data ) ) {
-			$row['settings'] = wp_json_encode( $data['settings'] );
+			$row['settings'] = wp_json_encode( self::sanitize_settings( $data['settings'] ) );
 		}
 		if ( array_key_exists( 'ai_prompt', $data ) ) {
 			$row['ai_prompt'] = wp_kses_post( (string) $data['ai_prompt'] );
@@ -135,6 +135,14 @@ class Form_Repository {
 			);
 		}
 		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', Schema::forms_table() ) );
+	}
+
+	private static function sanitize_settings( $settings ) {
+		$settings = is_array( $settings ) ? $settings : array();
+		if ( isset( $settings['custom_css'] ) ) {
+			$settings['custom_css'] = Css_Sanitizer::sanitize( $settings['custom_css'] );
+		}
+		return $settings;
 	}
 
 	private function hydrate( array $row ) {
