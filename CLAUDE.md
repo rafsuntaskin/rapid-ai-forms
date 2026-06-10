@@ -44,6 +44,7 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Add a new field type: extend `Form_Renderer::render_field` (PHP), `Rest_Controller::sanitize_submission()` (per-type submit sanitization), the `FIELD_TYPES` array in `FormEditor.js`, the allowed types in `Schema_Prompt::sanitize_schema()`, and (if the type takes a `placeholder`) `wp_ai_forms_placeholder_field_types`.
 - Build: `npm run build`. Dev watch: `npm run start`.
 - Lint PHP: `composer lint` (auto-fix: `composer lint:fix`).
+- Run PHP tests: `npm run test:php` (official WP test suite via wp-env; start the Docker env first with `npx wp-env start`). Tests live in `tests/test-*.php` as `WP_UnitTestCase` classes.
 - Regenerate translations: `wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist`.
 - Build dist zip: `npm run dist` → `dist/rapid-ai-forms.zip` (honors `.distignore`).
 - Deploy to local wooDev: `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build`.

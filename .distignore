@@ -36,6 +36,8 @@ composer.lock
 phpcs.xml*
 phpunit.xml*
 tests/
+.wp-env.json
+.wp-env.override.json
 
 # NOTE: package.json, package-lock.json, and webpack.config.js ARE included
 # in the dist zip so users / reviewers can run `npm install && npm run build`

@@ -9,9 +9,11 @@
     "lint:js": "wp-scripts lint-js src",
     "format": "wp-scripts format src",
     "dist": "bash bin/dist.sh",
-    "deploy": "bash bin/svn-deploy.sh"
+    "deploy": "bash bin/svn-deploy.sh",
+    "test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/wp-ai-forms ./vendor/bin/phpunit"
   },
   "devDependencies": {
+    "@wordpress/env": "^10.39.0",
     "@wordpress/scripts": "^30.0.0"
   }
 }
