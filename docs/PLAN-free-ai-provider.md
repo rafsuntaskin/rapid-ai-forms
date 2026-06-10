@@ -1,5 +1,9 @@
 # Plan: Free hosted AI provider ("Rapid AI Cloud")
 
+> **SUPERSEDED (2026-06-11)** by [`PLAN-rapid-ai-cloud.md`](PLAN-rapid-ai-cloud.md), which
+> carries the handshake design forward and adds the hybrid account model, backend service
+> design, usage metering, and the monetization funnel. Kept for the original rationale.
+
 ## Context
 
 The plugin (v0.1.0) is approved on wp.org and ships BYOK-only. The next feature is a

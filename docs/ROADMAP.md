@@ -32,6 +32,9 @@ current install base. CSV export + date filter deferred from the original v0.2 s
 
 ## v0.3
 
+- **Rapid AI Cloud** — hosted free-quota provider (hybrid: anonymous auto-connect +
+  optional website account for purchases). Plugin + backend plan with checklist:
+  [`PLAN-rapid-ai-cloud.md`](PLAN-rapid-ai-cloud.md).
 - Anti-abuse / submission-origin validation: signed cache-safe per-render token,
   honeypot + time-trap, per-IP rate limit, pluggable CAPTCHA/Akismet hook — see
   [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part B.
