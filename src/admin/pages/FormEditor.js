@@ -499,6 +499,8 @@ export default function FormEditor( { api, formId } ) {
 			</Card>
 
 			<StylingPanel
+				form={ form }
+				savedAt={ savedAt }
 				css={ ( form.settings && form.settings.custom_css ) || '' }
 				onChange={ ( v ) =>
 					setForm( {

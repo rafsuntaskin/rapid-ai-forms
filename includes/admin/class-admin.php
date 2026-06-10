@@ -98,6 +98,7 @@ class Admin {
 				'submissionsUrl' => admin_url( 'admin.php?page=' . self::SUBMISSIONS_SLUG ),
 				'settingsUrl'    => admin_url( 'admin.php?page=' . self::SETTINGS_SLUG ),
 				'pluginUrl'      => RAPID_AI_FORMS_URL,
+				'previewUrl'     => esc_url_raw( home_url( '/' ) ),
 				'page'           => $page,
 			)
 		);

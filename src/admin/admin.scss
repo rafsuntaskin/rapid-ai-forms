@@ -674,3 +674,32 @@
 	font-size: 12px;
 	tab-size: 2;
 }
+
+.raif-styling {
+	&__columns {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 20px;
+		align-items: start;
+
+		@media (max-width: 1100px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__preview {
+		iframe {
+			width: 100%;
+			height: 420px;
+			border: 1px solid #dcdcde;
+			border-radius: 4px;
+			background: #fff;
+		}
+	}
+
+	&__hint {
+		margin: 6px 0 0;
+		font-size: 12px;
+		color: #787c82;
+	}
+}

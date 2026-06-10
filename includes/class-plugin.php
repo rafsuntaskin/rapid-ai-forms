@@ -14,6 +14,7 @@ use Rapid_Ai_Forms\Db\Schema;
 use Rapid_Ai_Forms\Notifications\Email_Notifier;
 use Rapid_Ai_Forms\Shortcodes\Form_Shortcode;
 use Rapid_Ai_Forms\Frontend\Frontend;
+use Rapid_Ai_Forms\Frontend\Preview;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -36,6 +37,7 @@ class Plugin {
 		( new Rest_Controller() )->register();
 		( new Form_Shortcode() )->register();
 		( new Frontend() )->register();
+		( new Preview() )->register();
 		( new Abilities() )->register();
 		( new Email_Notifier() )->register();
 	}
