@@ -40,6 +40,21 @@ class Wp_Ai_Client implements Provider {
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
+		$text = $this->request_text( Schema_Prompt::system(), $prompt, true );
+		if ( is_wp_error( $text ) ) {
+			return $text;
+		}
+		return Schema_Prompt::extract_schema( $text );
+	}
+
+	public function generate_text( $system, $prompt, array $options = array() ) {
+		return $this->request_text( $system, $prompt, false );
+	}
+
+	/**
+	 * @param bool $json_mode Ask the connector for a JSON response (schema generation).
+	 */
+	private function request_text( $system, $prompt, $json_mode ) {
 		if ( ! self::is_available() ) {
 			return new \WP_Error(
 				'raif_wp_ai_client_unavailable',
@@ -48,8 +63,11 @@ class Wp_Ai_Client implements Provider {
 		}
 
 		$builder = wp_ai_client_prompt( $prompt )
-			->using_system_instruction( Schema_Prompt::system() )
-			->as_json_response();
+			->using_system_instruction( $system );
+
+		if ( $json_mode ) {
+			$builder = $builder->as_json_response();
+		}
 
 		if ( ! $builder->is_supported_for_text_generation() ) {
 			return new \WP_Error(
@@ -63,7 +81,7 @@ class Wp_Ai_Client implements Provider {
 			return $text;
 		}
 
-		return Schema_Prompt::extract_schema( (string) $text );
+		return (string) $text;
 	}
 
 	public function verify( array $options = array() ) {

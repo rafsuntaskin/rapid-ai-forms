@@ -104,4 +104,29 @@ class Provider_Manager {
 
 		return $provider->generate_form_schema( $prompt, $options );
 	}
+
+	/**
+	 * Free-form text generation through the active provider.
+	 *
+	 * @param string $system System instruction.
+	 * @param string $prompt User message.
+	 * @return string|\WP_Error
+	 */
+	public function generate_text( $system, $prompt ) {
+		$settings = $this->settings();
+		$provider = $this->get( $settings['active_provider'] );
+
+		if ( ! $provider ) {
+			return new \WP_Error( 'raif_no_provider', __( 'No AI provider configured.', 'rapid-ai-forms' ) );
+		}
+
+		// Third-party providers registered before generate_text() joined the
+		// interface may not implement it.
+		if ( ! method_exists( $provider, 'generate_text' ) ) {
+			return new \WP_Error( 'raif_not_supported', __( 'The active AI provider does not support text generation.', 'rapid-ai-forms' ) );
+		}
+
+		$options = $settings['providers'][ $settings['active_provider'] ] ?? array();
+		return $provider->generate_text( $system, $prompt, $options );
+	}
 }

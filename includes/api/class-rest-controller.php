@@ -7,6 +7,7 @@
 
 namespace Rapid_Ai_Forms\Api;
 
+use Rapid_Ai_Forms\Ai\Css_Prompt;
 use Rapid_Ai_Forms\Ai\Provider_Manager;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 use Rapid_Ai_Forms\Forms\Form_Repository;
@@ -92,6 +93,26 @@ class Rest_Controller {
 				'permission_callback' => array( $this, 'can_manage' ),
 				'args'                => array(
 					'prompt' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/ai/style',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'ai_style' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+				'args'                => array(
+					'form_id' => array(
+						'type'     => 'integer',
+						'required' => true,
+					),
+					'prompt'  => array(
 						'type'     => 'string',
 						'required' => true,
 					),
@@ -262,6 +283,34 @@ class Rest_Controller {
 				'latency_ms' => $ms,
 			)
 		);
+	}
+
+	public function ai_style( $req ) {
+		$form = ( new Form_Repository() )->get( (int) $req->get_param( 'form_id' ) );
+		if ( ! $form ) {
+			return new \WP_Error( 'raif_not_found', __( 'Form not found.', 'rapid-ai-forms' ), array( 'status' => 404 ) );
+		}
+
+		$prompt      = (string) $req->get_param( 'prompt' );
+		$current_css = (string) $req->get_param( 'current_css' );
+
+		$manager = new Provider_Manager();
+		$text    = $manager->generate_text(
+			Css_Prompt::system(),
+			Css_Prompt::context( $form, $prompt, $current_css )
+		);
+		if ( is_wp_error( $text ) ) {
+			$text->add_data( array( 'status' => 400 ) );
+			return $text;
+		}
+
+		$css = Css_Prompt::extract_css( $text );
+		if ( is_wp_error( $css ) ) {
+			$css->add_data( array( 'status' => 400 ) );
+			return $css;
+		}
+
+		return rest_ensure_response( array( 'css' => $css ) );
 	}
 
 	public function ai_generate( $req ) {

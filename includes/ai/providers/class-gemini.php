@@ -23,6 +23,21 @@ class Gemini implements Provider {
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
+		$text = $this->request_text( Schema_Prompt::system(), $prompt, $options, true );
+		if ( is_wp_error( $text ) ) {
+			return $text;
+		}
+		return Schema_Prompt::extract_schema( $text );
+	}
+
+	public function generate_text( $system, $prompt, array $options = array() ) {
+		return $this->request_text( $system, $prompt, $options, false );
+	}
+
+	/**
+	 * @param bool $json_mode Ask for a JSON response (schema generation).
+	 */
+	private function request_text( $system, $prompt, array $options, $json_mode ) {
 		$api_key = $options['api_key'] ?? '';
 		$model   = $options['model'] ?? 'gemini-2.0-flash';
 
@@ -32,23 +47,25 @@ class Gemini implements Provider {
 
 		$url = sprintf( 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s', rawurlencode( $model ), rawurlencode( $api_key ) );
 
+		$payload = array(
+			'systemInstruction' => array( 'parts' => array( array( 'text' => $system ) ) ),
+			'contents'          => array(
+				array(
+					'role'  => 'user',
+					'parts' => array( array( 'text' => $prompt ) ),
+				),
+			),
+		);
+		if ( $json_mode ) {
+			$payload['generationConfig'] = array( 'responseMimeType' => 'application/json' );
+		}
+
 		$response = wp_remote_post(
 			$url,
 			array(
 				'timeout' => 60,
 				'headers' => array( 'Content-Type' => 'application/json' ),
-				'body'    => wp_json_encode(
-					array(
-						'systemInstruction' => array( 'parts' => array( array( 'text' => Schema_Prompt::system() ) ) ),
-						'contents'          => array(
-							array(
-								'role'  => 'user',
-								'parts' => array( array( 'text' => $prompt ) ),
-							),
-						),
-						'generationConfig'  => array( 'responseMimeType' => 'application/json' ),
-					)
-				),
+				'body'    => wp_json_encode( $payload ),
 			)
 		);
 
@@ -61,8 +78,7 @@ class Gemini implements Provider {
 			return new \WP_Error( 'raif_gemini_error', $body['error']['message'] ?? __( 'Gemini API error.', 'rapid-ai-forms' ) );
 		}
 
-		$text = $body['candidates'][0]['content']['parts'][0]['text'] ?? '';
-		return Schema_Prompt::extract_schema( $text );
+		return (string) ( $body['candidates'][0]['content']['parts'][0]['text'] ?? '' );
 	}
 
 	public function verify( array $options = array() ) {

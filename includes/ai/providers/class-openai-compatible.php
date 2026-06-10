@@ -25,9 +25,41 @@ class Openai_Compatible implements Provider {
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
+		$text = $this->request_text( Schema_Prompt::system(), $prompt, $options, true );
+		if ( is_wp_error( $text ) ) {
+			return $text;
+		}
+		return Schema_Prompt::extract_schema( $text );
+	}
+
+	public function generate_text( $system, $prompt, array $options = array() ) {
+		return $this->request_text( $system, $prompt, $options, false );
+	}
+
+	/**
+	 * @param bool $json_mode Request response_format json_object (schema generation).
+	 */
+	private function request_text( $system, $prompt, array $options, $json_mode ) {
 		$api_key  = $options['api_key'] ?? '';
 		$base_url = untrailingslashit( $options['base_url'] ?? 'https://api.openai.com/v1' );
 		$model    = $options['model'] ?? 'gpt-4o-mini';
+
+		$payload = array(
+			'model'    => $model,
+			'messages' => array(
+				array(
+					'role'    => 'system',
+					'content' => $system,
+				),
+				array(
+					'role'    => 'user',
+					'content' => $prompt,
+				),
+			),
+		);
+		if ( $json_mode ) {
+			$payload['response_format'] = array( 'type' => 'json_object' );
+		}
 
 		$response = wp_remote_post(
 			$base_url . '/chat/completions',
@@ -39,22 +71,7 @@ class Openai_Compatible implements Provider {
 						'Authorization' => $api_key ? 'Bearer ' . $api_key : null,
 					)
 				),
-				'body'    => wp_json_encode(
-					array(
-						'model'           => $model,
-						'response_format' => array( 'type' => 'json_object' ),
-						'messages'        => array(
-							array(
-								'role'    => 'system',
-								'content' => Schema_Prompt::system(),
-							),
-							array(
-								'role'    => 'user',
-								'content' => $prompt,
-							),
-						),
-					)
-				),
+				'body'    => wp_json_encode( $payload ),
 			)
 		);
 
@@ -67,8 +84,7 @@ class Openai_Compatible implements Provider {
 			return new \WP_Error( 'raif_openai_error', $body['error']['message'] ?? __( 'AI API error.', 'rapid-ai-forms' ) );
 		}
 
-		$text = $body['choices'][0]['message']['content'] ?? '';
-		return Schema_Prompt::extract_schema( $text );
+		return (string) ( $body['choices'][0]['message']['content'] ?? '' );
 	}
 
 	public function verify( array $options = array() ) {

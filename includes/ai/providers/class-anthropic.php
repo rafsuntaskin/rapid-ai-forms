@@ -24,6 +24,14 @@ class Anthropic implements Provider {
 	}
 
 	public function generate_form_schema( $prompt, array $options = array() ) {
+		$text = $this->generate_text( Schema_Prompt::system(), $prompt, $options );
+		if ( is_wp_error( $text ) ) {
+			return $text;
+		}
+		return Schema_Prompt::extract_schema( $text );
+	}
+
+	public function generate_text( $system, $prompt, array $options = array() ) {
 		$api_key = $options['api_key'] ?? '';
 		$model   = $options['model'] ?? 'claude-sonnet-4-6';
 
@@ -44,7 +52,7 @@ class Anthropic implements Provider {
 					array(
 						'model'      => $model,
 						'max_tokens' => 2048,
-						'system'     => Schema_Prompt::system(),
+						'system'     => $system,
 						'messages'   => array(
 							array(
 								'role'    => 'user',
@@ -65,8 +73,7 @@ class Anthropic implements Provider {
 			return new \WP_Error( 'raif_anthropic_error', $body['error']['message'] ?? __( 'Anthropic API error.', 'rapid-ai-forms' ) );
 		}
 
-		$text = $body['content'][0]['text'] ?? '';
-		return Schema_Prompt::extract_schema( $text );
+		return (string) ( $body['content'][0]['text'] ?? '' );
 	}
 
 	public function verify( array $options = array() ) {

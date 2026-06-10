@@ -30,6 +30,17 @@ interface Provider {
 	public function generate_form_schema( $prompt, array $options = array() );
 
 	/**
+	 * Generate free-form text from a system + user prompt. Used for
+	 * non-schema tasks (e.g. the AI CSS editor).
+	 *
+	 * @param string $system  System instruction.
+	 * @param string $prompt  User message.
+	 * @param array  $options Provider options (api_key, model, etc.)
+	 * @return string|\WP_Error Raw model text or WP_Error on failure.
+	 */
+	public function generate_text( $system, $prompt, array $options = array() );
+
+	/**
 	 * Lightweight credential check. Should make the cheapest possible
 	 * round-trip that proves the API key + endpoint work.
 	 *

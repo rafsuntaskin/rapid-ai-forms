@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from '@wordpress/element';
+import { useEffect, useMemo, useRef, useState } from '@wordpress/element';
 import {
 	Button,
 	Card,
@@ -6,9 +6,11 @@ import {
 	CardHeader,
 	Flex,
 	FlexItem,
+	Notice,
 	TextareaControl,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { useAsync } from '../../shared/hooks/useAsync';
 
 /**
  * Per-form custom CSS editor with a real-theme iframe preview.
@@ -18,8 +20,32 @@ import { __ } from '@wordpress/i18n';
  * iframe's scoped <style> element after a short debounce — no reload needed;
  * a full reload happens when the form is saved.
  */
-export default function StylingPanel( { form, css, onChange, savedAt } ) {
+export default function StylingPanel( {
+	api,
+	form,
+	css,
+	onChange,
+	savedAt,
+	aiConfigured,
+} ) {
 	const iframeRef = useRef( null );
+	const [ prompt, setPrompt ] = useState( '' );
+
+	const style = useAsync( ( p ) =>
+		api.post( 'ai/style', {
+			form_id: form.id,
+			prompt: p,
+			current_css: css,
+		} )
+	);
+
+	const onApply = async () => {
+		const res = await style.run( prompt );
+		if ( res && typeof res.css === 'string' ) {
+			onChange( res.css );
+			setPrompt( '' );
+		}
+	};
 
 	const previewSrc = useMemo( () => {
 		const base = ( window.RAPID_AI_FORMS_ADMIN || {} ).previewUrl;
@@ -79,6 +105,42 @@ export default function StylingPanel( { form, css, onChange, savedAt } ) {
 			<CardBody>
 				<div className="raif-styling__columns">
 					<div className="raif-styling__editor">
+						<TextareaControl
+							label={ __( 'Describe the look you want', 'rapid-ai-forms' ) }
+							help={ __(
+								'Example: "Full-width inputs, the theme accent color on focus, and 8px rounded corners." The AI edits the CSS below — review and Save to keep it.',
+								'rapid-ai-forms'
+							) }
+							rows={ 3 }
+							value={ prompt }
+							onChange={ setPrompt }
+							disabled={ aiConfigured === false }
+						/>
+						<Flex justify="flex-start" gap={ 2 } className="raif-mt-sm">
+							<FlexItem>
+								<Button
+									variant="secondary"
+									onClick={ onApply }
+									isBusy={ style.loading }
+									disabled={
+										! prompt.trim() ||
+										style.loading ||
+										aiConfigured === false
+									}
+								>
+									{ __( 'Apply with AI', 'rapid-ai-forms' ) }
+								</Button>
+							</FlexItem>
+						</Flex>
+						{ style.error && (
+							<Notice
+								status="error"
+								isDismissible={ false }
+								className="raif-mt-sm"
+							>
+								{ style.error.message }
+							</Notice>
+						) }
 						<TextareaControl
 							className="raif-css-editor"
 							label={ __( 'Custom CSS', 'rapid-ai-forms' ) }
