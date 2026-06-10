@@ -124,13 +124,18 @@ Rule: **the plugin states facts; the website sells.**
 - [ ] `GET /v1/status` computing balances from the ledger.
 - [ ] Request-id + structured error envelope on every response.
 
-### Phase B — plugin provider (this repo, branch off after 0.2.0 ships)
-- [ ] `includes/ai/providers/class-managed.php` (both generate methods + register/status + error mapping).
-- [ ] Register in `Provider_Manager` + settings defaults.
-- [ ] REST: `GET /managed/verify` (public, single-use nonce), `POST /managed/register`, `GET /managed/status` (cached), `POST /managed/disconnect`.
-- [ ] Generalize secret masking to `site_token`; expose `connected`.
-- [ ] Settings card: Connect / quota meter / Refresh / Disconnect / "Manage account ↗".
-- [ ] Tests (wp-env suite): verify-route single-use semantics; error mapping + handshake via `pre_http_request` stubs; `site_token` never in `GET /settings`.
+### Phase B — plugin provider (✅ done 2026-06-11, branch `feat/rapid-ai-cloud`)
+- [x] `includes/ai/providers/class-managed.php` (both generate methods + register/status + error mapping; usage block folded into the status transient).
+- [x] Register in `Provider_Manager` + settings defaults.
+- [x] REST: `GET /managed/verify` (public, single-use nonce), `POST /managed/register`, `GET /managed/status` (cached), `POST /managed/disconnect`.
+- [x] Generalize secret masking to `site_token`; expose `connected`; `PUT /settings` cannot write the connection fields.
+- [x] Settings card: Connect / quota meter with low-state amber bar / Refresh / Disconnect / "Manage account ↗".
+- [x] Tests (13, in `tests/test-managed-provider.php`): verify-route single-use semantics; register handshake + unreachable-site steer; 402→`raif_quota_reached`, 401→reconnect; no-token short-circuit; schema sanitization + usage caching; token never on the wire; settings can't overwrite the connection; disconnect resets active provider.
+
+> Note: the provider is registered unconditionally, so the card is visible in Settings.
+> **Before any release that predates the live backend, gate registration** (e.g. only
+> register when `rapid_ai_forms_managed_endpoint` is filtered or a const is set) — the
+> 0.2.0 release must not ship a Connect button pointing at a placeholder domain.
 
 ### Phase C — backend generation + metering
 - [ ] `POST /v1/generate-form` + `POST /v1/generate-text` via Vercel AI Gateway.

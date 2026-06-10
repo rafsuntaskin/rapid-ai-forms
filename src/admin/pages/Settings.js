@@ -9,8 +9,146 @@ import {
 	Spinner,
 	TextControl,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
+
+/**
+ * Rapid AI Cloud connection card. No credentials to type — a Connect click
+ * runs the domain-verification handshake; the quota meter states facts only
+ * (wp.org: no purchase language in the plugin).
+ */
+function ManagedConnect( { api, connected, onConnectionChange } ) {
+	const [ busy, setBusy ] = useState( false );
+	const [ error, setError ] = useState( null );
+	const [ status, setStatus ] = useState( null );
+
+	useEffect( () => {
+		if ( ! connected ) {
+			setStatus( null );
+			return;
+		}
+		let cancelled = false;
+		api.get( 'managed/status' )
+			.then( ( s ) => ! cancelled && setStatus( s ) )
+			.catch( ( e ) => ! cancelled && setError( e.message ) );
+		return () => {
+			cancelled = true;
+		};
+	}, [ api, connected ] );
+
+	const run = async ( path ) => {
+		setBusy( true );
+		setError( null );
+		try {
+			await api.post( path, {} );
+			await onConnectionChange();
+		} catch ( e ) {
+			setError( e.message || __( 'Something went wrong. Please try again.', 'rapid-ai-forms' ) );
+		} finally {
+			setBusy( false );
+		}
+	};
+
+	if ( ! connected ) {
+		return (
+			<>
+				<p>
+					{ __(
+						'Connect this site to Rapid AI Cloud to use AI form generation without an API key. Free monthly usage included — no account needed.',
+						'rapid-ai-forms'
+					) }
+				</p>
+				<Button variant="primary" isBusy={ busy } disabled={ busy } onClick={ () => run( 'managed/register' ) }>
+					{ __( 'Connect', 'rapid-ai-forms' ) }
+				</Button>
+				{ error && (
+					<Notice status="error" isDismissible={ false } className="raif-mt-sm">
+						{ error }
+					</Notice>
+				) }
+			</>
+		);
+	}
+
+	const free = status && typeof status.free_remaining === 'number' ? status.free_remaining : null;
+	const allowance = status && typeof status.free_allowance === 'number' ? status.free_allowance : null;
+	const purchased = status && typeof status.purchased_remaining === 'number' ? status.purchased_remaining : 0;
+	const renews = status && status.free_renews_at ? new Date( status.free_renews_at ).toLocaleDateString() : null;
+	const pct = free !== null && allowance ? Math.max( 0, Math.min( 100, ( free / allowance ) * 100 ) ) : null;
+
+	return (
+		<>
+			<Notice status="success" isDismissible={ false }>
+				{ __( 'Connected to Rapid AI Cloud.', 'rapid-ai-forms' ) }
+			</Notice>
+			{ status === null && ! error && <Spinner /> }
+			{ free !== null && (
+				<div className={ `raif-quota${ pct !== null && pct <= 20 ? ' raif-quota--low' : '' }` }>
+					<p className="raif-quota__label">
+						{ allowance
+							? sprintf(
+									/* translators: 1: generations remaining, 2: monthly allowance */
+									__( '%1$d of %2$d free generations left this month', 'rapid-ai-forms' ),
+									free,
+									allowance
+							  )
+							: sprintf(
+									/* translators: %d: generations remaining */
+									__( '%d free generations left this month', 'rapid-ai-forms' ),
+									free
+							  ) }
+						{ renews &&
+							' — ' +
+								sprintf(
+									/* translators: %s: renewal date */
+									__( 'renews %s', 'rapid-ai-forms' ),
+									renews
+								) }
+					</p>
+					{ pct !== null && (
+						<div className="raif-quota__bar">
+							<span style={ { width: `${ pct }%` } } />
+						</div>
+					) }
+					{ purchased > 0 && (
+						<p className="raif-quota__purchased">
+							{ sprintf(
+								/* translators: %d: additional generations available */
+								__( '+%d additional generations available', 'rapid-ai-forms' ),
+								purchased
+							) }
+						</p>
+					) }
+				</div>
+			) }
+			{ error && (
+				<Notice status="error" isDismissible onRemove={ () => setError( null ) }>
+					{ error }
+				</Notice>
+			) }
+			<div className="raif-managed-actions">
+				<Button
+					variant="secondary"
+					isBusy={ busy }
+					onClick={ () => {
+						setStatus( null );
+						api.get( 'managed/status' ).then( setStatus ).catch( ( e ) => setError( e.message ) );
+					} }
+				>
+					{ __( 'Refresh', 'rapid-ai-forms' ) }
+				</Button>
+				{ status && status.manage_url && (
+					<Button variant="tertiary" href={ status.manage_url } target="_blank" rel="noreferrer">
+						{ __( 'Manage account ↗', 'rapid-ai-forms' ) }
+					</Button>
+				) }
+				<Button variant="tertiary" isDestructive isBusy={ busy } onClick={ () => run( 'managed/disconnect' ) }>
+					{ __( 'Disconnect', 'rapid-ai-forms' ) }
+				</Button>
+			</div>
+		</>
+	);
+}
 
 export default function Settings( { api } ) {
 	const [ settings, setSettings ] = useState( null );
@@ -142,7 +280,13 @@ export default function Settings( { api } ) {
 				<Card className="raif-mt">
 					<CardHeader><strong>{ activeProvider.label }</strong></CardHeader>
 					<CardBody>
-						{ activeKey === 'wp_ai_client' ? (
+						{ activeKey === 'managed' ? (
+							<ManagedConnect
+								api={ api }
+								connected={ !! activeCfg.connected }
+								onConnectionChange={ () => api.get( 'settings' ).then( setSettings ) }
+							/>
+						) : activeKey === 'wp_ai_client' ? (
 							<Notice status="info" isDismissible={ false }>
 								{ __(
 									'This provider uses your site’s WordPress AI Connectors. Configure your API keys under Settings → Connectors. No additional configuration is needed here.',
@@ -190,7 +334,11 @@ export default function Settings( { api } ) {
 								isBusy={ verifying }
 								disabled={
 									verifying ||
-									( activeKey !== 'wp_ai_client' && ! activeCfg.api_key && ! activeCfg.api_key_set )
+									( activeKey === 'managed'
+										? ! activeCfg.connected
+										: activeKey !== 'wp_ai_client' &&
+										  ! activeCfg.api_key &&
+										  ! activeCfg.api_key_set )
 								}
 							>
 								{ __( 'Verify connection', 'rapid-ai-forms' ) }

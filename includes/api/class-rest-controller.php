@@ -63,6 +63,49 @@ class Rest_Controller {
 			)
 		);
 
+		// Rapid AI Cloud connection management. /managed/verify is the public
+		// callback target for the domain-verification handshake — it leaks
+		// nothing beyond nonce validity.
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/verify',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'managed_verify' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/register',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'managed_register' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/status',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'managed_status' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/disconnect',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'managed_disconnect' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+
 		// Admin collection — distinct from the public POST /submissions/{uuid} below.
 		register_rest_route(
 			self::NAMESPACE,
@@ -254,7 +297,9 @@ class Rest_Controller {
 		// edits still test the right thing).
 		$settings = $manager->settings();
 		$saved    = isset( $settings['providers'][ $provider_key ] ) ? $settings['providers'][ $provider_key ] : array();
-		$options  = array();
+		// Start from the saved config so fields the form doesn't expose
+		// (e.g. the managed site_token) survive; overlay the editable trio.
+		$options = $saved;
 		foreach ( array( 'api_key', 'base_url', 'model' ) as $field ) {
 			$incoming = $req->get_param( $field );
 			if ( is_string( $incoming ) && '' !== $incoming ) {
@@ -325,6 +370,89 @@ class Rest_Controller {
 		return rest_ensure_response( $schema );
 	}
 
+	const MANAGED_NONCE_TRANSIENT = 'rapid_ai_forms_managed_nonce';
+
+	/**
+	 * Public callback target for the Rapid AI Cloud handshake. The backend
+	 * fetches this at the claimed home_url; a match proves whoever started
+	 * registration controls this domain. Single-use, 5-minute TTL.
+	 */
+	public function managed_verify( $req ) {
+		$nonce  = (string) $req->get_param( 'nonce' );
+		$stored = get_transient( self::MANAGED_NONCE_TRANSIENT );
+
+		if ( '' === $nonce || ! is_string( $stored ) || ! hash_equals( $stored, $nonce ) ) {
+			return new \WP_Error( 'raif_invalid_nonce', __( 'Invalid or expired verification nonce.', 'rapid-ai-forms' ), array( 'status' => 403 ) );
+		}
+
+		delete_transient( self::MANAGED_NONCE_TRANSIENT );
+		return rest_ensure_response( array( 'ok' => true ) );
+	}
+
+	public function managed_register() {
+		$nonce = wp_generate_password( 64, false );
+		set_transient( self::MANAGED_NONCE_TRANSIENT, $nonce, 5 * MINUTE_IN_SECONDS );
+
+		$provider = new \Rapid_Ai_Forms\Ai\Providers\Managed();
+		$result   = $provider->register( $nonce );
+
+		// Whatever happened, the nonce must not be replayable.
+		delete_transient( self::MANAGED_NONCE_TRANSIENT );
+
+		if ( is_wp_error( $result ) ) {
+			$result->add_data( array( 'status' => 400 ) );
+			return $result;
+		}
+
+		$manager  = new Provider_Manager();
+		$settings = $manager->settings();
+
+		$settings['providers']['managed']['site_token'] = $result['token'];
+		$settings['providers']['managed']['site_url']   = home_url( '/' );
+		$manager->save_settings( $settings );
+
+		delete_transient( \Rapid_Ai_Forms\Ai\Providers\Managed::STATUS_TRANSIENT );
+
+		return rest_ensure_response( array( 'connected' => true ) );
+	}
+
+	public function managed_status() {
+		$cached = get_transient( \Rapid_Ai_Forms\Ai\Providers\Managed::STATUS_TRANSIENT );
+		if ( is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
+		}
+
+		$manager = new Provider_Manager();
+		$options = $manager->settings()['providers']['managed'] ?? array();
+
+		$status = ( new \Rapid_Ai_Forms\Ai\Providers\Managed() )->status( $options );
+		if ( is_wp_error( $status ) ) {
+			$status->add_data( array( 'status' => 400 ) );
+			return $status;
+		}
+
+		set_transient( \Rapid_Ai_Forms\Ai\Providers\Managed::STATUS_TRANSIENT, $status, 5 * MINUTE_IN_SECONDS );
+		return rest_ensure_response( $status );
+	}
+
+	public function managed_disconnect() {
+		$manager  = new Provider_Manager();
+		$settings = $manager->settings();
+
+		$settings['providers']['managed']['site_token'] = '';
+		$settings['providers']['managed']['site_url']   = '';
+
+		// Don't leave the active provider pointing at a dead connection.
+		if ( 'managed' === $settings['active_provider'] ) {
+			$settings['active_provider'] = 'openai_compatible';
+		}
+
+		$manager->save_settings( $settings );
+		delete_transient( \Rapid_Ai_Forms\Ai\Providers\Managed::STATUS_TRANSIENT );
+
+		return rest_ensure_response( array( 'connected' => false ) );
+	}
+
 	public function get_settings() {
 		$manager  = new Provider_Manager();
 		$settings = $manager->settings();
@@ -340,6 +468,14 @@ class Rest_Controller {
 				$settings['providers'][ $key ]['api_key_set'] = false;
 			}
 
+			// The managed site token is a secret too — never on the wire.
+			if ( isset( $cfg['site_token'] ) ) {
+				$connected                                   = '' !== $cfg['site_token']
+					&& ( $cfg['site_url'] ?? '' ) === home_url( '/' );
+				$settings['providers'][ $key ]['site_token'] = '';
+				$settings['providers'][ $key ]['connected']  = $connected;
+			}
+
 			// wp_ai_client routes through core connectors; it's "configured"
 			// when the host supports it (which means at least one connector
 			// is reachable). For everything else, configured ≡ api key saved.
@@ -347,6 +483,8 @@ class Rest_Controller {
 				$settings['providers'][ $key ]['configured'] =
 					class_exists( 'Rapid_Ai_Forms\\Ai\\Providers\\Wp_Ai_Client' )
 					&& \Rapid_Ai_Forms\Ai\Providers\Wp_Ai_Client::is_available();
+			} elseif ( 'managed' === $key ) {
+				$settings['providers'][ $key ]['configured'] = ! empty( $settings['providers'][ $key ]['connected'] );
 			} else {
 				$settings['providers'][ $key ]['configured'] = $has_key;
 			}
@@ -378,6 +516,11 @@ class Rest_Controller {
 				foreach ( $cfg as $field => $value ) {
 					// Empty api_key means "leave as is"; non-empty replaces.
 					if ( 'api_key' === $field && '' === $value ) {
+						continue;
+					}
+					// The managed connection is only written by the
+					// register/disconnect handlers, never via settings.
+					if ( in_array( $field, array( 'site_token', 'site_url', 'connected' ), true ) ) {
 						continue;
 					}
 					$current['providers'][ $key ][ $field ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;

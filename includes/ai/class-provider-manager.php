@@ -9,6 +9,7 @@ namespace Rapid_Ai_Forms\Ai;
 
 use Rapid_Ai_Forms\Ai\Providers\Anthropic;
 use Rapid_Ai_Forms\Ai\Providers\Gemini;
+use Rapid_Ai_Forms\Ai\Providers\Managed;
 use Rapid_Ai_Forms\Ai\Providers\Openai_Compatible;
 use Rapid_Ai_Forms\Ai\Providers\Wp_Ai_Client;
 
@@ -20,6 +21,7 @@ class Provider_Manager {
 	private $providers = array();
 
 	public function __construct() {
+		$this->register( new Managed() );
 		$this->register( new Anthropic() );
 		$this->register( new Gemini() );
 		$this->register( new Openai_Compatible() );
@@ -53,6 +55,10 @@ class Provider_Manager {
 		$defaults = array(
 			'active_provider' => 'openai_compatible',
 			'providers'       => array(
+				'managed'           => array(
+					'site_token' => '',
+					'site_url'   => '',
+				),
 				'anthropic'         => array(
 					'api_key' => '',
 					'model'   => 'claude-sonnet-4-6',
