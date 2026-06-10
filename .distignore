@@ -17,6 +17,7 @@ dist/
 # requires source for any compiled/minified assets to be either bundled or
 # linked from the readme; we bundle.
 .claude/
+.poke/
 node_modules/
 vendor/
 

@@ -11,6 +11,24 @@ import './frontend.scss';
 const config = window.RAPID_AI_FORMS || {};
 const api = createApiClient( { restUrl: config.restUrl, nonce: config.nonce } );
 
+const clearFieldErrors = ( form ) => {
+	form.querySelectorAll( '.raif-field-error' ).forEach( ( el ) => el.remove() );
+};
+
+const showFieldErrors = ( form, fields ) => {
+	Object.entries( fields ).forEach( ( [ name, msg ] ) => {
+		const input = form.querySelector(
+			`[name="${ name }"], [name="${ name }[]"]`
+		);
+		const wrapper = input && input.closest( '.raif-field' );
+		if ( ! wrapper ) return;
+		const error = document.createElement( 'span' );
+		error.className = 'raif-field-error';
+		error.textContent = msg;
+		wrapper.appendChild( error );
+	} );
+};
+
 const onSubmit = async ( event ) => {
 	event.preventDefault();
 	const form = event.currentTarget;
@@ -33,6 +51,7 @@ const onSubmit = async ( event ) => {
 	submit.disabled = true;
 	message.textContent = '';
 	message.className = 'raif-form__message';
+	clearFieldErrors( form );
 
 	try {
 		await api.post( `submissions/${ uuid }`, data );
@@ -42,6 +61,9 @@ const onSubmit = async ( event ) => {
 	} catch ( err ) {
 		message.textContent = err.message || 'Submission failed.';
 		message.classList.add( 'is-error' );
+		if ( err.data && err.data.fields ) {
+			showFieldErrors( form, err.data.fields );
+		}
 	} finally {
 		submit.disabled = false;
 	}

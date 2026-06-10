@@ -89,7 +89,7 @@ class Form_Renderer {
 			'id="%s" name="%s"%s%s',
 			esc_attr( $id ),
 			esc_attr( $name ),
-			$required ? ' required' : '',
+			$required ? ' required aria-required="true"' : '',
 			$placeholder_attr
 		);
 
@@ -129,7 +129,7 @@ class Form_Renderer {
 						'<label><input type="radio" name="%s" value="%s"%s /> %s</label>',
 						esc_attr( $name ),
 						esc_attr( $opt['value'] ?? '' ),
-						$required ? ' required' : '',
+						$required ? ' required aria-required="true"' : '',
 						esc_html( $opt['label'] ?? '' )
 					);
 				}

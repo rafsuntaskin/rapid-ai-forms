@@ -315,6 +315,11 @@ class Rest_Controller {
 		$payload = $req->get_json_params() ?: $req->get_body_params();
 		$data    = $this->sanitize_submission( $form, (array) $payload );
 
+		$validation = $this->validate_required( $form, $data );
+		if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+
 		$submissions = new Submission_Repository();
 		$id          = $submissions->create( $form['id'], $data );
 
@@ -333,6 +338,55 @@ class Rest_Controller {
 				'id' => $id,
 			)
 		);
+	}
+
+	/**
+	 * Enforce `required: true` schema fields on the sanitized submission.
+	 *
+	 * Runs after sanitize_submission(), so emptiness is judged on what would
+	 * actually be stored (e.g. an invalid email already sanitized to '').
+	 *
+	 * @param array $form Form row including schema.
+	 * @param array $data Sanitized submission data.
+	 * @return true|\WP_Error True when valid; 422 WP_Error with per-field messages otherwise.
+	 */
+	private function validate_required( array $form, array $data ) {
+		$errors = array();
+		$fields = $form['schema']['fields'] ?? array();
+		foreach ( $fields as $field ) {
+			if ( empty( $field['required'] ) ) {
+				continue;
+			}
+			$type = $field['type'] ?? 'text';
+			// Hidden fields are populated from the schema, not the client.
+			if ( 'hidden' === $type ) {
+				continue;
+			}
+			$name  = $field['name'];
+			$value = $data[ $name ] ?? null;
+
+			$empty = null === $value
+				|| ( is_string( $value ) && '' === trim( $value ) )
+				|| ( is_array( $value ) && array() === $value );
+
+			if ( $empty ) {
+				$label = '' !== (string) ( $field['label'] ?? '' ) ? $field['label'] : $name;
+				/* translators: %s: field label. */
+				$errors[ $name ] = sprintf( __( '%s is required.', 'rapid-ai-forms' ), $label );
+			}
+		}
+
+		if ( $errors ) {
+			return new \WP_Error(
+				'raif_validation',
+				__( 'Please fill in the required fields.', 'rapid-ai-forms' ),
+				array(
+					'status' => 422,
+					'fields' => $errors,
+				)
+			);
+		}
+		return true;
 	}
 
 	private function sanitize_submission( array $form, array $payload ) {
