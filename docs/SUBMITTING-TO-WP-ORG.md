@@ -164,7 +164,7 @@ wp.org's review bot specifically flags `build/*.js` as minified artifacts with n
 
 ## 3. Once approved: SVN setup
 
-> **You are here (2026-05-31).** v0.1.0 was approved by the wp.org Plugin Review Team and SVN access has been granted at `https://plugins.svn.wordpress.org/rapid-ai-forms/`. The next concrete step is the first SVN commit using the workflow below.
+> **Status (2026-06): shipped.** v0.1.0 was approved, and the first SVN release is committed — `trunk/` + `tags/0.1.0/` are live at `https://plugins.svn.wordpress.org/rapid-ai-forms/`, and the plugin is listed at https://wordpress.org/plugins/rapid-ai-forms/. The first-release steps below are kept for reference; **subsequent updates use `bin/svn-deploy.sh` — see [`DEPLOY.md`](DEPLOY.md)** and §3 "Subsequent updates".
 
 Pre-flight (before the first svn commit):
 

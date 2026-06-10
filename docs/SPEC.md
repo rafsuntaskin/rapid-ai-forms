@@ -643,8 +643,7 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [x] Per-form email notifications with mail-tag templating + Reply-To.
 - [x] DB migration runner (`Plugin::maybe_migrate()`).
 - [x] One-click credential verification.
-- [ ] Submit to wp.org plugin directory.
-  *Done when:* the plugin passes wp.org review and is listed.
+- [x] Submit to wp.org plugin directory. **Shipped (2026-06):** approved, first SVN release committed (`trunk/` + `tags/0.1.0/`), live at https://wordpress.org/plugins/rapid-ai-forms/.
 
 ### v0.2 — Operability
 - [ ] **Required-field server-side enforcement** (422 + field-level errors; no junk rows) — higher priority. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part A.

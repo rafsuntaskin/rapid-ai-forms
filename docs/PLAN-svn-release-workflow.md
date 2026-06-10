@@ -1,5 +1,9 @@
 # Plan: Safe, repeatable wp.org SVN release workflow
 
+> **Status: implemented (2026-06).** `bin/svn-deploy.sh` + `bin/dist.sh --stage` shipped and
+> were used for the 0.1.0 release. User-facing docs live in [`DEPLOY.md`](DEPLOY.md). This
+> file is kept as the design record.
+
 ## Context
 
 v0.1.0 is approved and SVN access is granted at
