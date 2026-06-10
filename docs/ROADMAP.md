@@ -17,20 +17,23 @@ into the readme, FAQ, or in-product copy that reviewers see.
 If something belongs on this list, it does *not* belong in `readme.txt`,
 in-product help text, or the plugin description.
 
-## v0.2 (next)
+## v0.2 (feature-complete, unreleased)
 
-- **Required-field server-side enforcement** (422 + field-level errors; no junk
-  rows) — higher priority. See [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part A.
-- Submissions admin view (data is already stored; UI to come).
-- Database migration runner for schema changes.
+All implemented on the release branch; move to readme.txt changelog when 0.2.0 ships:
+
+- Required-field server-side enforcement (422 + field-level errors; no junk rows).
+- Submissions admin page (cross-form list, form filter, detail modal with email preview).
+- Per-form custom CSS with iframe preview and AI-prompt-driven editing — see
+  [`PLAN-ai-css-editor.md`](PLAN-ai-css-editor.md).
+
+(Database migration runner was descoped — dbDelta-on-activation is enough at the
+current install base.)
 
 ## v0.3
 
 - Anti-abuse / submission-origin validation: signed cache-safe per-render token,
   honeypot + time-trap, per-IP rate limit, pluggable CAPTCHA/Akismet hook — see
   [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part B.
-- Per-form custom CSS with iframe preview and AI-prompt-driven editing — see
-  [`PLAN-ai-css-editor.md`](PLAN-ai-css-editor.md).
 
 ## v0.4
 

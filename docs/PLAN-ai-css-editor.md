@@ -1,8 +1,8 @@
 # Plan: AI-driven per-form CSS editor with live frontend preview
 
-**Status:** Deferred (post wp.org submission)
-**Target:** v0.3 (after submissions UI + anti-abuse land)
-**Author:** initial draft 2026-05-19
+**Status:** Shipped (all three phases) — pulled forward into v0.2
+**Target:** v0.2
+**Author:** initial draft 2026-05-19; implemented 2026-06-10
 
 This document captures the design for letting users style each form individually using a natural-language prompt, with a faithful frontend preview rendered inside the editor.
 
