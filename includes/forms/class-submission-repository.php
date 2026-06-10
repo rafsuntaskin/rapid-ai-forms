@@ -38,15 +38,38 @@ class Submission_Repository {
 		return (int) $wpdb->insert_id;
 	}
 
-	public function list_for_form( $form_id, array $args = array() ) {
+	/**
+	 * List submissions across all forms, newest first, optionally filtered
+	 * to one form. Each row carries `form_title` from a join so the admin
+	 * list can label rows without extra lookups.
+	 *
+	 * @param array $args { form_id?, page?, per_page? }
+	 */
+	public function list( array $args = array() ) {
 		global $wpdb;
-		$limit  = isset( $args['per_page'] ) ? max( 1, min( 100, (int) $args['per_page'] ) ) : 20;
-		$offset = isset( $args['page'] ) ? max( 0, ( (int) $args['page'] - 1 ) * $limit ) : 0;
-		$rows   = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE form_id = %d ORDER BY created_at DESC LIMIT %d OFFSET %d', Schema::submissions_table(), (int) $form_id, $limit, $offset ), ARRAY_A );
-		foreach ( $rows ?: array() as &$r ) {
+		$limit   = isset( $args['per_page'] ) ? max( 1, min( 100, (int) $args['per_page'] ) ) : 20;
+		$offset  = isset( $args['page'] ) ? max( 0, ( (int) $args['page'] - 1 ) * $limit ) : 0;
+		$form_id = isset( $args['form_id'] ) ? (int) $args['form_id'] : 0;
+
+		if ( $form_id ) {
+			$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT s.*, f.title AS form_title FROM %i s LEFT JOIN %i f ON f.id = s.form_id WHERE s.form_id = %d ORDER BY s.created_at DESC, s.id DESC LIMIT %d OFFSET %d', Schema::submissions_table(), Schema::forms_table(), $form_id, $limit, $offset ), ARRAY_A );
+		} else {
+			$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT s.*, f.title AS form_title FROM %i s LEFT JOIN %i f ON f.id = s.form_id ORDER BY s.created_at DESC, s.id DESC LIMIT %d OFFSET %d', Schema::submissions_table(), Schema::forms_table(), $limit, $offset ), ARRAY_A );
+		}
+
+		$rows = $rows ?: array();
+		foreach ( $rows as &$r ) {
 			$r['data'] = json_decode( $r['data'], true ) ?: array();
 			$r['meta'] = json_decode( $r['meta'], true ) ?: array();
 		}
-		return $rows ?: array();
+		return $rows;
+	}
+
+	public function count( $form_id = 0 ) {
+		global $wpdb;
+		if ( $form_id ) {
+			return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i WHERE form_id = %d', Schema::submissions_table(), (int) $form_id ) );
+		}
+		return (int) $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %i', Schema::submissions_table() ) );
 	}
 }

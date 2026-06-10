@@ -11,6 +11,7 @@ use Rapid_Ai_Forms\Ai\Provider_Manager;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 use Rapid_Ai_Forms\Forms\Form_Repository;
 use Rapid_Ai_Forms\Forms\Submission_Repository;
+use Rapid_Ai_Forms\Notifications\Email_Notifier;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -58,6 +59,17 @@ class Rest_Controller {
 					'callback'            => array( $this, 'delete_form' ),
 					'permission_callback' => array( $this, 'can_manage' ),
 				),
+			)
+		);
+
+		// Admin collection — distinct from the public POST /submissions/{uuid} below.
+		register_rest_route(
+			self::NAMESPACE,
+			'/submissions',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'list_submissions' ),
+				'permission_callback' => array( $this, 'can_manage' ),
 			)
 		);
 
@@ -170,6 +182,42 @@ class Rest_Controller {
 		$repo = new Form_Repository();
 		$ok   = $repo->delete( (int) $req['id'] );
 		return rest_ensure_response( array( 'deleted' => $ok ) );
+	}
+
+	public function list_submissions( $req ) {
+		$page     = max( 1, (int) $req->get_param( 'page' ) ?: 1 );
+		$per_page = max( 1, min( 100, (int) $req->get_param( 'per_page' ) ?: 20 ) );
+		$form_id  = max( 0, (int) $req->get_param( 'form_id' ) );
+
+		$submissions = new Submission_Repository();
+		$rows        = $submissions->list(
+			array(
+				'form_id'  => $form_id,
+				'page'     => $page,
+				'per_page' => $per_page,
+			)
+		);
+		$total       = $submissions->count( $form_id );
+
+		// Attach the rendered notification email (using the form's current
+		// template) so the admin view can show what was sent. Null when
+		// notifications are disabled for the form.
+		$form_repo = new Form_Repository();
+		$notifier  = new Email_Notifier();
+		$forms     = array();
+		foreach ( $rows as &$row ) {
+			$fid = (int) $row['form_id'];
+			if ( ! array_key_exists( $fid, $forms ) ) {
+				$forms[ $fid ] = $form_repo->get( $fid );
+			}
+			$row['email'] = $forms[ $fid ] ? $notifier->compose( $forms[ $fid ], $row['data'] ) : null;
+		}
+		unset( $row );
+
+		$response = rest_ensure_response( $rows );
+		$response->header( 'X-WP-Total', (string) $total );
+		$response->header( 'X-WP-TotalPages', (string) max( 1, (int) ceil( $total / $per_page ) ) );
+		return $response;
 	}
 
 	public function ai_verify( $req ) {

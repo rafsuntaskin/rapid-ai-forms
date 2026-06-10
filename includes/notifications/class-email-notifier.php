@@ -51,20 +51,12 @@ class Email_Notifier {
 			return;
 		}
 
-		$tags = $this->build_tags( $form, $data );
-
-		$subject = trim( (string) ( $notifications['subject'] ?? '' ) );
-		if ( '' === $subject ) {
-			/* translators: %s: form title */
-			$subject = sprintf( __( 'New submission: %s', 'rapid-ai-forms' ), $form['title'] ?: __( 'Untitled form', 'rapid-ai-forms' ) );
+		$message = $this->compose( $form, $data );
+		if ( ! $message ) {
+			return;
 		}
-		$subject = $this->render_template( $subject, $tags );
-
-		$body = (string) ( $notifications['body'] ?? '' );
-		if ( '' === trim( $body ) ) {
-			$body = '{all_fields}';
-		}
-		$body = $this->render_template( $body, $tags );
+		$subject = $message['subject'];
+		$body    = $message['body'];
 
 		$headers     = array();
 		$reply_field = isset( $notifications['reply_to_field'] ) ? sanitize_key( $notifications['reply_to_field'] ) : '';
@@ -82,6 +74,44 @@ class Email_Notifier {
 		$headers    = (array) apply_filters( 'rapid_ai_forms_notification_headers', $headers, $form, $data );
 
 		wp_mail( $recipients, wp_strip_all_tags( $subject ), $body, $headers );
+	}
+
+	/**
+	 * Render the notification subject and body for a submission without
+	 * sending — also used by the admin submissions view to preview what
+	 * the email looks like. Returns null when notifications are disabled
+	 * for the form.
+	 *
+	 * @param array $form Form row including schema.
+	 * @param array $data Submission data.
+	 * @return array{subject: string, body: string}|null
+	 */
+	public function compose( array $form, array $data ) {
+		$notifications = isset( $form['schema']['notifications'] ) && is_array( $form['schema']['notifications'] )
+			? $form['schema']['notifications']
+			: array();
+
+		if ( empty( $notifications['enabled'] ) ) {
+			return null;
+		}
+
+		$tags = $this->build_tags( $form, $data );
+
+		$subject = trim( (string) ( $notifications['subject'] ?? '' ) );
+		if ( '' === $subject ) {
+			/* translators: %s: form title */
+			$subject = sprintf( __( 'New submission: %s', 'rapid-ai-forms' ), $form['title'] ?: __( 'Untitled form', 'rapid-ai-forms' ) );
+		}
+
+		$body = (string) ( $notifications['body'] ?? '' );
+		if ( '' === trim( $body ) ) {
+			$body = '{all_fields}';
+		}
+
+		return array(
+			'subject' => $this->render_template( $subject, $tags ),
+			'body'    => $this->render_template( $body, $tags ),
+		);
 	}
 
 	private function build_tags( array $form, array $data ) {
