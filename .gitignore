@@ -7,3 +7,6 @@ vendor/
 .env
 .env.local
 dist/
+.poke/
+.phpunit.result.cache
+.wp-env.override.json
