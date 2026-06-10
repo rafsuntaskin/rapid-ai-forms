@@ -50,6 +50,10 @@ class Preview {
 		nocache_headers();
 		header( 'X-Frame-Options: SAMEORIGIN' );
 
+		// The viewer is necessarily a logged-in admin — keep the admin bar
+		// out of the iframe so the preview matches what visitors see.
+		show_admin_bar( false );
+
 		wp_enqueue_script( 'rapid-ai-forms-frontend' );
 		wp_enqueue_style( 'rapid-ai-forms-frontend' );
 
