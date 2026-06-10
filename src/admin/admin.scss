@@ -703,3 +703,23 @@
 		color: #787c82;
 	}
 }
+
+.raif-editor__tabs {
+	.components-tab-panel__tabs {
+		margin-bottom: 4px;
+		border-bottom: 1px solid #dcdcde;
+	}
+
+	.components-tab-panel__tabs-item {
+		font-weight: 600;
+	}
+
+	.raif-editor__columns {
+		margin-top: 12px;
+	}
+
+	// The styling panel is the tab's sole content; trim the card top margin.
+	.raif-styling.raif-mt {
+		margin-top: 12px;
+	}
+}

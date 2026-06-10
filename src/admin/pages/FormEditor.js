@@ -12,6 +12,7 @@ import {
 	ToggleControl,
 	Flex,
 	FlexItem,
+	TabPanel,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
@@ -230,9 +231,32 @@ export default function FormEditor( { api, formId } ) {
 			/>
 			{ save.error && <Notice status="error" isDismissible={ false }>{ save.error.message }</Notice> }
 
-			<div className="raif-editor__columns">
-				<div className="raif-editor__main">
 			{ actionBar( 'top' ) }
+			<TabPanel
+				className="raif-editor__tabs"
+				tabs={ [
+					{ name: 'form', title: __( 'Form', 'rapid-ai-forms' ) },
+					{ name: 'style', title: __( 'Style', 'rapid-ai-forms' ) },
+				] }
+			>
+				{ ( tab ) =>
+					tab.name === 'style' ? (
+						<StylingPanel
+							api={ api }
+							form={ form }
+							savedAt={ savedAt }
+							aiConfigured={ ai.ready ? ai.configured : undefined }
+							css={ ( form.settings && form.settings.custom_css ) || '' }
+							onChange={ ( v ) =>
+								setForm( {
+									...form,
+									settings: { ...form.settings, custom_css: v },
+								} )
+							}
+						/>
+					) : (
+						<div className="raif-editor__columns">
+							<div className="raif-editor__main">
 			<Card>
 				<CardHeader>
 					<strong>
@@ -497,26 +521,15 @@ export default function FormEditor( { api, formId } ) {
 					) }
 				</CardBody>
 			</Card>
-
-			<StylingPanel
-				api={ api }
-				form={ form }
-				savedAt={ savedAt }
-				aiConfigured={ ai.ready ? ai.configured : undefined }
-				css={ ( form.settings && form.settings.custom_css ) || '' }
-				onChange={ ( v ) =>
-					setForm( {
-						...form,
-						settings: { ...form.settings, custom_css: v },
-					} )
+							</div>
+							<aside className="raif-editor__side">
+								<FormPreview form={ form } />
+							</aside>
+						</div>
+					)
 				}
-			/>
+			</TabPanel>
 			{ actionBar( 'bottom' ) }
-				</div>
-				<aside className="raif-editor__side">
-					<FormPreview form={ form } />
-				</aside>
-			</div>
 		</div>
 	);
 }
