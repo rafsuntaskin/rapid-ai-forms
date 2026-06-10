@@ -231,13 +231,13 @@ Total: ~6 hours of focused work.
 
 The feature is done when:
 
-- [ ] A logged-in admin can open the editor and see a working iframe of the form rendered with the active theme's styles.
-- [ ] Editing the manual CSS textarea + clicking Save updates the form and the iframe reloads to reflect changes.
-- [ ] Typing a prompt → clicking Apply → ~3 seconds later the textarea contains new CSS, the iframe shows the change, and the user can click Save to keep it (or undo to revert).
-- [ ] Anonymous visitors hitting `/?rapid_ai_form_preview={id}` get a 403.
-- [ ] Custom CSS for one form never affects another form on the same page.
-- [ ] Pasting `</style><script>alert(1)</script>` into the CSS textarea results in stripped output, no script execution.
-- [ ] `manage_options` is enforced for the AI endpoint too.
+- [x] A logged-in admin can open the editor and see a working iframe of the form rendered with the active theme's styles.
+- [x] Editing the manual CSS textarea + clicking Save updates the form and the iframe reloads to reflect changes. (Live edits also inject into the iframe after a 600ms debounce, no reload needed.)
+- [x] Typing a prompt → clicking Apply → ~3 seconds later the textarea contains new CSS, the iframe shows the change, and the user can click Save to keep it (or undo to revert).
+- [x] Anonymous visitors hitting `/?rapid_ai_form_preview={id}` get a 403. (PHPUnit + manual curl.)
+- [x] Custom CSS for one form never affects another form on the same page (CSS-nesting scope wrapper).
+- [x] Pasting `</style><script>alert(1)</script>` into the CSS textarea results in stripped output, no script execution. (Pinned by tests.)
+- [x] `manage_options` is enforced for the AI endpoint too.
 
 ---
 

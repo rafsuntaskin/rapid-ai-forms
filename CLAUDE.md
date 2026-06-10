@@ -24,7 +24,10 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - REST routes live under `rapid-ai-forms/v1/*`. Management endpoints require `manage_options`; the public submission endpoint is `/submissions/{uuid}`.
 - Secrets in `rapid_ai_forms_ai_settings` are never returned over REST; `*_set` booleans signal presence instead.
 - `Notifications\Email_Notifier` listens on `rapid_ai_forms_submission_created` and sends per-form email via `wp_mail()`. Mail-tags resolved in `Email_Notifier::build_tags()`; recipient defaults to `admin_email` (seeded at form-create time in `Form_Repository::create()`).
-- `Forms\Form_Repository::list()` / `count()` accept `page`, `per_page`, and `search`. The REST `/forms` endpoint reads `X-WP-Total` / `X-WP-TotalPages` headers so the React list can paginate without a custom envelope.
+- `Forms\Form_Repository::list()` / `count()` accept `page`, `per_page`, and `search`. The REST `/forms` endpoint reads `X-WP-Total` / `X-WP-TotalPages` headers so the React list can paginate without a custom envelope. `GET /submissions` (admin) follows the same convention.
+- Per-form custom CSS lives in `settings.custom_css`, sanitized by `Forms\Css_Sanitizer` on every write and at render; `Form_Renderer` emits it scoped under `.raif-form[data-form-uuid]` (CSS nesting). AI edits go through `POST /ai/style` → `Ai\Css_Prompt`.
+- AI providers implement both `generate_form_schema()` and `generate_text( $system, $prompt )` — schema JSON-mode and free-form text share one HTTP helper per provider.
+- `Frontend\Preview` serves `/?rapid_ai_form_preview={id}` (admin-only) — a minimal wp_head/wp_footer document the editor iframes for a theme-accurate preview.
 
 ### JS (`src/`)
 - Built with `@wordpress/scripts`. Two entries: `admin` and `frontend`. Output → `build/`.
@@ -52,9 +55,8 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Run wp.org Plugin Check against the installed copy: `lando wp plugin check rapid-ai-forms`. Must report `Success: Checks complete. No errors found.` before submitting.
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
-- Submissions admin view (data is being stored; UI to come) — v0.2.
-- Honeypot + per-IP rate limit on `/submissions/{uuid}` — v0.3.
-- AI-driven per-form CSS editor — v0.3 (see `docs/PLAN-ai-css-editor.md`).
+- Submission anti-abuse (origin token, honeypot, per-IP rate limit) — v0.3 (see `docs/PLAN-submission-integrity.md` Part B).
+- CSV/JSON export + date filter on the submissions page — deferred from v0.2.
 - Gutenberg block (thin wrapper around shortcode) — v0.4.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.

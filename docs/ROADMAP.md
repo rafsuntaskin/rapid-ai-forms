@@ -25,9 +25,10 @@ All implemented on the release branch; move to readme.txt changelog when 0.2.0 s
 - Submissions admin page (cross-form list, form filter, detail modal with email preview).
 - Per-form custom CSS with iframe preview and AI-prompt-driven editing — see
   [`PLAN-ai-css-editor.md`](PLAN-ai-css-editor.md).
+- PHPUnit on the official WP test suite (`npm run test:php` via wp-env).
 
 (Database migration runner was descoped — dbDelta-on-activation is enough at the
-current install base.)
+current install base. CSV export + date filter deferred from the original v0.2 scope.)
 
 ## v0.3
 

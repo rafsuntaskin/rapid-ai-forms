@@ -121,7 +121,7 @@ Any unknown type is coerced to `text` by `Schema_Prompt::sanitize_schema()`.
 | `title` | `VARCHAR(255)` | |
 | `status` | `VARCHAR(20)` | `draft` \| `published`. **Decorative in v0.1** — the UI does not expose a status control and the shortcode renders regardless. Column retained for future use (e.g. `archived`). |
 | `schema` | `LONGTEXT` | JSON-encoded Form Schema |
-| `settings` | `LONGTEXT` | JSON, per-form settings (notifications, etc. — future use) |
+| `settings` | `LONGTEXT` | JSON, per-form settings. Currently: `custom_css` (string, ≤50 KB, sanitized through `Css_Sanitizer` on every write — see §6.5) |
 | `ai_prompt` | `LONGTEXT NULL` | last prompt used to generate this form |
 | `author_id` | `BIGINT UNSIGNED` | WP user id (0 if none) |
 | `created_at` | `DATETIME` | UTC |
@@ -172,7 +172,9 @@ Authentication: WP cookie + `X-WP-Nonce` header for admin endpoints. Submission 
 | `/forms/{id}` | GET, PUT, DELETE | `manage_options` |
 | `/ai/generate` | POST | `manage_options` |
 | `/ai/verify` | POST | `manage_options` |
+| `/ai/style` | POST | `manage_options` |
 | `/settings` | GET, PUT | `manage_options` |
+| `/submissions` | GET | `manage_options` |
 | `/submissions/{uuid}` | POST | public (with payload cap, see §4.2) |
 
 ### 4.2 Endpoints
@@ -205,6 +207,16 @@ Error codes: `raif_no_provider`, `raif_missing_key`, `raif_empty_response`, `rai
 Body: `{ "provider": "anthropic|gemini|openai_compatible|wp_ai_client", "api_key": "...", "base_url": "...", "model": "..." }`. Any empty field falls back to the saved value, so an admin can verify before saving.
 Returns: `{ "ok": true, "latency_ms": 412 }` on success. On failure returns a `WP_Error` with `latency_ms` attached. Used by the Settings UI to gate Save until the credentials are confirmed working. For `wp_ai_client`, "verified" means at least one configured connector reports `is_supported_for_text_generation()` is true.
 
+#### `POST /ai/style`
+Body: `{ "form_id": 42, "prompt": "string", "current_css": "/* optional */" }`.
+Generates/edits the form's custom CSS via the active provider's `generate_text()`. `Css_Prompt` assembles the model context server-side: the request, the current CSS, the rendered form HTML (real selectors), a documented selector list, and theme.json design tokens (`wp_get_global_settings()` palette/fonts/spacing) so output matches the site. The system prompt requires **nested rules relative to the form root** because the renderer wraps the CSS in the `data-form-uuid` scope (§6.5).
+Returns: `{ "css": "..." }` — already fence-stripped, sanitized (`Css_Sanitizer`), and brace-validated. The client fills the editor; persisting still goes through `PUT /forms/{id}`.
+Error codes: `raif_not_found` (404), `raif_empty_css`, `raif_invalid_css`, `raif_not_supported`, plus the provider errors listed under `/ai/generate` (all 400).
+
+#### `GET /submissions`
+Query params: `page` (default 1), `per_page` (default 20, max 100), `form_id` (optional filter).
+Returns: array of submission rows across **all** forms, newest first. Each row carries decoded `data`/`meta`, a `form_title` (LEFT JOIN against the forms table), and `email` — the notification subject/body rendered by `Email_Notifier::compose()` using the form's **current** template (`null` when notifications are disabled). Headers carry `X-WP-Total` / `X-WP-TotalPages` like `GET /forms`.
+
 #### `GET /settings`
 Returns the settings object (§5.1) with **secrets stripped**: `api_key` is always an empty string; `api_key_set` indicates whether a secret is stored. Each provider also carries a generic `configured` boolean:
 - BYOK providers: `configured === api_key_set`.
@@ -231,8 +243,9 @@ Behavior:
    - `hidden` → ignored from the client; the value is read from `field.default_value` on the server
    - everything else → `sanitize_text_field` (array values are mapped)
 4. Unknown keys are dropped.
-5. Insert into `{prefix}rapid_ai_form_submissions`.
-6. Fire `do_action( 'rapid_ai_forms_submission_created', $submission_id, $form, $data )` — the built-in `Email_Notifier` listens at priority 10.
+5. **Validate required fields** (`Rest_Controller::validate_required()`): every schema field with `required: true` must be non-empty *after* sanitization (so `email`/`url` that sanitized to `''`, `number` that coerced to `null`, and `checkbox_group` that intersected to `[]` all count as missing). Hidden fields are exempt (server-populated). On failure: `422 raif_validation` with `data.fields = { name: message }` — **no row is written**. The renderer emits `required` + `aria-required="true"` and the frontend shows inline `.raif-field-error` messages from the 422.
+6. Insert into `{prefix}rapid_ai_form_submissions`.
+7. Fire `do_action( 'rapid_ai_forms_submission_created', $submission_id, $form, $data )` — the built-in `Email_Notifier` listens at priority 10.
 
 Returns: `{ "ok": true, "id": 123 }`.
 
@@ -280,6 +293,7 @@ interface Provider {
   public function key(): string;     // stable identifier, e.g. "anthropic"
   public function label(): string;   // human-readable name
   public function generate_form_schema( string $prompt, array $options = [] ); // array | WP_Error
+  public function generate_text( string $system, string $prompt, array $options = [] ); // string | WP_Error
   public function verify( array $options = [] );                                // true | WP_Error
 }
 ```
@@ -288,6 +302,7 @@ interface Provider {
 - `generate_form_schema()` must return either an array conforming to the Form Schema (§2) or a `WP_Error`.
 - Must call `Schema_Prompt::system()` as the system instruction.
 - Must funnel raw model text through `Schema_Prompt::extract_schema()` for validation/sanitization.
+- `generate_text()` is the free-form path (caller supplies the system prompt; used by the AI CSS editor). Built-in providers implement both through one shared HTTP helper, with JSON mode (`response_format` / `responseMimeType` / `as_json_response`) enabled only for schema generation. `Provider_Manager::generate_text()` guards with `method_exists()` so third-party providers written before this method existed degrade to `raif_not_supported` instead of fataling.
 - Must propagate HTTP failures as `WP_Error` (do not throw).
 - HTTP timeout: 60s recommended (current default).
 - `verify()` must perform the cheapest possible round-trip that proves the credentials/connector work — typically a `GET /models` style probe. Returns `true` on success, `WP_Error` otherwise. The REST `/ai/verify` endpoint calls this and reports `latency_ms` back to the client.
@@ -549,13 +564,36 @@ The PHP renderer emits a `<form class="raif-form" data-form-uuid="..." data-nonc
 
 All classes prefixed with `raif-`. Default styles are minimal and intended to be overridable by the theme.
 
+### 6.5 Per-form custom CSS
+
+`settings.custom_css` is emitted by `Form_Renderer` as a scoped style block immediately before the `<form>`:
+
+```html
+<style id="raif-css-{uuid}">
+  .raif-form[data-form-uuid="{uuid}"] {
+    /* custom_css, verbatim */
+  }
+</style>
+```
+
+The CSS-nesting wrapper scopes even un-prefixed rules to this one form instance. `Css_Sanitizer` runs on every write (`Form_Repository`) **and** again at render: 50 KB cap, then strips `</style`, `<script`, `javascript:`, `expression(`, `@import`, `behavior:` case-insensitively until stable (so split tokens can't reassemble). `Css_Sanitizer::validate()` adds a brace-balance check used by the AI endpoint. Trust model matches the Customizer's Additional CSS — admins may write arbitrary (safe) CSS.
+
+### 6.6 Admin preview route
+
+`GET /?rapid_ai_form_preview={id}` (query var registered by `Frontend\Preview`):
+- `manage_options` required — anonymous gets a bare 403; missing form → 404.
+- Outputs a minimal document that still runs `wp_head()` / `wp_footer()`, so the active theme's CSS applies — the editor iframes this for a faithful frontend preview.
+- Sent with `nocache_headers()` and `X-Frame-Options: SAMEORIGIN`; `<meta name="robots" content="noindex, nofollow">`.
+- The Styling panel live-injects CSS edits into the iframe's scoped style element (same-origin) after a 600 ms debounce; saving the form reloads the frame.
+
 ---
 
 ## 7. Admin SPA
 
-- Mounted in `wp-admin` under menu slug `rapid-ai-forms` (capability `manage_options`).
+- Mounted in `wp-admin` under menu slug `rapid-ai-forms` (capability `manage_options`), with submenus **Forms** (`rapid-ai-forms`), **Submissions** (`rapid-ai-forms-submissions`), and **Settings** (`rapid-ai-forms-settings`) — the `?page=` slug picks the top-level view.
 - Single root: `#rapid-ai-forms-admin-root`.
-- Hash-based routing: `#/` (forms list), `#/forms/{id}` (editor), `#/settings`.
+- Hash-based routing within the Forms page: `#/` (forms list), `#/forms/{id}` (editor).
+- The Submissions page reads an optional `&form_id=` query param as its initial filter (the Forms list's "Submissions" button deep-links with it).
 - All React via `@wordpress/element` only — no separate React dependency.
 - UI primitives from `@wordpress/components`.
 
@@ -577,6 +615,9 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 - Secrets (`api_key`, `license_key`) are never returned over the REST API; only `*_set` booleans.
 - All inputs go through WP sanitization functions (`sanitize_text_field`, `sanitize_email`, `esc_url_raw`, `sanitize_textarea_field`, `sanitize_key`).
 - AI-generated schemas are passed through `Schema_Prompt::sanitize_schema()` — never trusted raw.
+- AI-generated CSS is passed through `Css_Prompt::extract_css()` → `Css_Sanitizer` — same sanitizer as human-typed CSS (§6.5), and the render-time scope wrapper means a form's CSS cannot affect anything outside that form.
+- Required-field validation is enforced server-side before any submission row is written (§4.2).
+- The preview route is capability-gated (`manage_options`) and framed same-origin only (§6.6).
 - Nonces (`wp_rest`) are required for the admin SPA's REST calls.
 
 ### 8.1 Known gaps (planned)
@@ -609,6 +650,8 @@ Eventual plan: publish as `@your-org/wp-react-kit` and consume across plugins vi
 | Production build | `npm run build` |
 | Dev watch | `npm run start` |
 | Lint PHP (WPCS 3.1) | `composer lint` (auto-fix: `composer lint:fix`) |
+| Start test env (Docker) | `npx wp-env start` |
+| Run PHP tests (WP test suite) | `npm run test:php` (PHPUnit 9.6 + `WP_UnitTestCase`; tests in `tests/test-*.php`) |
 | Regenerate POT | `wp i18n make-pot . languages/rapid-ai-forms.pot --domain=rapid-ai-forms --exclude=build,node_modules,docs,vendor,bin,dist` |
 | Build wp.org dist zip | `npm run dist` → `dist/rapid-ai-forms.zip` (honors `.distignore`) |
 | Copy dist to local plugins dir | `bash bin/dist.sh --to ~/Dev/lando/sites/wooDev/wp-content/plugins --no-build` |
@@ -645,18 +688,18 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [x] One-click credential verification.
 - [x] Submit to wp.org plugin directory. **Shipped (2026-06):** approved, first SVN release committed (`trunk/` + `tags/0.1.0/`), live at https://wordpress.org/plugins/rapid-ai-forms/.
 
-### v0.2 — Operability
-- [ ] **Required-field server-side enforcement** (422 + field-level errors; no junk rows) — higher priority. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part A.
-  *Done when:* a submit missing a `required` field returns 422 and writes no row; the renderer marks required inputs and the frontend shows inline errors.
-- [ ] Submissions admin view: paginated list per form, JSON & CSV export.
-  *Done when:* admin can browse submissions, filter by date, and download a CSV.
+### v0.2 — Operability + Styling (feature-complete, unreleased)
+- [x] **Required-field server-side enforcement** (422 + field-level errors; no junk rows). See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part A.
+- [x] Submissions admin page: dedicated submenu, cross-form list with form filter, relative timestamps, message/summary excerpt, detail modal (all fields, IP, UA, rendered notification email). Backed by `GET /submissions`.
+- [x] **AI-driven per-form CSS editor with live iframe preview** — pulled forward from v0.3. See [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
+- [x] PHPUnit on the official WP test suite via wp-env (30 tests covering the above).
+- [ ] CSV/JSON export of submissions and date filtering — deferred (not blocking 0.2.0).
 
-### v0.3 — Anti-abuse + Styling
+### v0.3 — Anti-abuse
 - [ ] **Submission-origin validation** — signed, cache-safe per-render token via a never-cached `GET /form-token/{uuid}` endpoint, validated on submit; + Origin/Referer check. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part B.
 - [ ] Honeypot field auto-injected into the renderer + time-trap.
 - [ ] Optional Cloudflare Turnstile / hCaptcha integration (pluggable hook; external calls disclosed in readme privacy section).
 - [ ] Per-IP submission rate limit (configurable).
-- [ ] **AI-driven per-form CSS editor with live iframe preview** — see [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
 
 ### v0.4 — Block editor
 - [ ] Gutenberg block `rapid-ai-forms/form` selecting a form by id.

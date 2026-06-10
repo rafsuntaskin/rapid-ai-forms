@@ -28,7 +28,11 @@ each other.
 
 ---
 
-## Part A — Required-field enforcement (higher priority, target v0.2)
+## Part A — Required-field enforcement — ✅ SHIPPED in v0.2 (2026-06)
+
+Implemented as specified below (`validate_required()` in `Rest_Controller`, `aria-required`
+in the renderer, inline `.raif-field-error` rendering in the frontend JS) and covered by
+PHPUnit tests in `tests/test-rest-submissions.php`. Part B remains open for v0.3.
 
 ### Server (authoritative)
 - In `Rest_Controller::submit()` (`:297`), after `sanitize_submission()`, validate each
