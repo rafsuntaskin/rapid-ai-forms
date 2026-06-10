@@ -10,8 +10,9 @@ namespace Rapid_Ai_Forms\Admin;
 defined( 'ABSPATH' ) || exit;
 
 class Admin {
-	const MENU_SLUG     = 'rapid-ai-forms';
-	const SETTINGS_SLUG = 'rapid-ai-forms-settings';
+	const MENU_SLUG        = 'rapid-ai-forms';
+	const SUBMISSIONS_SLUG = 'rapid-ai-forms-submissions';
+	const SETTINGS_SLUG    = 'rapid-ai-forms-settings';
 
 	public function register() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
@@ -41,6 +42,15 @@ class Admin {
 
 		add_submenu_page(
 			self::MENU_SLUG,
+			__( 'Submissions', 'rapid-ai-forms' ),
+			__( 'Submissions', 'rapid-ai-forms' ),
+			'manage_options',
+			self::SUBMISSIONS_SLUG,
+			array( $this, 'render_app_root' )
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
 			__( 'AI Forms Settings', 'rapid-ai-forms' ),
 			__( 'Settings', 'rapid-ai-forms' ),
 			'manage_options',
@@ -57,7 +67,7 @@ class Admin {
 		// Reading the ?page= slug from an admin URL — no form data, no nonce needed.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		if ( self::MENU_SLUG !== $page && self::SETTINGS_SLUG !== $page ) {
+		if ( ! in_array( $page, array( self::MENU_SLUG, self::SUBMISSIONS_SLUG, self::SETTINGS_SLUG ), true ) ) {
 			return;
 		}
 		unset( $hook_suffix );
@@ -82,12 +92,13 @@ class Admin {
 			'rapid-ai-forms-admin',
 			'RAPID_AI_FORMS_ADMIN',
 			array(
-				'restUrl'     => esc_url_raw( rest_url( 'rapid-ai-forms/v1/' ) ),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'adminUrl'    => admin_url( 'admin.php?page=' . self::MENU_SLUG ),
-				'settingsUrl' => admin_url( 'admin.php?page=' . self::SETTINGS_SLUG ),
-				'pluginUrl'   => RAPID_AI_FORMS_URL,
-				'page'        => $page,
+				'restUrl'        => esc_url_raw( rest_url( 'rapid-ai-forms/v1/' ) ),
+				'nonce'          => wp_create_nonce( 'wp_rest' ),
+				'adminUrl'       => admin_url( 'admin.php?page=' . self::MENU_SLUG ),
+				'submissionsUrl' => admin_url( 'admin.php?page=' . self::SUBMISSIONS_SLUG ),
+				'settingsUrl'    => admin_url( 'admin.php?page=' . self::SETTINGS_SLUG ),
+				'pluginUrl'      => RAPID_AI_FORMS_URL,
+				'page'           => $page,
 			)
 		);
 

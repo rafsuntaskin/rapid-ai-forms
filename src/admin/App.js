@@ -3,6 +3,7 @@ import { createApiClient } from '../shared/api/createApiClient';
 import FormsList from './pages/FormsList';
 import FormEditor from './pages/FormEditor';
 import Settings from './pages/Settings';
+import Submissions from './pages/Submissions';
 
 export default function App() {
 	const config = window.RAPID_AI_FORMS_ADMIN || {};
@@ -22,6 +23,9 @@ export default function App() {
 	// The WP admin page slug determines top-level view.
 	if ( config.page === 'rapid-ai-forms-settings' ) {
 		return <Settings api={ api } />;
+	}
+	if ( config.page === 'rapid-ai-forms-submissions' ) {
+		return <Submissions api={ api } />;
 	}
 
 	const editMatch = route.match( /^#\/forms\/(\d+)/ );

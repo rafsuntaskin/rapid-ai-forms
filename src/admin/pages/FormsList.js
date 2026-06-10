@@ -46,6 +46,7 @@ export default function FormsList( { api } ) {
 	const [ loading, setLoading ] = useState( false );
 	const ai = useAiConfigured( api );
 	const settingsUrl = ( window.RAPID_AI_FORMS_ADMIN || {} ).settingsUrl || '';
+	const submissionsUrl = ( window.RAPID_AI_FORMS_ADMIN || {} ).submissionsUrl || '';
 
 	// Debounce keystrokes so we don't fire a REST query on every character.
 	useEffect( () => {
@@ -227,6 +228,9 @@ export default function FormsList( { api } ) {
 							<footer className="raif-card__actions">
 								<Button variant="primary" href={ `#/forms/${ f.id }` }>
 									{ __( 'Edit', 'rapid-ai-forms' ) }
+								</Button>
+								<Button variant="secondary" href={ `${ submissionsUrl }&form_id=${ f.id }` }>
+									{ __( 'Submissions', 'rapid-ai-forms' ) }
 								</Button>
 								<Button
 									variant="tertiary"
