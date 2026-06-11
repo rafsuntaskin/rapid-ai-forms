@@ -78,8 +78,19 @@ class Provider_Manager {
 		if ( Wp_Ai_Client::is_available() ) {
 			$defaults['providers']['wp_ai_client'] = array();
 		}
-		$saved = get_option( self::OPTION_KEY, array() );
-		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
+		$saved    = get_option( self::OPTION_KEY, array() );
+		$settings = wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
+
+		// wp_parse_args is shallow — without this, a site that saved settings
+		// before an update would never see a newly added provider's defaults.
+		foreach ( $defaults['providers'] as $key => $provider_defaults ) {
+			$settings['providers'][ $key ] = wp_parse_args(
+				isset( $settings['providers'][ $key ] ) && is_array( $settings['providers'][ $key ] ) ? $settings['providers'][ $key ] : array(),
+				$provider_defaults
+			);
+		}
+
+		return $settings;
 	}
 
 	public function save_settings( array $settings ) {
