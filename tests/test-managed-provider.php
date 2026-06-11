@@ -58,6 +58,26 @@ class Test_Managed_Provider extends WP_UnitTestCase {
 		$manager->save_settings( $settings );
 	}
 
+	// ----- launch gate -----
+
+	public function test_provider_hidden_until_launch() {
+		$keys = array_keys( ( new Provider_Manager() )->all() );
+		$this->assertNotContains( 'managed', $keys );
+	}
+
+	public function test_provider_offered_when_filter_enables_it() {
+		add_filter( 'rapid_ai_forms_managed_enabled', '__return_true' );
+		$keys = array_keys( ( new Provider_Manager() )->all() );
+		remove_filter( 'rapid_ai_forms_managed_enabled', '__return_true' );
+		$this->assertContains( 'managed', $keys );
+	}
+
+	public function test_provider_stays_for_already_connected_sites() {
+		$this->connect_site();
+		$keys = array_keys( ( new Provider_Manager() )->all() );
+		$this->assertContains( 'managed', $keys );
+	}
+
 	// ----- verify route (handshake callback target) -----
 
 	public function test_verify_rejects_when_no_nonce_pending() {

@@ -21,7 +21,11 @@ class Provider_Manager {
 	private $providers = array();
 
 	public function __construct() {
-		$this->register( new Managed() );
+		// Hidden until the hosted backend launches (or the site is already
+		// connected / a dev filter enables it) — see Managed::is_enabled().
+		if ( Managed::is_enabled() ) {
+			$this->register( new Managed() );
+		}
 		$this->register( new Anthropic() );
 		$this->register( new Gemini() );
 		$this->register( new Openai_Compatible() );

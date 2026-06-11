@@ -13,6 +13,7 @@
 namespace Rapid_Ai_Forms\Ai\Providers;
 
 use Rapid_Ai_Forms\Ai\Provider;
+use Rapid_Ai_Forms\Ai\Provider_Manager;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 
 defined( 'ABSPATH' ) || exit;
@@ -20,6 +21,31 @@ defined( 'ABSPATH' ) || exit;
 class Managed implements Provider {
 
 	const STATUS_TRANSIENT = 'rapid_ai_forms_managed_status';
+
+	/**
+	 * Whether the hosted provider is offered on this site.
+	 *
+	 * Off by default until the backend is live — flip the default to true in
+	 * the release that launches Rapid AI Cloud. A site that already holds a
+	 * connection keeps the provider so generation doesn't silently break.
+	 * Dev/test environments enable it via the filter (alongside
+	 * rapid_ai_forms_managed_endpoint).
+	 */
+	public static function is_enabled() {
+		$default = defined( 'RAPID_AI_FORMS_CLOUD_ENABLED' ) && RAPID_AI_FORMS_CLOUD_ENABLED;
+
+		if ( ! $default ) {
+			$settings = get_option( Provider_Manager::OPTION_KEY, array() );
+			$default  = ! empty( $settings['providers']['managed']['site_token'] );
+		}
+
+		/**
+		 * Offer the Rapid AI Cloud provider.
+		 *
+		 * @param bool $enabled
+		 */
+		return (bool) apply_filters( 'rapid_ai_forms_managed_enabled', $default );
+	}
 
 	public function key() {
 		return 'managed';
