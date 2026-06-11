@@ -142,7 +142,7 @@ Rule: **the plugin states facts; the website sells.**
 - [x] `POST /v1/generate-form` + `POST /v1/generate-text` via OpenAI-compatible gateway (Vercel AI Gateway default; `MOCK_LLM=1` for dev).
 - [x] Atomic debit/refund ledger writes (row-locked, free pool then purchased); idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker.
 - [x] Smoke-tested against local Postgres: quota 3→0 → 402 neutral message; purchased credit resumes generation; site-binding 403; bad token 401; private-IP registration refused.
-- [ ] End-to-end on wooDev against the dev backend (mu-plugin filters `rapid_ai_forms_managed_endpoint`): Connect → quota badge → form gen → `/ai/style` gen → forced 402. Full handshake needs the WP site publicly reachable (tunnel) since the backend calls back.
+- [x] End-to-end on wooDev against the local dev backend (2026-06-11, `ALLOW_PRIVATE_CALLBACK=1` + mu-plugin endpoint filter): Connect handshake → `{connected:true}`, status 3/3, token masked in settings → `ai/generate` via cloud (mock schema) → `ai/style` via cloud (CSS through the sanitizer) → 4th call `raif_quota_reached` "Monthly free limit reached." → cached meter at 0 without re-polling. Found+fixed: shallow `wp_parse_args` dropped new provider defaults for existing installs; callback budget raised 5s→10s for slow hosts.
 
 ### Phase D — accounts + monetization (website)
 - [ ] Magic-link auth + dashboard (linked sites, usage graph).
