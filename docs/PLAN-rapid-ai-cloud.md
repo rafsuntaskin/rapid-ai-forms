@@ -118,11 +118,12 @@ Rule: **the plugin states facts; the website sells.**
 
 ## 4. Implementation checklist
 
-### Phase A — backend skeleton
-- [ ] Repo + Vercel project + Neon Postgres + Upstash; schema migrations for `sites`, `accounts`, `usage_ledger`, `requests`.
-- [ ] `POST /v1/register` with SSRF-guarded callback verification + token issuance (hash at rest) + registration rate limits.
-- [ ] `GET /v1/status` computing balances from the ledger.
-- [ ] Request-id + structured error envelope on every response.
+### Phase A — backend skeleton (code ✅ 2026-06-11 at `~/Dev/MyPlugins/rapid-ai-cloud`; provisioning pending)
+- [x] Repo (local git) + schema migrations for `sites`, `accounts`, `usage_ledger`, `requests`, `claim_codes`. Hono/TS, runs locally (`npm run dev`), Vercel adapter in `api/index.ts`.
+- [x] `POST /v1/register` with SSRF-guarded callback verification (public IPs only, no redirects, `?rest_route=` fallback) + sha256-hashed token issuance with rotation + per-IP/per-domain registration rate limits.
+- [x] `GET /v1/status` computing balances from the ledger.
+- [x] Request-id + structured error envelope on every response.
+- [ ] Provision: Vercel project + Neon `DATABASE_URL` + AI Gateway key; swap in Upstash for the in-memory rate limiter; point `api.rapidaiforms.com` at it.
 
 ### Phase B — plugin provider (✅ done 2026-06-11, branch `feat/rapid-ai-cloud`)
 - [x] `includes/ai/providers/class-managed.php` (both generate methods + register/status + error mapping; usage block folded into the status transient).
@@ -137,10 +138,11 @@ Rule: **the plugin states facts; the website sells.**
 > register when `rapid_ai_forms_managed_endpoint` is filtered or a const is set) — the
 > 0.2.0 release must not ship a Connect button pointing at a placeholder domain.
 
-### Phase C — backend generation + metering
-- [ ] `POST /v1/generate-form` + `POST /v1/generate-text` via Vercel AI Gateway.
-- [ ] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-400 breaker.
-- [ ] End-to-end on wooDev against the dev backend (mu-plugin filters `rapid_ai_forms_managed_endpoint`): Connect → quota badge → form gen → `/ai/style` gen → forced 402 (allowance=2 on dev) → friendly message. Negative: localhost `home_url` → BYOK-steer; callback to `http://10.0.0.1` refused.
+### Phase C — backend generation + metering (code ✅ 2026-06-11; e2e-vs-plugin pending)
+- [x] `POST /v1/generate-form` + `POST /v1/generate-text` via OpenAI-compatible gateway (Vercel AI Gateway default; `MOCK_LLM=1` for dev).
+- [x] Atomic debit/refund ledger writes (row-locked, free pool then purchased); idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker.
+- [x] Smoke-tested against local Postgres: quota 3→0 → 402 neutral message; purchased credit resumes generation; site-binding 403; bad token 401; private-IP registration refused.
+- [ ] End-to-end on wooDev against the dev backend (mu-plugin filters `rapid_ai_forms_managed_endpoint`): Connect → quota badge → form gen → `/ai/style` gen → forced 402. Full handshake needs the WP site publicly reachable (tunnel) since the backend calls back.
 
 ### Phase D — accounts + monetization (website)
 - [ ] Magic-link auth + dashboard (linked sites, usage graph).
