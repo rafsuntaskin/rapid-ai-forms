@@ -4,7 +4,7 @@ Tags: contact form, ai builder, form builder, forms
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,7 +42,9 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * Verify provider credentials in one click before saving them
 * Reorder fields up / down, search and delete forms from a card-based list
 * Click-to-copy shortcode for each form
-* Submissions stored in a dedicated database table
+* Submissions dashboard: browse entries across all forms, filter by form, and view every field of a submission (including the notification email it produced)
+* Required-field validation enforced on the server — incomplete submissions are rejected with inline, per-field errors and never stored
+* Per-form custom CSS with a Style tab: write CSS by hand or describe the look in plain language and let AI write it, previewed live in your active theme
 * REST API and registration with the WordPress Abilities API (6.9+)
 * No tracking, no telemetry, no advertising, no upsells
 
@@ -97,6 +99,12 @@ The plugin hands the message to WordPress's `wp_mail()`, which means the site it
 5. The Settings page with the AI provider dropdown and one-click credential verification.
 
 == Changelog ==
+
+= 0.2.0 =
+* Submissions dashboard under **AI Forms → Submissions**: a cross-form list with a per-form filter, relative timestamps, a one-line summary, and a detail view showing every field plus the notification email that was generated.
+* Server-side required-field validation: submissions missing a required field are rejected (HTTP 422) with per-field messages shown inline, and no incomplete row is stored. Required inputs are also marked for the browser and assistive tech.
+* Per-form custom CSS, edited in a new **Style** tab: hand-write scoped CSS or describe the look in plain language and let AI generate it, with a live preview rendered in your active theme. Custom CSS is sanitized and scoped to each form.
+* Internal: PHPUnit test suite on the official WordPress test framework.
 
 = 0.1.0 =
 * Initial release.

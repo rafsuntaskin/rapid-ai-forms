@@ -35,6 +35,7 @@ composer.json
 composer.lock
 phpcs.xml*
 phpunit.xml*
+.phpunit.result.cache
 tests/
 .wp-env.json
 .wp-env.override.json
