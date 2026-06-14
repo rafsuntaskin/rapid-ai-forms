@@ -5,12 +5,12 @@
 ## What this plugin is
 A WordPress plugin that builds forms from natural-language prompts.
 
-**MVP (v0.1) ships BYOK only.** The managed/credit-based mode is intentionally hidden from the Settings UI until after the wp.org launch — the PHP `Managed` provider and the backend contract are wired ahead of time, but no user-facing UI exists for it yet. Don't surface it in MVP work unless explicitly asked.
+**Shipped (0.1.0): BYOK + WP AI Client.** The hosted **Rapid AI Cloud** provider is built but **gated off** (`Managed::is_enabled()` is false by default) until the backend launches with 0.3.0 — see `docs/PLAN-rapid-ai-cloud.md`. Don't surface it in user-facing copy (readme, in-product help) until launch.
 
 Modes:
-- **BYOK** (MVP): user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
-- **WP AI Client** (MVP, WP 7.0+): registers a fourth provider that delegates to core's `wp_ai_client_prompt()`. No plugin-held credentials — the site owner uses **Settings → Connectors**. Auto-hidden on older WP via `Wp_Ai_Client::is_available()`.
-- **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
+- **BYOK**: user-supplied API keys for Anthropic, Gemini, or any OpenAI-compatible endpoint.
+- **WP AI Client** (WP 7.0+): registers a provider that delegates to core's `wp_ai_client_prompt()`. No plugin-held credentials — the site owner uses **Settings → Connectors**. Auto-hidden on older WP via `Wp_Ai_Client::is_available()`.
+- **Rapid AI Cloud** (built, gated until 0.3.0): our hosted provider with a **free monthly quota**. No API key — the site connects via a domain-verification handshake and stores a per-site bearer token (never a shared secret, never a license key). Plugin code is `Ai\Providers\Managed` + the `/managed/*` REST routes; the separate backend lives in the `rapid-ai-cloud` repo. Visibility is controlled by `Managed::is_enabled()` (true when `RAPID_AI_FORMS_CLOUD_ENABLED` is defined, the `rapid_ai_forms_managed_enabled` filter says so, or the site already holds a connection). See `docs/PLAN-rapid-ai-cloud.md`; the credit-based managed contract in `docs/SPEC.md` §5A is the older license-key design and is being superseded by the free-quota model.
 
 Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_ai_form_submissions`) and rendered via the `[rapid_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
 
@@ -28,6 +28,7 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Per-form custom CSS lives in `settings.custom_css`, sanitized by `Forms\Css_Sanitizer` on every write and at render; `Form_Renderer` emits it scoped under `.raif-form[data-form-uuid]` (CSS nesting). AI edits go through `POST /ai/style` → `Ai\Css_Prompt`.
 - AI providers implement both `generate_form_schema()` and `generate_text( $system, $prompt )` — schema JSON-mode and free-form text share one HTTP helper per provider.
 - `Frontend\Preview` serves `/?rapid_ai_form_preview={id}` (admin-only) — a minimal wp_head/wp_footer document the editor iframes for a theme-accurate preview.
+- `Ai\Providers\Managed` (Rapid AI Cloud) holds only a handshake-issued `site_token` (masked over REST like `api_key`; not writable via `PUT /settings`). Connection lifecycle is the `/managed/verify` (public callback target), `/managed/register`, `/managed/status`, `/managed/disconnect` routes. Generation responses carry a `usage` block that the status transient folds in so the quota meter counts down without re-polling. Gated by `Managed::is_enabled()`.
 
 ### JS (`src/`)
 - Built with `@wordpress/scripts`. Two entries: `admin` and `frontend`. Output → `build/`.
@@ -60,4 +61,4 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Gutenberg block (thin wrapper around shortcode) — v0.4.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.
-- Managed service (UI + backend) — v1.0, post wp.org launch.
+- Rapid AI Cloud launch (flip `Managed::is_enabled()` default, ship backend, readme privacy + `.pot`) — v0.3. Plugin + backend code already built and gated; see `docs/PLAN-rapid-ai-cloud.md` (Phase D website/dashboard + Phase E release gate remain).
