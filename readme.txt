@@ -1,6 +1,6 @@
 === AI Contact Form Builder – Rapid AI Forms ===
 Contributors: rafsuntaskin
-Tags: contact form, ai builder, form builder, forms
+Tags: contact form, form builder, ai form builder, ai contact form, forms
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
