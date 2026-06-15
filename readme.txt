@@ -1,4 +1,4 @@
-=== Rapid AI Forms ===
+=== AI Contact Form Builder – Rapid AI Forms ===
 Contributors: rafsuntaskin
 Tags: contact form, ai builder, form builder, forms
 Requires at least: 6.4
@@ -8,7 +8,7 @@ Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-AI-powered contact form builder. Describe the form you need and let AI build it — name, email, message, the works. No drag-and-drop required.
+Easily build forms with AI — describe the form you need and let AI build it. Name, email, message, the works. No drag-and-drop required.
 
 == Description ==
 
