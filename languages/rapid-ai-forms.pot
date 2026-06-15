@@ -2,20 +2,24 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Rapid AI Forms 0.1.0\n"
+"Project-Id-Version: Rapid AI Forms 0.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-ai-forms\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-05-27T12:30:24+00:00\n"
+"POT-Creation-Date: 2026-06-14T20:47:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
 "X-Domain: rapid-ai-forms\n"
 
 #. Plugin Name of the plugin
 msgid "Rapid AI Forms"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/rapid-ai-forms/"
 msgstr ""
 
 #. Description of the plugin
@@ -31,8 +35,8 @@ msgid "https://profiles.wordpress.org/rafsuntaskin/"
 msgstr ""
 
 #: includes/abilities/class-abilities.php:35
-#: includes/admin/class-admin.php:23
 #: includes/admin/class-admin.php:24
+#: includes/admin/class-admin.php:25
 msgid "AI Forms"
 msgstr ""
 
@@ -57,7 +61,7 @@ msgid "Persist a form (with an optional pre-generated schema)."
 msgstr ""
 
 #: includes/abilities/class-abilities.php:143
-#: src/admin/pages/FormsList.js:103
+#: src/admin/pages/FormsList.js:104
 msgid "Could not create form."
 msgstr ""
 
@@ -78,28 +82,45 @@ msgid "Fetch a single form (and its schema) by id or uuid."
 msgstr ""
 
 #: includes/abilities/class-abilities.php:235
-#: includes/api/class-rest-controller.php:149
-#: includes/api/class-rest-controller.php:164
-#: includes/api/class-rest-controller.php:302
+#: includes/api/class-rest-controller.php:182
+#: includes/api/class-rest-controller.php:197
+#: includes/api/class-rest-controller.php:291
+#: includes/api/class-rest-controller.php:399
 msgid "Form not found."
 msgstr ""
 
-#: includes/admin/class-admin.php:35
 #: includes/admin/class-admin.php:36
-#: src/admin/pages/FormsList.js:133
+#: includes/admin/class-admin.php:37
+#: src/admin/pages/FormsList.js:134
 msgid "Forms"
 msgstr ""
 
-#: includes/admin/class-admin.php:44
+#: includes/admin/class-admin.php:45
+#: includes/admin/class-admin.php:46
+#: src/admin/pages/FormsList.js:233
+#: src/admin/pages/Submissions.js:164
+msgid "Submissions"
+msgstr ""
+
+#: includes/admin/class-admin.php:54
 msgid "AI Forms Settings"
 msgstr ""
 
-#: includes/admin/class-admin.php:45
+#: includes/admin/class-admin.php:55
 msgid "Settings"
 msgstr ""
 
+#: includes/ai/class-css-prompt.php:135
+msgid "The AI did not return any usable CSS. Try rephrasing the request."
+msgstr ""
+
 #: includes/ai/class-provider-manager.php:91
+#: includes/ai/class-provider-manager.php:120
 msgid "No AI provider configured."
+msgstr ""
+
+#: includes/ai/class-provider-manager.php:126
+msgid "The active AI provider does not support text generation."
 msgstr ""
 
 #: includes/ai/class-schema-prompt.php:77
@@ -111,7 +132,7 @@ msgid "AI response was not valid JSON."
 msgstr ""
 
 #: includes/ai/class-schema-prompt.php:105
-#: includes/forms/class-form-renderer.php:33
+#: includes/forms/class-form-renderer.php:48
 #: src/admin/components/FormPreview.js:125
 msgid "Submit"
 msgstr ""
@@ -120,21 +141,21 @@ msgstr ""
 msgid "Anthropic (Claude)"
 msgstr ""
 
-#: includes/ai/providers/class-anthropic.php:31
+#: includes/ai/providers/class-anthropic.php:39
 msgid "Anthropic API key is not set."
 msgstr ""
 
-#: includes/ai/providers/class-anthropic.php:65
+#: includes/ai/providers/class-anthropic.php:73
 msgid "Anthropic API error."
 msgstr ""
 
-#: includes/ai/providers/class-anthropic.php:75
-#: includes/ai/providers/class-gemini.php:73
-#: includes/ai/providers/class-openai-compatible.php:80
+#: includes/ai/providers/class-anthropic.php:82
+#: includes/ai/providers/class-gemini.php:89
+#: includes/ai/providers/class-openai-compatible.php:96
 msgid "API key is required."
 msgstr ""
 
-#: includes/ai/providers/class-anthropic.php:110
+#: includes/ai/providers/class-anthropic.php:117
 msgid "Anthropic rejected this API key."
 msgstr ""
 
@@ -142,20 +163,20 @@ msgstr ""
 msgid "Google Gemini"
 msgstr ""
 
-#: includes/ai/providers/class-gemini.php:30
+#: includes/ai/providers/class-gemini.php:45
 msgid "Gemini API key is not set."
 msgstr ""
 
-#: includes/ai/providers/class-gemini.php:61
+#: includes/ai/providers/class-gemini.php:78
 msgid "Gemini API error."
 msgstr ""
 
-#: includes/ai/providers/class-gemini.php:86
+#: includes/ai/providers/class-gemini.php:102
 msgid "Google rejected this API key."
 msgstr ""
 
 #. translators: %s: model id
-#: includes/ai/providers/class-gemini.php:106
+#: includes/ai/providers/class-gemini.php:122
 msgid "Model \"%s\" is not available to this API key. Check the model id at ai.google.dev."
 msgstr ""
 
@@ -163,16 +184,16 @@ msgstr ""
 msgid "OpenAI-compatible"
 msgstr ""
 
-#: includes/ai/providers/class-openai-compatible.php:67
+#: includes/ai/providers/class-openai-compatible.php:84
 msgid "AI API error."
 msgstr ""
 
-#: includes/ai/providers/class-openai-compatible.php:98
+#: includes/ai/providers/class-openai-compatible.php:114
 msgid "The endpoint rejected this API key."
 msgstr ""
 
 #. translators: %s: model id
-#: includes/ai/providers/class-openai-compatible.php:109
+#: includes/ai/providers/class-openai-compatible.php:125
 msgid "Model \"%s\" is not available to this API key. Check the model id or pick one your account can access."
 msgstr ""
 
@@ -180,42 +201,55 @@ msgstr ""
 msgid "WordPress AI Client (site connector)"
 msgstr ""
 
-#: includes/ai/providers/class-wp-ai-client.php:46
+#: includes/ai/providers/class-wp-ai-client.php:61
 msgid "The WordPress AI Client is not available on this site. Configure a connector under Settings → Connectors, or pick a different provider."
 msgstr ""
 
-#: includes/ai/providers/class-wp-ai-client.php:57
+#: includes/ai/providers/class-wp-ai-client.php:75
 msgid "No configured connector supports text generation. Add one under Settings → Connectors."
 msgstr ""
 
-#: includes/ai/providers/class-wp-ai-client.php:73
+#: includes/ai/providers/class-wp-ai-client.php:91
 msgid "WordPress 7.0 or later is required to use the AI Client provider."
 msgstr ""
 
-#: includes/ai/providers/class-wp-ai-client.php:79
+#: includes/ai/providers/class-wp-ai-client.php:97
 msgid "AI features are disabled in this environment (WP_AI_SUPPORT is false or filtered off)."
 msgstr ""
 
-#: includes/ai/providers/class-wp-ai-client.php:87
+#: includes/ai/providers/class-wp-ai-client.php:105
 msgid "No connector is configured for text generation. Open Settings → Connectors and add one."
 msgstr ""
 
-#: includes/api/class-rest-controller.php:180
+#: includes/api/class-rest-controller.php:249
 msgid "Unknown provider."
 msgstr ""
 
-#: includes/api/class-rest-controller.php:310
+#: includes/api/class-rest-controller.php:407
 msgid "Submission exceeds the size limit."
 msgstr ""
 
+#. translators: %s: field label.
+#: includes/api/class-rest-controller.php:472
+msgid "%s is required."
+msgstr ""
+
+#: includes/api/class-rest-controller.php:479
+msgid "Please fill in the required fields."
+msgstr ""
+
+#: includes/forms/class-css-sanitizer.php:53
+msgid "The CSS has unbalanced braces."
+msgstr ""
+
 #. translators: %s: form title
-#: includes/notifications/class-email-notifier.php:59
+#: includes/notifications/class-email-notifier.php:103
 msgid "New submission: %s"
 msgstr ""
 
 #. translators: %s: form title
-#: includes/notifications/class-email-notifier.php:59
-#: src/admin/pages/FormsList.js:93
+#: includes/notifications/class-email-notifier.php:103
+#: src/admin/pages/FormsList.js:94
 msgid "Untitled form"
 msgstr ""
 
@@ -260,199 +294,244 @@ msgstr ""
 msgid "Copy"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:107
+#: src/admin/components/StylingPanel.js:96
+msgid "Styling"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:100
+msgid "Refresh preview"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:109
+msgid "Describe the look you want"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:110
+msgid "Example: \"Full-width inputs, the theme accent color on focus, and 8px rounded corners.\" The AI edits the CSS below — review and Save to keep it."
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:131
+msgid "Apply with AI"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:146
+msgid "Custom CSS"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:147
+msgid "Applies to this form only. Selectors are scoped automatically — write rules against .raif-field, label, input, etc. Save to apply on the live site."
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:161
+msgid "Form preview with theme styles"
+msgstr ""
+
+#: src/admin/components/StylingPanel.js:168
+msgid "Rendered with your active theme — this is what visitors see."
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:109
 msgid "— None —"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:189
+#: src/admin/pages/FormEditor.js:192
 msgid "← Back to forms"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:196
+#: src/admin/pages/FormEditor.js:199
 msgid "Saving…"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:203
+#: src/admin/pages/FormEditor.js:206
 msgid "Saved"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:209
+#: src/admin/pages/FormEditor.js:212
 msgid "Save"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:221
+#: src/admin/pages/FormEditor.js:224
 msgid "Edit form"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:225
+#: src/admin/pages/FormEditor.js:228
 msgid "Embed:"
 msgstr ""
 
 #: src/admin/pages/FormEditor.js:238
-msgid "Edit with AI"
+msgid "Form"
 msgstr ""
 
 #: src/admin/pages/FormEditor.js:239
-#: src/admin/pages/FormEditor.js:478
+msgid "Style"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:264
+msgid "Edit with AI"
+msgstr ""
+
+#: src/admin/pages/FormEditor.js:265
+#: src/admin/pages/FormEditor.js:504
 msgid "Generate with AI"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:245
+#: src/admin/pages/FormEditor.js:271
 msgid "No AI key set. Add one in"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:246
-#: src/admin/pages/FormsList.js:145
+#: src/admin/pages/FormEditor.js:272
+#: src/admin/pages/FormsList.js:146
 msgid "AI Forms → Settings"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:247
+#: src/admin/pages/FormEditor.js:273
 msgid "to enable AI generation. You can still add and edit fields below by hand."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:251
+#: src/admin/pages/FormEditor.js:277
 msgid "Prompt"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:254
+#: src/admin/pages/FormEditor.js:280
 msgid "Describe a change. The AI keeps existing fields and applies only what you ask. Example: \"Add a phone field after email\" or \"Make the message field optional\"."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:255
+#: src/admin/pages/FormEditor.js:281
 msgid "Describe the form you want. Example: \"Contact form with name, email, phone, and a message field.\""
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:268
+#: src/admin/pages/FormEditor.js:294
 msgid "Apply changes"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:269
+#: src/admin/pages/FormEditor.js:295
 msgid "Generate fields"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:280
+#: src/admin/pages/FormEditor.js:306
 msgid "Form details"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:283
+#: src/admin/pages/FormEditor.js:309
 msgid "Title"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:288
+#: src/admin/pages/FormEditor.js:314
 msgid "Submit button label"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:298
-#: src/admin/pages/FormsList.js:218
+#: src/admin/pages/FormEditor.js:324
+#: src/admin/pages/FormsList.js:219
 msgid "Fields"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:301
+#: src/admin/pages/FormEditor.js:327
 msgid "Add field"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:308
+#: src/admin/pages/FormEditor.js:334
 msgid "No fields yet. Generate with AI or add manually."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:316
-#: src/admin/pages/FormEditor.js:369
+#: src/admin/pages/FormEditor.js:342
+#: src/admin/pages/FormEditor.js:395
 msgid "Label"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:323
+#: src/admin/pages/FormEditor.js:349
 msgid "Name (snake_case)"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:330
+#: src/admin/pages/FormEditor.js:356
 msgid "Type"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:339
+#: src/admin/pages/FormEditor.js:365
 msgid "Required"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:346
+#: src/admin/pages/FormEditor.js:372
 msgid "Default value"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:347
+#: src/admin/pages/FormEditor.js:373
 msgid "This value is submitted with the form. Not visible or editable to visitors."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:355
+#: src/admin/pages/FormEditor.js:381
 msgid "Options"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:357
+#: src/admin/pages/FormEditor.js:383
 msgid "Add option"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:362
+#: src/admin/pages/FormEditor.js:388
 msgid "No options yet. Add at least 2 for the field to render."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:377
+#: src/admin/pages/FormEditor.js:403
 msgid "Value"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:389
+#: src/admin/pages/FormEditor.js:415
 msgid "Remove option"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:407
+#: src/admin/pages/FormEditor.js:433
 msgid "Move field up"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:418
+#: src/admin/pages/FormEditor.js:444
 msgid "Move field down"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:427
+#: src/admin/pages/FormEditor.js:453
 msgid "Remove"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:438
+#: src/admin/pages/FormEditor.js:464
 msgid "Email notifications"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:441
+#: src/admin/pages/FormEditor.js:467
 msgid "Send an email when this form is submitted"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:448
+#: src/admin/pages/FormEditor.js:474
 msgid "To"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:449
+#: src/admin/pages/FormEditor.js:475
 msgid "Comma-separated email addresses. Leave blank to use the site admin email."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:454
+#: src/admin/pages/FormEditor.js:480
 msgid "Subject"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:455
+#: src/admin/pages/FormEditor.js:481
 msgid "Mail-tags allowed. Leave blank for \"New submission: <form title>\"."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:460
+#: src/admin/pages/FormEditor.js:486
 msgid "Body"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:461
+#: src/admin/pages/FormEditor.js:487
 msgid "Mail-tags: {all_fields}, {field_name}, {form_title}, {site_name}, {site_url}, {admin_email}. Leave blank to send all field values."
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:488
+#: src/admin/pages/FormEditor.js:514
 msgid "Reply-To field"
 msgstr ""
 
-#: src/admin/pages/FormEditor.js:489
+#: src/admin/pages/FormEditor.js:515
 msgid "When set, replies to the notification go to the submitter’s email."
 msgstr ""
 
 #: src/admin/pages/FormsList.js:21
+#: src/admin/pages/Submissions.js:21
 msgid "just now"
 msgstr ""
 
@@ -477,116 +556,119 @@ msgid_plural "%d days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/admin/pages/FormsList.js:97
+#: src/admin/pages/FormsList.js:98
 msgid "Form was created but no id was returned."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:126
+#: src/admin/pages/FormsList.js:127
 msgid "Could not delete form."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:134
+#: src/admin/pages/FormsList.js:135
 msgid "Create AI-generated forms and embed them anywhere with a shortcode."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:137
+#: src/admin/pages/FormsList.js:138
 msgid "+ New form"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:144
+#: src/admin/pages/FormsList.js:145
 msgid "AI is not connected yet — set an API key in"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:146
+#: src/admin/pages/FormsList.js:147
 msgid "to enable form generation. You can still build forms manually."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:159
+#: src/admin/pages/FormsList.js:160
 msgid "Search forms"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:161
+#: src/admin/pages/FormsList.js:162
 msgid "Search by title, id, or uuid…"
 msgstr ""
 
 #. translators: %d: total number of forms on the site
-#: src/admin/pages/FormsList.js:169
+#: src/admin/pages/FormsList.js:170
 msgid "%d form"
 msgid_plural "%d forms"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of forms matching the search across the whole site
-#: src/admin/pages/FormsList.js:174
+#: src/admin/pages/FormsList.js:175
 msgid "%d match"
 msgid_plural "%d matches"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/admin/pages/FormsList.js:188
+#: src/admin/pages/FormsList.js:189
 msgid "No forms yet"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:189
+#: src/admin/pages/FormsList.js:190
 msgid "Create your first AI-powered form. Describe it in plain language and the editor will build the fields for you."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:191
+#: src/admin/pages/FormsList.js:192
 msgid "Create your first form"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:199
+#: src/admin/pages/FormsList.js:200
 msgid "No forms match your search."
 msgstr ""
 
 #. translators: %d: form id number used as a placeholder title
-#: src/admin/pages/FormsList.js:211
+#: src/admin/pages/FormsList.js:212
 msgid "Untitled form #%d"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:222
+#: src/admin/pages/FormsList.js:223
 msgid "Updated"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:229
+#: src/admin/pages/FormsList.js:230
 msgid "Edit"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:236
+#: src/admin/pages/FormsList.js:240
 msgid "Delete"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:245
+#: src/admin/pages/FormsList.js:249
 msgid "Forms pagination"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:251
+#: src/admin/pages/FormsList.js:255
+#: src/admin/pages/Submissions.js:330
 msgid "← Previous"
 msgstr ""
 
 #. translators: 1: current page number, 2: total number of pages
-#: src/admin/pages/FormsList.js:256
+#: src/admin/pages/FormsList.js:260
+#: src/admin/pages/Submissions.js:335
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:266
+#: src/admin/pages/FormsList.js:270
+#: src/admin/pages/Submissions.js:347
 msgid "Next →"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:273
+#: src/admin/pages/FormsList.js:277
 msgid "Delete form?"
 msgstr ""
 
 #. translators: %s: form title (or "#id" fallback for untitled forms)
-#: src/admin/pages/FormsList.js:280
+#: src/admin/pages/FormsList.js:284
 msgid "Delete \"%s\"? Submissions are kept but the form will stop working anywhere it is embedded. This cannot be undone."
 msgstr ""
 
-#: src/admin/pages/FormsList.js:286
+#: src/admin/pages/FormsList.js:290
 msgid "Cancel"
 msgstr ""
 
-#: src/admin/pages/FormsList.js:289
+#: src/admin/pages/FormsList.js:293
 msgid "Delete form"
 msgstr ""
 
@@ -658,4 +740,86 @@ msgstr ""
 
 #: src/admin/pages/Settings.js:211
 msgid "Save settings"
+msgstr ""
+
+#. translators: %d: number of minutes elapsed
+#: src/admin/pages/Submissions.js:25
+msgid "%dm ago"
+msgstr ""
+
+#. translators: %d: number of hours elapsed
+#: src/admin/pages/Submissions.js:32
+msgid "%dh ago"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:130
+msgid "Failed to load submissions."
+msgstr ""
+
+#. translators: %d: total number of submissions matching the current filter
+#: src/admin/pages/Submissions.js:167
+msgid "%d submission"
+msgid_plural "%d submissions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/admin/pages/Submissions.js:189
+msgid "Filter by form"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:195
+msgid "All forms"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:220
+msgid "No submissions for this form yet."
+msgstr ""
+
+#: src/admin/pages/Submissions.js:224
+msgid "No submissions yet. They will appear here as visitors submit your forms."
+msgstr ""
+
+#: src/admin/pages/Submissions.js:236
+msgid "Submission"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:239
+msgid "Summary"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:242
+msgid "Submitted"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:246
+msgid "Actions"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:284
+msgid "(no content)"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:307
+msgid "View"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:318
+msgid "Submissions pagination"
+msgstr ""
+
+#. translators: %d: submission id
+#: src/admin/pages/Submissions.js:356
+msgid "Submission #%d"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:392
+msgid "IP address"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:400
+msgid "User agent"
+msgstr ""
+
+#: src/admin/pages/Submissions.js:409
+msgid "Email notification"
 msgstr ""

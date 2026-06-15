@@ -20,15 +20,15 @@ function formatSubmitted( iso ) {
 	const diff = ( Date.now() - d.getTime() ) / 1000;
 	if ( diff < 60 ) return __( 'just now', 'rapid-ai-forms' );
 	if ( diff < 3600 ) {
-		// translators: %d: number of minutes elapsed
 		return sprintf(
+			// translators: %d: number of minutes elapsed
 			__( '%dm ago', 'rapid-ai-forms' ),
 			Math.floor( diff / 60 )
 		);
 	}
 	if ( diff < 86400 ) {
-		// translators: %d: number of hours elapsed
 		return sprintf(
+			// translators: %d: number of hours elapsed
 			__( '%dh ago', 'rapid-ai-forms' ),
 			Math.floor( diff / 3600 )
 		);
