@@ -1,6 +1,6 @@
-=== AI Contact Form Builder – Rapid AI Forms ===
+=== AI Form Builder – Contact Forms Built with AI – Rapid AI Forms ===
 Contributors: rafsuntaskin
-Tags: contact form, form builder, ai form builder, ai contact form, forms
+Tags: ai form builder, ai forms, ai contact form, contact form, form builder
 Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 7.4
@@ -8,7 +8,7 @@ Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Easily build forms with AI — describe the form you need and let AI build it. Name, email, message, the works. No drag-and-drop required.
+AI form builder for WordPress. Describe your contact form in plain English and AI builds it — fields, labels, validation. No drag-and-drop.
 
 == Description ==
 
