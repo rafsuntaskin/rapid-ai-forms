@@ -18,6 +18,10 @@ Rapid AI Forms is a contact form builder that uses AI to do the boring part. Ins
 
 Every form sends a notification email to whoever you choose, with a fully customizable Subject and Body using mail-tags (Contact Form 7 style). Replies go straight to the visitor's email address when you pick a Reply-To field.
 
+**Style your forms with AI**
+
+Want the form to match your site? Open the **Style** tab and describe the look you want — *"full-width inputs, rounded corners, my theme's accent color on focus"* — and AI writes the CSS for you, previewed live in your active theme. Prefer to do it yourself? Write custom CSS by hand in the same editor. Either way the styling is scoped to each form, so it never leaks into the rest of your site.
+
 **Typical uses**
 
 * A site contact form with name, email, and message
@@ -73,6 +77,10 @@ You need credentials for at least one provider. Either bring your own API key (A
 = Can I use it without the AI? =
 
 Yes. Every field is fully editable by hand and you can build the whole form manually if you prefer. The AI is a shortcut, not a requirement.
+
+= Can I style the form to match my theme? =
+
+Yes. Each form has a **Style** tab where you can either write custom CSS by hand or describe the look you want in plain language and let AI generate the CSS for you, with a live preview rendered in your active theme. The styling is scoped to that one form, so it never affects the rest of your site. Styling by hand needs no AI; the AI step is optional.
 
 = Does the plugin send my form submissions to the AI provider? =
 
