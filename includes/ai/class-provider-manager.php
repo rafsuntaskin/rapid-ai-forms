@@ -9,6 +9,7 @@ namespace Rapid_Ai_Forms\Ai;
 
 use Rapid_Ai_Forms\Ai\Providers\Anthropic;
 use Rapid_Ai_Forms\Ai\Providers\Gemini;
+use Rapid_Ai_Forms\Ai\Providers\Managed;
 use Rapid_Ai_Forms\Ai\Providers\Openai_Compatible;
 use Rapid_Ai_Forms\Ai\Providers\Wp_Ai_Client;
 
@@ -23,6 +24,12 @@ class Provider_Manager {
 		$this->register( new Anthropic() );
 		$this->register( new Gemini() );
 		$this->register( new Openai_Compatible() );
+
+		// Hosted free-quota provider — gated off by default until the
+		// post-launch rollout (see Managed::is_enabled()).
+		if ( Managed::is_enabled() ) {
+			$this->register( new Managed() );
+		}
 
 		// Only expose the core AI Client provider on WP 7.0+ with AI support enabled.
 		if ( Wp_Ai_Client::is_available() ) {
@@ -71,6 +78,13 @@ class Provider_Manager {
 		// Core AI Client has no per-plugin credentials — the connector lives in core.
 		if ( Wp_Ai_Client::is_available() ) {
 			$defaults['providers']['wp_ai_client'] = array();
+		}
+		// Hosted provider stores a site-bound token + the URL it was issued for.
+		if ( Managed::is_enabled() ) {
+			$defaults['providers']['managed'] = array(
+				'site_token' => '',
+				'site_url'   => '',
+			);
 		}
 		$saved = get_option( self::OPTION_KEY, array() );
 		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
