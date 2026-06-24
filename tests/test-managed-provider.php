@@ -256,6 +256,59 @@ class Test_Managed_Provider extends WP_UnitTestCase {
 		$this->assertSame( '', $opt['providers']['managed']['site_url'] );
 	}
 
+	private function activate_managed( $token = 'tok' ) {
+		$manager  = new Provider_Manager();
+		$settings = $manager->settings();
+		$settings['active_provider'] = 'managed';
+		$settings['providers']['managed']['site_token'] = $token;
+		$settings['providers']['managed']['site_url']   = home_url();
+		$manager->save_settings( $settings );
+	}
+
+	private function ai_generate_request( $prompt = 'a contact form' ) {
+		$req = new WP_REST_Request( 'POST', '/rapid-ai-forms/v1/ai/generate' );
+		$req->set_header( 'Content-Type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'prompt' => $prompt ) ) );
+		return rest_do_request( $req );
+	}
+
+	public function test_quota_error_surfaces_as_402_through_ai_generate() {
+		$this->activate_managed();
+		wp_set_current_user( self::$admin_id );
+		$this->stub_http(
+			fn( $url ) => false !== strpos( $url, '/v1/generate-form' )
+				? $this->http_response( 402, array( 'message' => 'Monthly free limit reached.' ) )
+				: null
+		);
+
+		$res = $this->ai_generate_request();
+		// The provider's 402 is preserved as the REST status (not flattened to 400).
+		$this->assertSame( 402, $res->get_status() );
+		$this->assertSame( 'raif_quota_reached', $res->get_data()['code'] );
+	}
+
+	public function test_successful_generation_busts_status_cache() {
+		$this->activate_managed();
+		wp_set_current_user( self::$admin_id );
+		set_transient( 'raif_managed_status', array( 'connected' => true, 'free_remaining' => 5 ), 300 );
+		$this->stub_http(
+			fn( $url ) => false !== strpos( $url, '/v1/generate-form' )
+				? $this->http_response(
+					200,
+					array(
+						'schema' => array( 'title' => 'T', 'fields' => array() ),
+						'usage'  => array( 'free_remaining' => 4 ),
+					)
+				)
+				: null
+		);
+
+		$res = $this->ai_generate_request();
+		$this->assertSame( 200, $res->get_status() );
+		// The stale cached meter is dropped so the next status load refetches.
+		$this->assertFalse( get_transient( 'raif_managed_status' ) );
+	}
+
 	public function test_status_without_token_reports_disconnected_without_http() {
 		wp_set_current_user( self::$admin_id );
 		// No HTTP stub: a network call here would error, proving we short-circuit.

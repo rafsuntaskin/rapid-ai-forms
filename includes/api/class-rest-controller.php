@@ -207,6 +207,29 @@ class Rest_Controller {
 		return current_user_can( 'manage_options' );
 	}
 
+	/**
+	 * Set the REST HTTP status on an AI WP_Error, preserving the provider's
+	 * own `http_status` when it set one (e.g. the hosted provider's 402 quota
+	 * error) instead of flattening everything to 400.
+	 */
+	private function ai_error( \WP_Error $err, $default = 400 ) {
+		$data           = $err->get_error_data();
+		$data           = is_array( $data ) ? $data : array();
+		$data['status'] = ! empty( $data['http_status'] ) ? (int) $data['http_status'] : $default;
+		$err->add_data( $data );
+		return $err;
+	}
+
+	/**
+	 * A generation just changed the hosted provider's quota, so drop the
+	 * cached status — the meter refetches fresh on its next load.
+	 */
+	private function bust_managed_status_cache( Provider_Manager $manager ) {
+		if ( 'managed' === ( $manager->settings()['active_provider'] ?? '' ) ) {
+			delete_transient( self::MANAGED_STATUS_TRANSIENT );
+		}
+	}
+
 	public function list_forms( $req ) {
 		$repo     = new Form_Repository();
 		$page     = max( 1, (int) $req->get_param( 'page' ) ?: 1 );
@@ -355,16 +378,15 @@ class Rest_Controller {
 			Css_Prompt::context( $form, $prompt, $current_css )
 		);
 		if ( is_wp_error( $text ) ) {
-			$text->add_data( array( 'status' => 400 ) );
-			return $text;
+			return $this->ai_error( $text );
 		}
 
 		$css = Css_Prompt::extract_css( $text );
 		if ( is_wp_error( $css ) ) {
-			$css->add_data( array( 'status' => 400 ) );
-			return $css;
+			return $this->ai_error( $css );
 		}
 
+		$this->bust_managed_status_cache( $manager );
 		return rest_ensure_response( array( 'css' => $css ) );
 	}
 
@@ -374,9 +396,9 @@ class Rest_Controller {
 		$manager        = new Provider_Manager();
 		$schema         = $manager->generate_form_schema( $prompt, is_array( $current_schema ) ? $current_schema : null );
 		if ( is_wp_error( $schema ) ) {
-			$schema->add_data( array( 'status' => 400 ) );
-			return $schema;
+			return $this->ai_error( $schema );
 		}
+		$this->bust_managed_status_cache( $manager );
 		return rest_ensure_response( $schema );
 	}
 
