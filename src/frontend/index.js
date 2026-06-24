@@ -99,6 +99,14 @@ const bind = () => {
 	document.querySelectorAll( 'form.raif-form' ).forEach( ( form ) => {
 		if ( form.dataset.eaifBound ) return;
 		form.dataset.eaifBound = '1';
+		// Prefetch the token at page load so the server's time-trap measures
+		// real fill time (load → submit), not a near-zero lazy fetch. Without
+		// this every genuine submit looks "too fast" and is silently dropped.
+		fetchToken( form.dataset.formUuid )
+			.then( ( token ) => {
+				form._raifToken = token;
+			} )
+			.catch( () => {} );
 		form.addEventListener( 'submit', onSubmit );
 	} );
 };

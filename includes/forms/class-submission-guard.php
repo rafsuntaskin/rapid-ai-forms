@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
 
 class Submission_Guard {
 
-	const TOKEN_TTL        = 900; // 15 minutes.
+	const TOKEN_TTL        = 3600; // 1 hour — generous so long forms don't expire mid-fill; the token is fetched at page load.
 	const MIN_FILL_SECONDS = 2;   // Reject submits faster than this after token issue.
 	const RATE_LIMIT       = 20;  // Submissions per window per IP.
 	const RATE_WINDOW      = 60;  // Seconds.

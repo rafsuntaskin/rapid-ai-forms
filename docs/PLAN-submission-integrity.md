@@ -63,6 +63,8 @@ PHPUnit tests in `tests/test-rest-submissions.php`. Part B remains open for v0.3
 
 Implemented in `includes/forms/class-submission-guard.php` (token mint/verify, Origin check, per-IP rate limit, honeypot, time-trap), wired into `Rest_Controller::submit()` cheapest-first with the new `GET /form-token/{uuid}` endpoint and the `rapid_ai_forms_submission_pre_store` CAPTCHA hook. Honeypot markup in `Form_Renderer`; token fetch/retry in `src/frontend/index.js`. Covered by `tests/test-submission-guard.php` (12 tests). The signing secret is generated lazily (`rapid_ai_forms_submit_secret`, autoload off) rather than in the migration, so existing installs self-heal. Original spec below.
 
+**Verification status:** server side fully covered by PHPUnit (token issuance/binding/expiry, cold-POST 403, honeypot/time-trap discard, Origin 403, rate-limit 429). Browser e2e of the frontend token fetch + retry: see the Verify checklist below.
+
 Goal: a submission must follow the form's issuance flow recently, not be a cold direct
 POST. Designed to be **full-page-cache safe** — the form HTML stays cacheable; nothing
 per-request is baked into it.
@@ -114,13 +116,13 @@ per-request is baked into it.
 - Install/migration: generate `rapid_ai_forms_submit_secret` in `Plugin::maybe_migrate()`.
 
 ### Verify
-- Cold direct `POST` with no token → `403`. Forged/expired token → `403`.
-- Token from `GET /form-token/{uuid}` then submit within TTL → `200`.
-- Submit < 2s after issuance → rejected (time-trap). Honeypot filled → accepted-but-discarded.
-- Hammer the endpoint past the per-IP threshold → `429` with `Retry-After`.
-- Full-page-cache smoke test: cached form page still submits successfully (token came from
-  the uncached endpoint, not the cached HTML).
-- Confirm `GET /form-token/{uuid}` sends no-cache headers and isn't served from cache.
+- [x] Cold direct `POST` with no token → `403`. Forged/expired token → `403`. *(PHPUnit)*
+- [x] Token from `GET /form-token/{uuid}` then submit within TTL → `200`. *(PHPUnit)*
+- [x] Submit < 2s after issuance → rejected (time-trap). Honeypot filled → accepted-but-discarded. *(PHPUnit)*
+- [x] Hammer the endpoint past the per-IP threshold → `429` with `Retry-After`. *(PHPUnit)*
+- [x] **Browser e2e (2026-06-25, wooDev):** real form submits and writes a row; honeypot-filled submit shows success but stores nothing; cold no-token POST → 403. *Caught a real bug:* the frontend fetched the token lazily at submit, so the time-trap (issued_ts ≈ now) silently discarded every genuine submission. Fixed by prefetching the token at page load (so token-age ≈ fill time) and raising the TTL to 1h.
+- [ ] Full-page-cache smoke test against a real page cache. *(deferred — no page-cache plugin on wooDev)*
+- [ ] Confirm `GET /form-token/{uuid}` no-cache headers hold behind a real CDN. *(headers set in code)*
 
 ---
 
