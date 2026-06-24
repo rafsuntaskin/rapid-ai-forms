@@ -723,11 +723,11 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [x] PHPUnit on the official WP test suite via wp-env (30 tests covering the above).
 - [ ] CSV/JSON export of submissions and date filtering — deferred (not blocking 0.2.0).
 
-### v0.3 — Anti-abuse
-- [ ] **Submission-origin validation** — signed, cache-safe per-render token via a never-cached `GET /form-token/{uuid}` endpoint, validated on submit; + Origin/Referer check. See [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part B.
-- [ ] Honeypot field auto-injected into the renderer + time-trap.
-- [ ] Optional Cloudflare Turnstile / hCaptcha integration (pluggable hook; external calls disclosed in readme privacy section).
-- [ ] Per-IP submission rate limit (configurable).
+### v0.3 — Anti-abuse — ✅ shipped (see `Forms\Submission_Guard`, [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part B)
+- [x] **Submission-origin validation** — signed, cache-safe token via never-cached `GET /form-token/{uuid}`, verified on submit; + Origin/Referer allowlist.
+- [x] Honeypot field auto-injected into the renderer + time-trap (silent accept-and-discard).
+- [x] Pluggable CAPTCHA/Akismet hook (`rapid_ai_forms_submission_pre_store`) — no bundled provider; external calls a site owner adds must be disclosed in the readme privacy section.
+- [x] Per-IP submission rate limit (transient, hashed IP, `rapid_ai_forms_submission_rate_limit` filter). Covered by 12 guard tests.
 
 ### v0.3 — Rapid AI Cloud (hosted free tier) — see [docs/PLAN-rapid-ai-cloud.md](PLAN-rapid-ai-cloud.md), §5A.8
 Ships **gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org launch.

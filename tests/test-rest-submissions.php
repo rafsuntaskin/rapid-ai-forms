@@ -17,6 +17,14 @@ class Test_Rest_Submissions extends WP_UnitTestCase {
 		self::$admin_id = $factory->user->create( array( 'role' => 'administrator' ) );
 	}
 
+	public function set_up() {
+		parent::set_up();
+		// These tests cover data integrity, not the anti-abuse timing — let
+		// freshly-minted tokens through immediately. (Guard behavior has its
+		// own suite in test-submission-guard.php.)
+		add_filter( 'rapid_ai_forms_min_fill_seconds', '__return_zero' );
+	}
+
 	private function create_contact_form() {
 		return ( new Form_Repository() )->create(
 			array(
@@ -49,6 +57,10 @@ class Test_Rest_Submissions extends WP_UnitTestCase {
 	}
 
 	private function submit( $uuid, array $body ) {
+		// Include a valid submission token — it's now required on submit.
+		$minted              = \Rapid_Ai_Forms\Forms\Submission_Guard::mint( $uuid );
+		$body['_raif_token'] = $minted['token'];
+
 		$req = new WP_REST_Request( 'POST', "/rapid-ai-forms/v1/submissions/{$uuid}" );
 		$req->set_header( 'Content-Type', 'application/json' );
 		$req->set_body( wp_json_encode( $body ) );

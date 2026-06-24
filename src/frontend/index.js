@@ -29,6 +29,13 @@ const showFieldErrors = ( form, fields ) => {
 	} );
 };
 
+// Fetch a fresh submission token from the never-cached endpoint, so a page
+// behind a full-page cache still submits (the token isn't baked into the HTML).
+const fetchToken = async ( uuid ) => {
+	const res = await api.get( `form-token/${ uuid }` );
+	return res && res.token ? res.token : '';
+};
+
 const onSubmit = async ( event ) => {
 	event.preventDefault();
 	const form = event.currentTarget;
@@ -53,15 +60,34 @@ const onSubmit = async ( event ) => {
 	message.className = 'raif-form__message';
 	clearFieldErrors( form );
 
+	const post = ( token ) =>
+		api.post( `submissions/${ uuid }`, { ...data, _raif_token: token } );
+
 	try {
-		await api.post( `submissions/${ uuid }`, data );
+		if ( ! form._raifToken ) {
+			form._raifToken = await fetchToken( uuid );
+		}
+		try {
+			await post( form._raifToken );
+		} catch ( err ) {
+			// Token expired or came from a stale cached page — refresh once.
+			if ( err && ( err.code === 'raif_bad_token' || err.code === 'raif_expired_token' ) ) {
+				form._raifToken = await fetchToken( uuid );
+				await post( form._raifToken );
+			} else {
+				throw err;
+			}
+		}
 		message.textContent = 'Thank you! Your submission was received.';
 		message.classList.add( 'is-success' );
 		form.reset();
 	} catch ( err ) {
-		message.textContent = err.message || 'Submission failed.';
+		message.textContent =
+			err && err.code === 'raif_rate_limited'
+				? 'Too many submissions. Please try again shortly.'
+				: ( err && err.message ) || 'Submission failed.';
 		message.classList.add( 'is-error' );
-		if ( err.data && err.data.fields ) {
+		if ( err && err.data && err.data.fields ) {
 			showFieldErrors( form, err.data.fields );
 		}
 	} finally {
@@ -73,6 +99,14 @@ const bind = () => {
 	document.querySelectorAll( 'form.raif-form' ).forEach( ( form ) => {
 		if ( form.dataset.eaifBound ) return;
 		form.dataset.eaifBound = '1';
+		// Prefetch the token at page load so the server's time-trap measures
+		// real fill time (load → submit), not a near-zero lazy fetch. Without
+		// this every genuine submit looks "too fast" and is silently dropped.
+		fetchToken( form.dataset.formUuid )
+			.then( ( token ) => {
+				form._raifToken = token;
+			} )
+			.catch( () => {} );
 		form.addEventListener( 'submit', onSubmit );
 	} );
 };

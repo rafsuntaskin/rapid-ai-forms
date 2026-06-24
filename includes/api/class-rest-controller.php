@@ -12,6 +12,7 @@ use Rapid_Ai_Forms\Ai\Provider_Manager;
 use Rapid_Ai_Forms\Ai\Providers\Managed;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 use Rapid_Ai_Forms\Forms\Form_Repository;
+use Rapid_Ai_Forms\Forms\Submission_Guard;
 use Rapid_Ai_Forms\Forms\Submission_Repository;
 use Rapid_Ai_Forms\Notifications\Email_Notifier;
 
@@ -148,6 +149,18 @@ class Rest_Controller {
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'submit' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+
+		// Never-cached: hands the frontend a signed, short-lived submission
+		// token so the form HTML itself can stay full-page-cache safe.
+		register_rest_route(
+			self::NAMESPACE,
+			'/form-token/(?P<uuid>[a-f0-9\-]+)',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'form_token' ),
 				'permission_callback' => '__return_true',
 			)
 		);
@@ -584,6 +597,22 @@ class Rest_Controller {
 
 	const MAX_SUBMISSION_BYTES = 64 * 1024;
 
+	/**
+	 * Issue a signed submission token for a form. Never cached, so it bypasses
+	 * the page cache the form HTML sits in.
+	 */
+	public function form_token( $req ) {
+		$uuid = sanitize_text_field( $req['uuid'] );
+		$form = ( new Form_Repository() )->get_by_uuid( $uuid );
+		if ( ! $form ) {
+			return new \WP_Error( 'raif_not_found', __( 'Form not found.', 'rapid-ai-forms' ), array( 'status' => 404 ) );
+		}
+		nocache_headers();
+		$response = rest_ensure_response( Submission_Guard::mint( $uuid ) );
+		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0' );
+		return $response;
+	}
+
 	public function submit( $req ) {
 		$uuid = sanitize_text_field( $req['uuid'] );
 		$repo = new Form_Repository();
@@ -602,12 +631,55 @@ class Rest_Controller {
 			);
 		}
 
+		// Anti-abuse layers, cheapest first (see Submission_Guard).
+		$origin = Submission_Guard::check_origin( $req );
+		if ( is_wp_error( $origin ) ) {
+			return $origin;
+		}
+		$rate = Submission_Guard::check_rate_limit( $req );
+		if ( is_wp_error( $rate ) ) {
+			return $rate;
+		}
+		$issued_ts = Submission_Guard::verify_token( $uuid, Submission_Guard::token_from_request( $req ) );
+		if ( is_wp_error( $issued_ts ) ) {
+			return $issued_ts;
+		}
+
 		$payload = $req->get_json_params() ?: $req->get_body_params();
-		$data    = $this->sanitize_submission( $form, (array) $payload );
+
+		// Honeypot / time-trap: look successful, store nothing (don't tip bots).
+		if ( Submission_Guard::is_trap_tripped( (array) $payload, $issued_ts ) ) {
+			return rest_ensure_response(
+				array(
+					'ok' => true,
+					'id' => 0,
+				)
+			);
+		}
+
+		$data = $this->sanitize_submission( $form, (array) $payload );
 
 		$validation = $this->validate_required( $form, $data );
 		if ( is_wp_error( $validation ) ) {
 			return $validation;
+		}
+
+		/**
+		 * Last gate before persisting — a hook for CAPTCHA/Akismet/etc.
+		 * Return a WP_Error (or false) to block. External calls added here
+		 * must be disclosed in the readme privacy section.
+		 *
+		 * @param true|\WP_Error $ok
+		 * @param array          $form
+		 * @param array          $data
+		 * @param \WP_REST_Request $req
+		 */
+		$pre = apply_filters( 'rapid_ai_forms_submission_pre_store', true, $form, $data, $req );
+		if ( is_wp_error( $pre ) ) {
+			return $pre;
+		}
+		if ( false === $pre ) {
+			return new \WP_Error( 'raif_blocked', __( 'Submission blocked.', 'rapid-ai-forms' ), array( 'status' => 403 ) );
 		}
 
 		$submissions = new Submission_Repository();
