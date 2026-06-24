@@ -516,7 +516,9 @@ The shipped contract. Endpoint base is filterable via `rapid_ai_forms_managed_en
 - `GET /v1/status` → `{ valid, free_remaining, free_allowance, free_renews_at, purchased_remaining, account_linked, manage_url }`. When unlinked, `manage_url` is a fresh `/claim?code=…` link. Plugin caches it 5 min (transient), busted after a generation.
 - `POST /v1/claim-code` (Bearer) → `{ code, claim_url }` — 15-min single-use code.
 - `POST /v1/claim` `{ code, email }` → links the site to an account (created/reused by email); also the dashboard's `GET /claim?code=` does this against the signed-in session.
-- Dashboard + passwordless auth (`POST /v1/auth/request`, `GET /auth/verify`, `GET /dashboard`) are served by the backend app; see the `rapid-ai-cloud` README. **Checkout and usage emails are not built yet.**
+- Dashboard + passwordless auth (`POST /v1/auth/request`, `GET /auth/verify`, `GET /dashboard`) are served by the backend app; see the `rapid-ai-cloud` README.
+- **Usage emails:** 80%/100% free-pool alerts fire to linked accounts (once per threshold per month).
+- **Billing (LemonSqueezy):** `POST /v1/billing/checkout` (session) creates a hosted checkout; `POST /v1/billing/webhook` (HMAC-verified) credits the site once on `order_created` as a `purchased` ledger row — so the plugin's quota meter reflects purchases with **no plugin changes**. Scaffolded; needs live store keys. See `rapid-ai-cloud/docs/lemonsqueezy.md`.
 
 Balances are **computed from the ledger** (no stored totals); the monthly free reset is just the calendar window; purchased units never expire.
 

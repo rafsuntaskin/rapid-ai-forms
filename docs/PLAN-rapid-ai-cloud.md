@@ -157,9 +157,9 @@ limiter, pooled Neon).
 ### Phase D — accounts + monetization (decided 2026-06-24: dashboard served from the Hono app; Resend for email; checkout deferred)
 - [x] Magic-link auth + dashboard, served from the backend app (no separate frontend): `POST /v1/auth/request` → emailed token → `GET /auth/verify` → signed session → `GET /dashboard` (linked sites + balances). Email via Resend with a `MAIL_DEV` console fallback. Verified e2e locally.
 - [x] `POST /v1/claim` exchange + dashboard `GET /claim?code=` linking flow; status `manage_url` carries a fresh claim code when unlinked so the plugin's "Manage account" walks into it. (`POST /v1/claim-code` already existed.)
-- [ ] Checkout (Stripe or LemonSqueezy) → `purchased` ledger credits. **Pending provider choice** (purchased path itself already works — `npm run usage topup`).
-- [ ] 80%/100% usage emails for linked accounts. (`sendMail()`/Resend wired; needs the threshold-trigger logic.)
-- [ ] Productionize email/sessions: real `RESEND_API_KEY` + verified domain, override `SESSION_SECRET`, serve over HTTPS.
+- [x] 80%/100% usage emails for linked accounts — fire after a debit, once per threshold per month (`usage_alerts`). Verified locally (incl. dedupe).
+- [~] Checkout via **LemonSqueezy** (provider chosen 2026-06-24; BD bank payout confirmed). Scaffolded + verified by signed-curl: `POST /v1/billing/checkout` (creates hosted checkout), `POST /v1/billing/webhook` (HMAC-verified, idempotent on order id → `purchased` ledger row), per-site dashboard buy buttons. **Pending: live store keys + a webhook tunnel for the real e2e; `order_refunded` handling.** See `rapid-ai-cloud/docs/lemonsqueezy.md`.
+- [ ] Productionize email/sessions/billing: real `RESEND_API_KEY` + verified domain, override `SESSION_SECRET`, serve over HTTPS, live LemonSqueezy keys.
 
 ### Phase E — 0.3.0 release gate
 - [~] readme privacy section + FAQ; SPEC §5A + §12 updates; `.pot` regen. **SPEC §5A.8 + §12 done (2026-06-24); backend README updated.** Readme privacy disclosure still pending (write when the feature is un-gated).
