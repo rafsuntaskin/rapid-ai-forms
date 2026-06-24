@@ -9,6 +9,7 @@ namespace Rapid_Ai_Forms\Api;
 
 use Rapid_Ai_Forms\Ai\Css_Prompt;
 use Rapid_Ai_Forms\Ai\Provider_Manager;
+use Rapid_Ai_Forms\Ai\Providers\Managed;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 use Rapid_Ai_Forms\Forms\Form_Repository;
 use Rapid_Ai_Forms\Forms\Submission_Repository;
@@ -18,6 +19,10 @@ defined( 'ABSPATH' ) || exit;
 
 class Rest_Controller {
 	const NAMESPACE = 'rapid-ai-forms/v1';
+
+	// Single-use handshake nonce (5-min) and the cached hosted-provider status.
+	const MANAGED_NONCE_TRANSIENT  = 'raif_managed_nonce';
+	const MANAGED_STATUS_TRANSIENT = 'raif_managed_status';
 
 	public function register() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -146,10 +151,83 @@ class Rest_Controller {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		// Rapid AI Cloud (hosted provider) routes — only when the provider is
+		// enabled, so they don't exist in the MVP build.
+		if ( Managed::is_enabled() ) {
+			$this->register_managed_routes();
+		}
+	}
+
+	/**
+	 * Hosted-provider handshake + connection management routes.
+	 */
+	private function register_managed_routes() {
+		// Public: the backend calls this during registration to prove we
+		// control the claimed domain. Returns only {ok:true} on a nonce match.
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/verify',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'managed_verify' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/register',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'managed_register' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/status',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'managed_status' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/managed/disconnect',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'managed_disconnect' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
 	}
 
 	public function can_manage() {
 		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * Set the REST HTTP status on an AI WP_Error, preserving the provider's
+	 * own `http_status` when it set one (e.g. the hosted provider's 402 quota
+	 * error) instead of flattening everything to 400.
+	 */
+	private function ai_error( \WP_Error $err, $default = 400 ) {
+		$data           = $err->get_error_data();
+		$data           = is_array( $data ) ? $data : array();
+		$data['status'] = ! empty( $data['http_status'] ) ? (int) $data['http_status'] : $default;
+		$err->add_data( $data );
+		return $err;
+	}
+
+	/**
+	 * A generation just changed the hosted provider's quota, so drop the
+	 * cached status — the meter refetches fresh on its next load.
+	 */
+	private function bust_managed_status_cache( Provider_Manager $manager ) {
+		if ( 'managed' === ( $manager->settings()['active_provider'] ?? '' ) ) {
+			delete_transient( self::MANAGED_STATUS_TRANSIENT );
+		}
 	}
 
 	public function list_forms( $req ) {
@@ -300,16 +378,15 @@ class Rest_Controller {
 			Css_Prompt::context( $form, $prompt, $current_css )
 		);
 		if ( is_wp_error( $text ) ) {
-			$text->add_data( array( 'status' => 400 ) );
-			return $text;
+			return $this->ai_error( $text );
 		}
 
 		$css = Css_Prompt::extract_css( $text );
 		if ( is_wp_error( $css ) ) {
-			$css->add_data( array( 'status' => 400 ) );
-			return $css;
+			return $this->ai_error( $css );
 		}
 
+		$this->bust_managed_status_cache( $manager );
 		return rest_ensure_response( array( 'css' => $css ) );
 	}
 
@@ -319,10 +396,109 @@ class Rest_Controller {
 		$manager        = new Provider_Manager();
 		$schema         = $manager->generate_form_schema( $prompt, is_array( $current_schema ) ? $current_schema : null );
 		if ( is_wp_error( $schema ) ) {
-			$schema->add_data( array( 'status' => 400 ) );
-			return $schema;
+			return $this->ai_error( $schema );
 		}
+		$this->bust_managed_status_cache( $manager );
 		return rest_ensure_response( $schema );
+	}
+
+	/**
+	 * Public callback the backend hits during registration to prove we own
+	 * the claimed domain. Leaks nothing beyond {ok:true}; consumes the nonce.
+	 */
+	public function managed_verify( $req ) {
+		$nonce  = (string) $req->get_param( 'nonce' );
+		$stored = get_transient( self::MANAGED_NONCE_TRANSIENT );
+		if ( '' !== $nonce && is_string( $stored ) && hash_equals( $stored, $nonce ) ) {
+			delete_transient( self::MANAGED_NONCE_TRANSIENT ); // single-use
+			return rest_ensure_response( array( 'ok' => true ) );
+		}
+		return new \WP_Error(
+			'raif_bad_nonce',
+			__( 'Invalid or expired verification nonce.', 'rapid-ai-forms' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Start the handshake: mint a single-use nonce, ask the backend to
+	 * register (it calls back /managed/verify), then persist the issued token.
+	 */
+	public function managed_register( $req ) {
+		$manager  = new Provider_Manager();
+		$provider = $manager->get( 'managed' );
+		if ( ! $provider ) {
+			return new \WP_Error( 'raif_unknown_provider', __( 'Rapid AI Cloud is not available.', 'rapid-ai-forms' ), array( 'status' => 400 ) );
+		}
+
+		$nonce = wp_generate_password( 64, false );
+		set_transient( self::MANAGED_NONCE_TRANSIENT, $nonce, 5 * MINUTE_IN_SECONDS );
+
+		$token = $provider->register( $nonce );
+		delete_transient( self::MANAGED_NONCE_TRANSIENT ); // ensure single-use even on failure
+
+		if ( is_wp_error( $token ) ) {
+			$token->add_data( array( 'status' => 400 ) );
+			return $token;
+		}
+
+		$settings                                       = $manager->settings();
+		$settings['providers']['managed']['site_token'] = $token;
+		$settings['providers']['managed']['site_url']   = home_url();
+		$manager->save_settings( $settings );
+		delete_transient( self::MANAGED_STATUS_TRANSIENT );
+
+		return $this->managed_status_payload( $manager );
+	}
+
+	/**
+	 * Connection + quota state, cached 5 minutes to avoid hammering the
+	 * backend on every Settings load.
+	 */
+	public function managed_status( $req ) {
+		$cached = get_transient( self::MANAGED_STATUS_TRANSIENT );
+		if ( is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
+		}
+		return $this->managed_status_payload( new Provider_Manager() );
+	}
+
+	/**
+	 * Drop the stored token so the site is no longer connected.
+	 */
+	public function managed_disconnect( $req ) {
+		$manager                                        = new Provider_Manager();
+		$settings                                       = $manager->settings();
+		$settings['providers']['managed']['site_token'] = '';
+		$settings['providers']['managed']['site_url']   = '';
+		$manager->save_settings( $settings );
+		delete_transient( self::MANAGED_STATUS_TRANSIENT );
+		return rest_ensure_response( array( 'connected' => false ) );
+	}
+
+	/**
+	 * Fetch live status from the backend, cache it, and shape the response.
+	 * Returns {connected:false} without a network call when no valid token
+	 * is stored for this exact home_url.
+	 */
+	private function managed_status_payload( Provider_Manager $manager ) {
+		$settings  = $manager->settings();
+		$options   = $settings['providers']['managed'] ?? array();
+		$connected = ! empty( $options['site_token'] ) && ( $options['site_url'] ?? '' ) === home_url();
+
+		if ( ! $connected ) {
+			return rest_ensure_response( array( 'connected' => false ) );
+		}
+
+		$status = $manager->get( 'managed' )->status( $options );
+		if ( is_wp_error( $status ) ) {
+			$status->add_data( array( 'status' => 400 ) );
+			return $status;
+		}
+
+		$payload = array_merge( array( 'connected' => true ), $status );
+		set_transient( self::MANAGED_STATUS_TRANSIENT, $payload, 5 * MINUTE_IN_SECONDS );
+		return rest_ensure_response( $payload );
 	}
 
 	public function get_settings() {
@@ -340,13 +516,28 @@ class Rest_Controller {
 				$settings['providers'][ $key ]['api_key_set'] = false;
 			}
 
+			// The hosted provider stores a site_token instead of an api_key —
+			// mask it the same way (never returned over REST; a *_set boolean
+			// signals presence).
+			if ( array_key_exists( 'site_token', $cfg ) ) {
+				$has_token                                       = ! empty( $cfg['site_token'] );
+				$settings['providers'][ $key ]['site_token']     = '';
+				$settings['providers'][ $key ]['site_token_set'] = $has_token;
+				$settings['providers'][ $key ]['connected']      =
+					$has_token && ( $cfg['site_url'] ?? '' ) === home_url();
+			}
+
 			// wp_ai_client routes through core connectors; it's "configured"
 			// when the host supports it (which means at least one connector
-			// is reachable). For everything else, configured ≡ api key saved.
+			// is reachable). The hosted provider is configured when connected.
+			// For everything else, configured ≡ api key saved.
 			if ( 'wp_ai_client' === $key ) {
 				$settings['providers'][ $key ]['configured'] =
 					class_exists( 'Rapid_Ai_Forms\\Ai\\Providers\\Wp_Ai_Client' )
 					&& \Rapid_Ai_Forms\Ai\Providers\Wp_Ai_Client::is_available();
+			} elseif ( 'managed' === $key ) {
+				$settings['providers'][ $key ]['configured'] =
+					! empty( $settings['providers'][ $key ]['connected'] );
 			} else {
 				$settings['providers'][ $key ]['configured'] = $has_key;
 			}
@@ -376,8 +567,10 @@ class Rest_Controller {
 					continue;
 				}
 				foreach ( $cfg as $field => $value ) {
-					// Empty api_key means "leave as is"; non-empty replaces.
-					if ( 'api_key' === $field && '' === $value ) {
+					// Empty secret means "leave as is"; non-empty replaces.
+					// (site_token is managed via the handshake, never the form,
+					// but masked round-trips send it back empty.)
+					if ( in_array( $field, array( 'api_key', 'site_token' ), true ) && '' === $value ) {
 						continue;
 					}
 					$current['providers'][ $key ][ $field ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;

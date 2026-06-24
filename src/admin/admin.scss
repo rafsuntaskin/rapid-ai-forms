@@ -267,6 +267,52 @@
 	}
 }
 
+.raif-managed {
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-top: 16px;
+		flex-wrap: wrap;
+	}
+}
+
+.raif-quota {
+	&__label {
+		margin: 0 0 8px;
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	&__bar {
+		height: 8px;
+		background: #e2e4e7;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	&__fill {
+		height: 100%;
+		background: #1a7e3a;
+		transition: width 0.3s ease;
+	}
+
+	&__purchased {
+		margin: 8px 0 0;
+		font-size: 12px;
+		color: #50575e;
+	}
+
+	// Amber state at <=20% remaining (soft upsell threshold).
+	&--low &__label {
+		color: #8a6d00;
+	}
+
+	&--low &__fill {
+		background: #dba617;
+	}
+}
+
 .raif-shortcode {
 	display: inline-flex;
 	align-items: center;

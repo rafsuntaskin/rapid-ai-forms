@@ -118,24 +118,41 @@ Rule: **the plugin states facts; the website sells.**
 
 ## 4. Implementation checklist
 
-### Phase A — backend skeleton
-- [ ] Repo + Vercel project + Neon Postgres + Upstash; schema migrations for `sites`, `accounts`, `usage_ledger`, `requests`.
-- [ ] `POST /v1/register` with SSRF-guarded callback verification + token issuance (hash at rest) + registration rate limits.
-- [ ] `GET /v1/status` computing balances from the ledger.
-- [ ] Request-id + structured error envelope on every response.
+**Dev approach (decided 2026-06-22): local-first.** The backend lives in the sibling repo
+`../rapid-ai-cloud` and runs fully locally (Docker Postgres + `npm run dev` on `:8787`,
+`MOCK_LLM=1` so no AI key is needed). The inner loop is plugin PHP ↔ backend contract,
+iterated together against `http://host.docker.internal:8787` from Lando wooDev — the dev
+`.env` flags (`ALLOW_PRIVATE_CALLBACK`, `NODE_TLS_REJECT_UNAUTHORIZED=0`) let the register
+callback reach the loopback-resolved `*.lndo.site` site. **Vercel is the deploy target, not
+the workbench**: a deployed backend can't call back into a local WP site, so it's used only
+for (1) a one-time preview deploy to smoke-test the Vercel/Neon wiring and (2) staging/prod
+once Phase B works. Production deploy is gated on the §5A.7 items below (Upstash-backed rate
+limiter, pooled Neon).
 
-### Phase B — plugin provider (this repo, branch off after 0.2.0 ships)
+### Phase A — backend skeleton ✅ built in `../rapid-ai-cloud` (commits `20257ca` → `fec42f3`)
+- [x] Repo + schema migrations for `sites`, `accounts`, `usage_ledger`, `requests` (Hono + postgres.js + zod). Cloud provisioning (Vercel project, Neon, Upstash) deferred to deploy time.
+- [x] `POST /v1/register` with SSRF-guarded callback verification + token issuance (sha256 hash at rest) + registration rate limits + dev escape hatch for local callbacks.
+- [x] `GET /v1/status` computing balances from the ledger.
+- [x] Request-id + structured error envelope on every response.
+
+### Phase B — plugin provider (this repo, **active next task** — local-first against the running backend)
 - [ ] `includes/ai/providers/class-managed.php` (both generate methods + register/status + error mapping).
 - [ ] Register in `Provider_Manager` + settings defaults.
 - [ ] REST: `GET /managed/verify` (public, single-use nonce), `POST /managed/register`, `GET /managed/status` (cached), `POST /managed/disconnect`.
 - [ ] Generalize secret masking to `site_token`; expose `connected`.
 - [ ] Settings card: Connect / quota meter / Refresh / Disconnect / "Manage account ↗".
-- [ ] Tests (wp-env suite): verify-route single-use semantics; error mapping + handshake via `pre_http_request` stubs; `site_token` never in `GET /settings`.
+- [ ] `dev/raif-cloud-dev.php` mu-plugin already filters `rapid_ai_forms_managed_endpoint` → `host.docker.internal:8787`; wire the pre-launch provider gate to match.
+- [x] Tests (wp-env suite): verify-route single-use semantics; error mapping + handshake via `pre_http_request` stubs; `site_token` never in `GET /settings`. (`tests/test-managed-provider.php`, 14 tests.)
 
-### Phase C — backend generation + metering
-- [ ] `POST /v1/generate-form` + `POST /v1/generate-text` via Vercel AI Gateway.
-- [ ] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-400 breaker.
-- [ ] End-to-end on wooDev against the dev backend (mu-plugin filters `rapid_ai_forms_managed_endpoint`): Connect → quota badge → form gen → `/ai/style` gen → forced 402 (allowance=2 on dev) → friendly message. Negative: localhost `home_url` → BYOK-steer; callback to `http://10.0.0.1` refused.
+### Phase C — backend generation + metering ✅ built locally; ✅ e2e verified on wooDev
+- [x] `POST /v1/generate-form` + `POST /v1/generate-text` via OpenAI-compatible call (Vercel AI Gateway by default; `MOCK_LLM` for dev). NB: raw `fetch`, not the Vercel AI SDK.
+- [x] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker. ⚠️ Rate limiter is in-memory/per-instance — must move to Upstash before prod (§5A.7).
+- [x] End-to-end on wooDev against the local backend (2026-06-24): Connect handshake completed (real domain-verification callback → site-bound token), quota meter rendered (green, then amber at 0), generation debited (backend confirmed 2→0 then 402), and the plugin surfaced the neutral 402 verbatim ("You've reached this month's free usage limit.").
+
+**E2E follow-ups (non-blocking, fold into Phase E polish):**
+- *Live quota countdown:* generate responses carry a `usage` block (§2), but `ai/generate`/`ai/style` go through `Provider_Manager`, which discards it — so the cached `/managed/status` (5-min transient) doesn't update after a generation; the meter only refreshes once the cache expires. Capture `usage` from the generate path and refresh the cached status.
+- *402 status passthrough:* `ai_generate`/`ai_style` override the WP_Error status to 400, so a quota hit reaches the browser as HTTP 400 (code/message are correct). Preserve the provider's `http_status` (402).
+- *Negative cases still to spot-check:* localhost `home_url` → BYOK-steer; backend callback to a private IP refused (SSRF guard).
 
 ### Phase D — accounts + monetization (website)
 - [ ] Magic-link auth + dashboard (linked sites, usage graph).
