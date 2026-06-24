@@ -738,9 +738,9 @@ Ships **gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org la
 - [ ] Prod hardening: in-memory rate limiter → Upstash Redis (§5A.7).
 - [ ] Readme *Privacy & external services* disclosure + FAQ when the feature is un-gated.
 
-### v0.4 — Block editor
-- [ ] Gutenberg block `rapid-ai-forms/form` selecting a form by id.
-- [ ] Server-side render via the existing shortcode renderer.
+### v0.4 — Block editor — ✅ shipped (`Blocks\Form_Block`, `blocks/form/block.json`)
+- [x] Gutenberg block `rapid-ai-forms/form` — form picker (`SelectControl` fed by `GET /forms-list`) + live `ServerSideRender` preview. Core block.json structure, apiVersion 3.
+- [x] Server-side render via the existing `Form_Renderer` (block and shortcode output match). Browser-verified in the editor; 5 block tests.
 
 ### v0.5 — Richer forms
 - [ ] File upload field type (with size/MIME constraints).
