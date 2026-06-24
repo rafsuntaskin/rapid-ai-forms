@@ -43,6 +43,17 @@ class Form_Renderer {
 				<?php $this->render_field( $field ); ?>
 			<?php endforeach; ?>
 
+			<?php
+			// Honeypot: hidden from humans (and assistive tech); bots that fill
+			// it get a silent accept-and-discard. Inline styles so it stays
+			// hidden even if the stylesheet fails to load.
+			?>
+			<div class="raif-form__hp" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+				<label><?php esc_html_e( 'Leave this field empty', 'rapid-ai-forms' ); ?>
+					<input type="text" name="<?php echo esc_attr( Submission_Guard::HONEYPOT_FIELD ); ?>" tabindex="-1" autocomplete="off" value="">
+				</label>
+			</div>
+
 			<div class="raif-form__actions wp-block-button">
 				<button type="submit" class="raif-form__submit wp-block-button__link wp-element-button">
 					<?php echo esc_html( $schema['submit_label'] ?? __( 'Submit', 'rapid-ai-forms' ) ); ?>
