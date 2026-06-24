@@ -357,22 +357,24 @@ add_action( 'rapid_ai_forms_submission_created', function ( $id, $form, $data ) 
 
 ---
 
-## 5A. Managed service backend contract — POST-MVP (v1.0)
+## 5A. Managed service backend contract — Rapid AI Cloud
 
-> **Not in MVP.** This section is documented now to lock in the wire protocol ahead of time, but no UI is shipped for the managed path in v0.1. The plugin will surface the managed-service Settings card and credit-balance UI once the hosted backend is live (see §12 Roadmap).
+> **Status (2026-06).** The **free tier** (v0.3) is implemented: the `Managed` provider, the domain-verification handshake, the Settings card, and the backend service all exist — see [`PLAN-rapid-ai-cloud.md`](PLAN-rapid-ai-cloud.md) for the build state and the backend repo (`rapid-ai-cloud`) for the implementation. It ships **gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org launch. The **paid credits** path (§5A.2–5A.6 below, license-key framing) is the original design that the free tier evolved from; purchased credits now layer onto the same ledger. §5A.8 documents the **implemented** endpoints.
 
-This section specifies the HTTP contract our hosted backend must implement so the plugin's `Managed` provider can talk to it. **The plugin never holds an LLM provider key.** It only holds a per-site `license_key`. The backend is responsible for authenticating the license, debiting credits, and proxying the actual LLM call using server-held provider keys.
+This section specifies the HTTP contract the hosted backend implements so the plugin's `Managed` provider can talk to it. **The plugin never holds an LLM provider key.** For the free tier it holds a per-site **bearer token** issued by the domain-verification handshake (§5A.8); the backend authenticates the token, debits generations (free pool first, then purchased), and proxies the LLM call using server-held provider keys.
 
 ### 5A.1 Trust model
 
 ```
-[WP site]  ──Bearer license_key──▶  [Our backend]  ──provider key──▶  [LLM provider]
+[WP site]  ──Bearer site_token──▶  [Our backend]  ──provider key──▶  [LLM provider]
+                  (issued by the domain-verification handshake, §5A.8)
 ```
 
-- The `license_key` is the only credential present in the plugin.
-- A leaked license key only burns *that customer's* credits — there is no shared/global secret to compromise.
-- License keys must be **per-site bindable**: when first used, the backend records the site URL (`X-Site-URL`) and may refuse later requests from a different origin (configurable per plan).
-- License keys are revocable from the customer dashboard and must propagate revocation within ≤ 60s.
+- The site-bound token is the only credential present in the plugin; it is obtained by proving domain ownership, not by a purchase.
+- A leaked token can at worst burn *that one site's* quota — there is no shared/global secret to compromise.
+- Tokens are **per-site bound**: the backend records the site URL at registration and rejects requests whose `X-Site-URL` doesn't match (§5A.8).
+- Re-registering a domain rotates the token (the old one is revoked); the same domain proof is required, so rotation is safe.
+- **Hybrid accounts:** the free tier needs no signup. Buying more attaches purchases to a *website account* the owner links via a claim code (§5A.8) — the plugin stays friction-free and wp.org-clean (no "buy/upgrade" copy).
 
 ### 5A.2 Endpoint: generate form schema
 
@@ -493,6 +495,32 @@ These belong in the separate `rapid-ai-forms-backend` service, not this plugin:
 - [ ] `X-Idempotency-Key` honored.
 - [ ] All errors return a `request_id` to aid customer support.
 - [ ] Webhook signature verification implemented before the webhook is announced.
+
+### 5A.8 Implemented endpoints (free tier — v0.3)
+
+The shipped contract. Endpoint base is filterable via `rapid_ai_forms_managed_endpoint`; the plugin sends `Authorization: Bearer {site_token}`, `X-Site-URL: home_url()`, and `X-Plugin-Version` on authenticated calls.
+
+**Handshake (proves domain ownership; no signup)**
+
+1. `POST {endpoint}/v1/register` `{ home_url, nonce, plugin_version }` — backend calls back `GET {home_url}/wp-json/rapid-ai-forms/v1/managed/verify?nonce=…` (SSRF-guarded: public IPs, standard ports, no redirects). On a single-use nonce match the plugin returns `{ ok: true }` and the backend issues `{ token }` (sha256-hashed at rest). Unreachable/loopback sites fail → plugin steers to BYOK.
+
+**Generation (Bearer + `X-Site-URL` binding)**
+
+- `POST /v1/generate-form` `{ prompt }` → `{ schema | text, usage, request_id }`.
+- `POST /v1/generate-text` `{ system, prompt }` → `{ text, usage, request_id }` (powers the AI CSS editor).
+- Atomic debit (free pool → purchased) with refund on 5xx/invalid output; `X-Idempotency-Key` honored 24h; per-site rate limit + consecutive-failure breaker.
+- Errors map in `Managed::map_error()`: `401`→`raif_reconnect`, `402/429`→`raif_quota_reached` (neutral copy, shown verbatim), `5xx`→`raif_managed_server`.
+
+**Status & account linking (hybrid model)**
+
+- `GET /v1/status` → `{ valid, free_remaining, free_allowance, free_renews_at, purchased_remaining, account_linked, manage_url }`. When unlinked, `manage_url` is a fresh `/claim?code=…` link. Plugin caches it 5 min (transient), busted after a generation.
+- `POST /v1/claim-code` (Bearer) → `{ code, claim_url }` — 15-min single-use code.
+- `POST /v1/claim` `{ code, email }` → links the site to an account (created/reused by email); also the dashboard's `GET /claim?code=` does this against the signed-in session.
+- Dashboard + passwordless auth (`POST /v1/auth/request`, `GET /auth/verify`, `GET /dashboard`) are served by the backend app; see the `rapid-ai-cloud` README.
+- **Usage emails:** 80%/100% free-pool alerts fire to linked accounts (once per threshold per month).
+- **Billing (LemonSqueezy):** `POST /v1/billing/checkout` (session) creates a hosted checkout; `POST /v1/billing/webhook` (HMAC-verified) credits the site once on `order_created` as a `purchased` ledger row — so the plugin's quota meter reflects purchases with **no plugin changes**. Scaffolded; needs live store keys. See `rapid-ai-cloud/docs/lemonsqueezy.md`.
+
+Balances are **computed from the ledger** (no stored totals); the monthly free reset is just the calendar window; purchased units never expire.
 
 ---
 
@@ -700,6 +728,15 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [ ] Honeypot field auto-injected into the renderer + time-trap.
 - [ ] Optional Cloudflare Turnstile / hCaptcha integration (pluggable hook; external calls disclosed in readme privacy section).
 - [ ] Per-IP submission rate limit (configurable).
+
+### v0.3 — Rapid AI Cloud (hosted free tier) — see [docs/PLAN-rapid-ai-cloud.md](PLAN-rapid-ai-cloud.md), §5A.8
+Ships **gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org launch.
+- [x] `Managed` provider + `/managed/*` handshake routes + Settings card (Connect / quota meter / Disconnect). Phase B; e2e verified on wooDev.
+- [x] Backend service (`rapid-ai-cloud`): register/verify handshake, ledger metering, generate-form/text. Phase A/C.
+- [x] Account model: claim-code linking, magic-link auth + dashboard served from the backend app. Phase D (partial).
+- [ ] Checkout (Stripe/LemonSqueezy) → `purchased` credits; 80%/100% usage emails. Phase D (pending provider choice).
+- [ ] Prod hardening: in-memory rate limiter → Upstash Redis (§5A.7).
+- [ ] Readme *Privacy & external services* disclosure + FAQ when the feature is un-gated.
 
 ### v0.4 — Block editor
 - [ ] Gutenberg block `rapid-ai-forms/form` selecting a form by id.

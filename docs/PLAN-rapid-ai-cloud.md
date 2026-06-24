@@ -154,14 +154,15 @@ limiter, pooled Neon).
 - *402 status passthrough:* `ai_generate`/`ai_style` override the WP_Error status to 400, so a quota hit reaches the browser as HTTP 400 (code/message are correct). Preserve the provider's `http_status` (402).
 - *Negative cases still to spot-check:* localhost `home_url` → BYOK-steer; backend callback to a private IP refused (SSRF guard).
 
-### Phase D — accounts + monetization (website)
-- [ ] Magic-link auth + dashboard (linked sites, usage graph).
-- [ ] `POST /v1/claim-code` + `/claim?code=` linking flow.
-- [ ] Checkout (Stripe or LemonSqueezy) → `purchased` ledger credits.
-- [ ] 80%/100% usage emails for linked accounts.
+### Phase D — accounts + monetization (decided 2026-06-24: dashboard served from the Hono app; Resend for email; checkout deferred)
+- [x] Magic-link auth + dashboard, served from the backend app (no separate frontend): `POST /v1/auth/request` → emailed token → `GET /auth/verify` → signed session → `GET /dashboard` (linked sites + balances). Email via Resend with a `MAIL_DEV` console fallback. Verified e2e locally.
+- [x] `POST /v1/claim` exchange + dashboard `GET /claim?code=` linking flow; status `manage_url` carries a fresh claim code when unlinked so the plugin's "Manage account" walks into it. (`POST /v1/claim-code` already existed.)
+- [x] 80%/100% usage emails for linked accounts — fire after a debit, once per threshold per month (`usage_alerts`). Verified locally (incl. dedupe).
+- [~] Checkout via **LemonSqueezy** (provider chosen 2026-06-24; BD bank payout confirmed). Scaffolded + verified by signed-curl: `POST /v1/billing/checkout` (creates hosted checkout), `POST /v1/billing/webhook` (HMAC-verified, idempotent on order id → `purchased` ledger row), per-site dashboard buy buttons. **Pending: live store keys + a webhook tunnel for the real e2e; `order_refunded` handling.** See `rapid-ai-cloud/docs/lemonsqueezy.md`.
+- [ ] Productionize email/sessions/billing: real `RESEND_API_KEY` + verified domain, override `SESSION_SECRET`, serve over HTTPS, live LemonSqueezy keys.
 
 ### Phase E — 0.3.0 release gate
-- [ ] readme privacy section + FAQ; SPEC §5A + §12 updates; `.pot` regen.
+- [~] readme privacy section + FAQ; SPEC §5A + §12 updates; `.pot` regen. **SPEC §5A.8 + §12 done (2026-06-24); backend README updated.** Readme privacy disclosure still pending (write when the feature is un-gated).
 - [ ] §5A.7 security checklist signed off on the backend.
 - [ ] `composer lint`, `npm run build`, `npm run test:php`, `lando wp plugin check rapid-ai-forms` → no errors.
 - [ ] SVN deploy (`npm run deploy` dry-run → `--commit`).
