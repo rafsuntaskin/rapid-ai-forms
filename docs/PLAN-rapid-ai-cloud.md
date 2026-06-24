@@ -142,12 +142,17 @@ limiter, pooled Neon).
 - [ ] Generalize secret masking to `site_token`; expose `connected`.
 - [ ] Settings card: Connect / quota meter / Refresh / Disconnect / "Manage account ↗".
 - [ ] `dev/raif-cloud-dev.php` mu-plugin already filters `rapid_ai_forms_managed_endpoint` → `host.docker.internal:8787`; wire the pre-launch provider gate to match.
-- [ ] Tests (wp-env suite): verify-route single-use semantics; error mapping + handshake via `pre_http_request` stubs; `site_token` never in `GET /settings`.
+- [x] Tests (wp-env suite): verify-route single-use semantics; error mapping + handshake via `pre_http_request` stubs; `site_token` never in `GET /settings`. (`tests/test-managed-provider.php`, 14 tests.)
 
-### Phase C — backend generation + metering ✅ built locally; ⏳ e2e blocked on Phase B
+### Phase C — backend generation + metering ✅ built locally; ✅ e2e verified on wooDev
 - [x] `POST /v1/generate-form` + `POST /v1/generate-text` via OpenAI-compatible call (Vercel AI Gateway by default; `MOCK_LLM` for dev). NB: raw `fetch`, not the Vercel AI SDK.
 - [x] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker. ⚠️ Rate limiter is in-memory/per-instance — must move to Upstash before prod (§5A.7).
-- [ ] End-to-end on wooDev against the local backend (mu-plugin filters `rapid_ai_forms_managed_endpoint`): Connect → quota badge → form gen → `/ai/style` gen → forced 402 (allowance=5 on dev) → friendly message. Negative: localhost `home_url` → BYOK-steer; callback to `http://10.0.0.1` refused. **Requires Phase B.**
+- [x] End-to-end on wooDev against the local backend (2026-06-24): Connect handshake completed (real domain-verification callback → site-bound token), quota meter rendered (green, then amber at 0), generation debited (backend confirmed 2→0 then 402), and the plugin surfaced the neutral 402 verbatim ("You've reached this month's free usage limit.").
+
+**E2E follow-ups (non-blocking, fold into Phase E polish):**
+- *Live quota countdown:* generate responses carry a `usage` block (§2), but `ai/generate`/`ai/style` go through `Provider_Manager`, which discards it — so the cached `/managed/status` (5-min transient) doesn't update after a generation; the meter only refreshes once the cache expires. Capture `usage` from the generate path and refresh the cached status.
+- *402 status passthrough:* `ai_generate`/`ai_style` override the WP_Error status to 400, so a quota hit reaches the browser as HTTP 400 (code/message are correct). Preserve the provider's `http_status` (402).
+- *Negative cases still to spot-check:* localhost `home_url` → BYOK-steer; backend callback to a private IP refused (SSRF guard).
 
 ### Phase D — accounts + monetization (website)
 - [ ] Magic-link auth + dashboard (linked sites, usage graph).
