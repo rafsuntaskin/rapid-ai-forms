@@ -10,7 +10,7 @@ This document specifies the data contracts, APIs, and behaviors of the Rapid AI 
 
 ## 1. Product overview
 
-Rapid AI Forms is a WordPress plugin that lets site owners build forms from natural-language prompts, then embed them anywhere via shortcodes (Gutenberg block planned).
+Rapid AI Forms is a WordPress plugin that lets site owners build forms from natural-language prompts, then embed them anywhere via the `[rapid_ai_form id="..."]` shortcode or the `rapid-ai-forms/form` Gutenberg block.
 
 ### 1.1 AI modes
 
@@ -23,7 +23,7 @@ Rapid AI Forms is a WordPress plugin that lets site owners build forms from natu
 
 ### 1.2 Goals
 - Generate working form schemas from a single natural-language prompt.
-- Render forms via shortcode `[rapid_ai_form id="..."]`.
+- Render forms via the `[rapid_ai_form id="..."]` shortcode or the `rapid-ai-forms/form` block (both server-rendered through `Form_Renderer`).
 - Store submissions in dedicated DB tables for querying and export.
 - Be extensible: third parties can register additional AI providers.
 
@@ -170,6 +170,7 @@ Authentication: WP cookie + `X-WP-Nonce` header for admin endpoints. Submission 
 |---|---|---|
 | `/forms` | GET, POST | `manage_options` |
 | `/forms/{id}` | GET, PUT, DELETE | `manage_options` |
+| `/forms-list` | GET | `edit_posts` (block form picker — id+title only) |
 | `/ai/generate` | POST | `manage_options` |
 | `/ai/verify` | POST | `manage_options` |
 | `/ai/style` | POST | `manage_options` |
@@ -196,6 +197,9 @@ Returns: updated form object.
 
 #### `DELETE /forms/{id}`
 Returns: `{ "deleted": true }`.
+
+#### `GET /forms-list`
+Capability: `edit_posts` (not `manage_options`) so any content editor can pick a form in the block editor without admin rights. Returns a compact `[{ id, title }]` list — no schema, settings, or submission data. Backs the `rapid-ai-forms/form` block's form picker. The block itself is a dynamic block (`save → null`, PHP `render_callback`) that reuses `Form_Renderer`, so its editor preview (`ServerSideRender`) and front-end output match the shortcode exactly.
 
 #### `POST /ai/generate`
 Body: `{ "prompt": "string", "current_schema": { /* optional */ } }`.
