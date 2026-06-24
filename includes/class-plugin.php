@@ -10,6 +10,7 @@ namespace Rapid_Ai_Forms;
 use Rapid_Ai_Forms\Abilities\Abilities;
 use Rapid_Ai_Forms\Admin\Admin;
 use Rapid_Ai_Forms\Api\Rest_Controller;
+use Rapid_Ai_Forms\Blocks\Form_Block;
 use Rapid_Ai_Forms\Db\Schema;
 use Rapid_Ai_Forms\Notifications\Email_Notifier;
 use Rapid_Ai_Forms\Shortcodes\Form_Shortcode;
@@ -36,6 +37,7 @@ class Plugin {
 		( new Admin() )->register();
 		( new Rest_Controller() )->register();
 		( new Form_Shortcode() )->register();
+		( new Form_Block() )->register();
 		( new Frontend() )->register();
 		( new Preview() )->register();
 		( new Abilities() )->register();

@@ -1,0 +1,23 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "rapid-ai-forms/form",
+	"version": "0.1.0",
+	"title": "Rapid AI Form",
+	"category": "widgets",
+	"icon": "feedback",
+	"description": "Embed a form built with Rapid AI Forms.",
+	"keywords": [ "form", "contact", "ai" ],
+	"textdomain": "rapid-ai-forms",
+	"attributes": {
+		"formId": {
+			"type": "number",
+			"default": 0
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true
+	},
+	"editorScript": "rapid-ai-forms-block"
+}
