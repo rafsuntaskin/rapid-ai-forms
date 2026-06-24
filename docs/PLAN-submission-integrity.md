@@ -59,7 +59,9 @@ PHPUnit tests in `tests/test-rest-submissions.php`. Part B remains open for v0.3
 
 ---
 
-## Part B — Form-origin validation (target v0.3, with anti-abuse)
+## Part B — Form-origin validation — ✅ SHIPPED in v0.3 (2026-06)
+
+Implemented in `includes/forms/class-submission-guard.php` (token mint/verify, Origin check, per-IP rate limit, honeypot, time-trap), wired into `Rest_Controller::submit()` cheapest-first with the new `GET /form-token/{uuid}` endpoint and the `rapid_ai_forms_submission_pre_store` CAPTCHA hook. Honeypot markup in `Form_Renderer`; token fetch/retry in `src/frontend/index.js`. Covered by `tests/test-submission-guard.php` (12 tests). The signing secret is generated lazily (`rapid_ai_forms_submit_secret`, autoload off) rather than in the migration, so existing installs self-heal. Original spec below.
 
 Goal: a submission must follow the form's issuance flow recently, not be a cold direct
 POST. Designed to be **full-page-cache safe** — the form HTML stays cacheable; nothing
