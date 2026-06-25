@@ -69,6 +69,18 @@ class Rest_Controller {
 			)
 		);
 
+		// Minimal id/title list for the block's form picker — available to any
+		// content editor (the full /forms collection requires manage_options).
+		register_rest_route(
+			self::NAMESPACE,
+			'/forms-list',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'list_forms_min' ),
+				'permission_callback' => array( $this, 'can_edit' ),
+			)
+		);
+
 		// Admin collection — distinct from the public POST /submissions/{uuid} below.
 		register_rest_route(
 			self::NAMESPACE,
@@ -218,6 +230,25 @@ class Rest_Controller {
 
 	public function can_manage() {
 		return current_user_can( 'manage_options' );
+	}
+
+	public function can_edit() {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Compact form list (id + title) for the block editor's form picker.
+	 */
+	public function list_forms_min() {
+		$forms = ( new Form_Repository() )->list( array( 'per_page' => 100 ) );
+		$out   = array();
+		foreach ( $forms as $form ) {
+			$out[] = array(
+				'id'    => (int) $form['id'],
+				'title' => (string) $form['title'],
+			);
+		}
+		return rest_ensure_response( $out );
 	}
 
 	/**

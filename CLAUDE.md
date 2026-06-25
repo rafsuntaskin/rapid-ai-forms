@@ -12,7 +12,7 @@ Modes:
 - **WP AI Client** (MVP, WP 7.0+): registers a fourth provider that delegates to core's `wp_ai_client_prompt()`. No plugin-held credentials — the site owner uses **Settings → Connectors**. Auto-hidden on older WP via `Wp_Ai_Client::is_available()`.
 - **Managed** (post-launch / v1.0): our hosted service, credit-based, authenticated by license key. See `docs/SPEC.md` §5A.
 
-Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_ai_form_submissions`) and rendered via the `[rapid_ai_form id="..."]` shortcode. Gutenberg block is on the roadmap.
+Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_ai_form_submissions`) and rendered via the `[rapid_ai_form id="..."]` shortcode or the `rapid-ai-forms/form` Gutenberg block. Both render server-side through the same `Forms\Form_Renderer`, so output matches.
 
 ## Architecture
 
@@ -55,9 +55,7 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Run wp.org Plugin Check against the installed copy: `lando wp plugin check rapid-ai-forms`. Must report `Success: Checks complete. No errors found.` before submitting.
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
-- Submission anti-abuse (origin token, honeypot, per-IP rate limit) — v0.3 (see `docs/PLAN-submission-integrity.md` Part B).
 - CSV/JSON export + date filter on the submissions page — deferred from v0.2.
-- Gutenberg block (thin wrapper around shortcode) — v0.4.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.
 - Managed service (UI + backend) — v1.0, post wp.org launch.

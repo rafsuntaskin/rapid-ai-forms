@@ -39,9 +39,9 @@ current install base. CSV export + date filter deferred from the original v0.2 s
   honeypot + time-trap, per-IP rate limit, pluggable CAPTCHA/Akismet hook — see
   [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part B.
 
-## v0.4
+## v0.4 — ✅ shipped (on develop)
 
-- Gutenberg block — a thin wrapper around the existing shortcode.
+- ~~Gutenberg block — a thin wrapper around the existing shortcode.~~ Shipped: `rapid-ai-forms/form` block with a form picker + live `ServerSideRender` preview, reusing `Form_Renderer`.
 
 ## v0.5
 

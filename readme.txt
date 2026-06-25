@@ -14,7 +14,7 @@ AI form builder for WordPress. Describe your contact form in plain English and A
 
 https://vimeo.com/1198809051
 
-Rapid AI Forms is a contact form builder that uses AI to do the boring part. Instead of dragging fields around, you describe the form you want in plain English — *"contact form with name, email, phone, and a short message"* — and the plugin generates the fields, labels, and validation for you. Edit anything by hand, drop it on any page with a shortcode, and start receiving submissions.
+Rapid AI Forms is a contact form builder that uses AI to do the boring part. Instead of dragging fields around, you describe the form you want in plain English — *"contact form with name, email, phone, and a short message"* — and the plugin generates the fields, labels, and validation for you. Edit anything by hand, drop it on any page with the block or a shortcode, and start receiving submissions.
 
 Every form sends a notification email to whoever you choose, with a fully customizable Subject and Body using mail-tags (Contact Form 7 style). Replies go straight to the visitor's email address when you pick a Reply-To field.
 
@@ -45,7 +45,8 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * "Generate with AI" button to rewrite the notification body from your current form
 * Verify provider credentials in one click before saving them
 * Reorder fields up / down, search and delete forms from a card-based list
-* Click-to-copy shortcode for each form
+* Add a form with the **Rapid AI Form** block (pick a form, see a live preview in the editor) or the `[rapid_ai_form id="..."]` shortcode — click-to-copy on every form
+* Built-in spam protection — honeypot, time-trap, same-origin and per-IP rate-limit checks, plus a hook for Turnstile/hCaptcha/Akismet — no CAPTCHA required out of the box
 * Submissions dashboard: browse entries across all forms, filter by form, and view every field of a submission (including the notification email it produced)
 * Required-field validation enforced on the server — incomplete submissions are rejected with inline, per-field errors and never stored
 * Per-form custom CSS with a Style tab: write CSS by hand or describe the look in plain language and let AI write it, previewed live in your active theme
@@ -77,6 +78,10 @@ You need credentials for at least one provider. Either bring your own API key (A
 = Can I use it without the AI? =
 
 Yes. Every field is fully editable by hand and you can build the whole form manually if you prefer. The AI is a shortcut, not a requirement.
+
+= How do I add a form to a page? =
+
+Two ways. In the block editor, add the **Rapid AI Form** block and pick your form from the dropdown — you'll see a live preview right in the editor. Or paste the `[rapid_ai_form id="..."]` shortcode (copy it from the forms list) into any page, post, or widget area. Both render the same form.
 
 = Can I style the form to match my theme? =
 
