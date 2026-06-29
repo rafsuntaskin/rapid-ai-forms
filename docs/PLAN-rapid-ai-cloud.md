@@ -1,8 +1,20 @@
 # Plan: Rapid AI Cloud — hosted free-quota provider (plugin + backend)
 
-**Status:** Planned — implement after the 0.2.0 release, in a fresh session.
+**Status (2026-06-29):** Phases A–D **built and on `develop`** in both repos (plugin `rapid-ai-forms`, backend `rapid-ai-cloud`); gated off behind `rapid_ai_forms_managed_enabled`. Phase E (release gate) + monetization go-live remain. See **§0 Resume here** below.
 **Target:** plugin side ships in **0.3.0**; backend soft-launches first.
 **Supersedes:** [`PLAN-free-ai-provider.md`](PLAN-free-ai-provider.md) (its handshake design is carried over verbatim; this plan adds the hybrid account model, the backend service design, usage metering, and the monetization funnel).
+
+## §0 Resume here (next session)
+
+**Repo/branch state:** both repos on `develop`, fully pushed (`origin/develop` == local), clean trees. `develop` is ahead of `master`; nothing released yet (plugin Stable tag still 0.2.0). Old/merged feature branches are kept, not pruned.
+
+**Done & verified:** Phase A–C (handshake, metering, generate) + Phase D (claim-code linking, magic-link auth + dashboard served from the Hono app, 80%/100% usage emails, LemonSqueezy checkout/webhook **scaffold**). Plugin also shipped v0.3 anti-abuse (`Submission_Guard`) and the v0.4 `rapid-ai-forms/form` block — both on `develop`, browser-verified on wooDev.
+
+**Blocked on the user (external):** live LemonSqueezy store keys + a webhook tunnel for the real checkout e2e (BD bank payout confirmed; provider = LemonSqueezy). See [`rapid-ai-cloud/docs/lemonsqueezy.md`](../../rapid-ai-cloud/docs/lemonsqueezy.md).
+
+**Next buildable (no external deps):** Upstash rate-limiter (prod blocker, §5A.7), `order_refunded` webhook handling, productionize email/sessions (real Resend + domain, `SESSION_SECRET`, HTTPS). Plugin side: CSV/JSON export (deferred from v0.2), v0.5 (file upload, conditional logic, multi-step).
+
+**Local dev env (rebuild if stale):** backend `npm run start` on `:8787` (`MOCK_LLM=1`, `MAIL_DEV=1`); wooDev (Lando) has the plugin deployed + `dev/raif-cloud-dev.php` mu-plugin (endpoint → `host.docker.internal:8787`, provider gate on); `npm run usage [show|reset|topup N|clear]` manages quota. Test artifacts: forms 8/10, "Guard/Block Test" pages.
 
 ## Context
 
@@ -135,7 +147,7 @@ limiter, pooled Neon).
 - [x] `GET /v1/status` computing balances from the ledger.
 - [x] Request-id + structured error envelope on every response.
 
-### Phase B — plugin provider (this repo, **active next task** — local-first against the running backend)
+### Phase B — plugin provider (this repo) ✅ done; e2e verified on wooDev
 - [ ] `includes/ai/providers/class-managed.php` (both generate methods + register/status + error mapping).
 - [ ] Register in `Provider_Manager` + settings defaults.
 - [ ] REST: `GET /managed/verify` (public, single-use nonce), `POST /managed/register`, `GET /managed/status` (cached), `POST /managed/disconnect`.
