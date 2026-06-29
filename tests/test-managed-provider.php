@@ -80,6 +80,32 @@ class Test_Managed_Provider extends WP_UnitTestCase {
 		$this->assertInstanceOf( Managed::class, ( new Provider_Manager() )->get( 'managed' ) );
 	}
 
+	public function test_settings_deep_merges_new_provider_defaults_over_old_saved_data() {
+		// Simulate a site that saved AI settings before the managed provider
+		// existed: a `providers` array without a `managed` block.
+		update_option(
+			'rapid_ai_forms_ai_settings',
+			array(
+				'active_provider' => 'anthropic',
+				'providers'       => array(
+					'anthropic' => array(
+						'api_key' => 'sk-existing',
+						'model'   => 'claude-sonnet-4-6',
+					),
+				),
+			),
+			false
+		);
+
+		$settings = ( new Provider_Manager() )->settings();
+
+		// The newly added managed defaults are present (shallow merge would drop them)…
+		$this->assertArrayHasKey( 'managed', $settings['providers'] );
+		$this->assertSame( '', $settings['providers']['managed']['site_token'] );
+		// …without clobbering the user's existing saved values.
+		$this->assertSame( 'sk-existing', $settings['providers']['anthropic']['api_key'] );
+	}
+
 	/* ---- verify route (single-use nonce) ---- */
 
 	public function test_verify_route_single_use() {

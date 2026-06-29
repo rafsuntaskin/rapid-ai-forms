@@ -86,8 +86,19 @@ class Provider_Manager {
 				'site_url'   => '',
 			);
 		}
-		$saved = get_option( self::OPTION_KEY, array() );
-		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
+		$saved    = get_option( self::OPTION_KEY, array() );
+		$settings = wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
+
+		// wp_parse_args is shallow: a saved `providers` array replaces the
+		// defaults wholesale, so a site that saved settings before a provider
+		// was added (e.g. `managed`) would never see that provider's default
+		// block. Re-merge each provider's defaults individually.
+		foreach ( $defaults['providers'] as $key => $provider_defaults ) {
+			$current                       = isset( $settings['providers'][ $key ] ) && is_array( $settings['providers'][ $key ] ) ? $settings['providers'][ $key ] : array();
+			$settings['providers'][ $key ] = wp_parse_args( $current, $provider_defaults );
+		}
+
+		return $settings;
 	}
 
 	public function save_settings( array $settings ) {
