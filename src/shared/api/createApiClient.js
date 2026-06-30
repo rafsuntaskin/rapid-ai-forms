@@ -35,9 +35,20 @@ export function createApiClient( { restUrl, nonce } ) {
 		return { data, headers: response.headers };
 	};
 
+	// Raw Response (unparsed) — for non-JSON endpoints like file downloads.
+	const getResponse = ( path, options = {} ) =>
+		apiFetch( {
+			url: `${ trimmed }/${ path.replace( /^\//, '' ) }`,
+			headers: { 'X-WP-Nonce': nonce, ...( options.headers || {} ) },
+			parse: false,
+			method: 'GET',
+			...options,
+		} );
+
 	return {
 		get: ( path ) => request( path, { method: 'GET' } ),
 		getWithHeaders: ( path ) => requestWithHeaders( path, { method: 'GET' } ),
+		getResponse,
 		post: ( path, data ) => request( path, { method: 'POST', data } ),
 		put: ( path, data ) => request( path, { method: 'PUT', data } ),
 		del: ( path ) => request( path, { method: 'DELETE' } ),

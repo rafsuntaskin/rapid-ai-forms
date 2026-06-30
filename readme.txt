@@ -47,7 +47,7 @@ Use your own API keys for Anthropic Claude, Google Gemini, or any OpenAI-compati
 * Reorder fields up / down, search and delete forms from a card-based list
 * Add a form with the **Rapid AI Form** block (pick a form, see a live preview in the editor) or the `[rapid_ai_form id="..."]` shortcode — click-to-copy on every form
 * Built-in spam protection — honeypot, time-trap, same-origin and per-IP rate-limit checks, plus a hook for Turnstile/hCaptcha/Akismet — no CAPTCHA required out of the box
-* Submissions dashboard: browse entries across all forms, filter by form, and view every field of a submission (including the notification email it produced)
+* Submissions dashboard: browse entries across all forms, filter by form and date range, view every field of a submission (including the notification email it produced), and export to CSV or JSON
 * Required-field validation enforced on the server — incomplete submissions are rejected with inline, per-field errors and never stored
 * Per-form custom CSS with a Style tab: write CSS by hand or describe the look in plain language and let AI write it, previewed live in your active theme
 * REST API and registration with the WordPress Abilities API (6.9+)

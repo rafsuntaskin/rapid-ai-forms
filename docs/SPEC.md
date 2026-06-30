@@ -725,7 +725,7 @@ The PHP loaders fall back to a sensible default dependency list if `*.asset.php`
 - [x] Submissions admin page: dedicated submenu, cross-form list with form filter, relative timestamps, message/summary excerpt, detail modal (all fields, IP, UA, rendered notification email). Backed by `GET /submissions`.
 - [x] **AI-driven per-form CSS editor with live iframe preview** — pulled forward from v0.3. See [docs/PLAN-ai-css-editor.md](PLAN-ai-css-editor.md).
 - [x] PHPUnit on the official WP test suite via wp-env (30 tests covering the above).
-- [ ] CSV/JSON export of submissions and date filtering — deferred (not blocking 0.2.0).
+- [x] CSV/JSON export of submissions + date-range filter on the submissions page. `GET /submissions/export?format=csv|json` (admin, `can_manage`) streams a download via `Forms\Submission_Exporter`; the same `date_from`/`date_to` filter narrows the on-screen list. CSV unions all field keys (schema labels for single-form exports) and guards against formula injection.
 
 ### v0.3 — Anti-abuse — ✅ shipped (see `Forms\Submission_Guard`, [docs/PLAN-submission-integrity.md](PLAN-submission-integrity.md) Part B)
 - [x] **Submission-origin validation** — signed, cache-safe token via never-cached `GET /form-token/{uuid}`, verified on submit; + Origin/Referer allowlist.
