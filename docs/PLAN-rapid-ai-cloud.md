@@ -8,11 +8,11 @@
 
 **Repo/branch state:** both repos on `develop`, fully pushed (`origin/develop` == local), clean trees. `develop` is ahead of `master`; nothing released yet (plugin Stable tag still 0.2.0). Old/merged feature branches are kept, not pruned.
 
-**Done & verified:** Phase A–C (handshake, metering, generate) + Phase D (claim-code linking, magic-link auth + dashboard served from the Hono app, 80%/100% usage emails, LemonSqueezy checkout/webhook **scaffold**). Plugin also shipped v0.3 anti-abuse (`Submission_Guard`) and the v0.4 `rapid-ai-forms/form` block — both on `develop`, browser-verified on wooDev.
+**Done & verified:** Phase A–C (handshake, metering, generate) + Phase D (claim-code linking, magic-link auth + dashboard served from the Hono app, 80%/100% usage emails, LemonSqueezy checkout/webhook **scaffold**). Plugin also shipped v0.3 anti-abuse (`Submission_Guard`) and the v0.4 `rapid-ai-forms/form` block — both on `develop`, browser-verified on wooDev. **Prod hardening done (2026-07):** Upstash-backed rate limiter (fails open to memory; `UPSTASH_REDIS_REST_URL`/`_TOKEN`) and `order_refunded` webhook clawback (idempotent via `billing_events.refunded_at`, migration 005) — both verified and on `develop`.
 
 **Blocked on the user (external):** live LemonSqueezy store keys + a webhook tunnel for the real checkout e2e (BD bank payout confirmed; provider = LemonSqueezy). See [`rapid-ai-cloud/docs/lemonsqueezy.md`](../../rapid-ai-cloud/docs/lemonsqueezy.md).
 
-**Next buildable (no external deps):** Upstash rate-limiter (prod blocker, §5A.7), `order_refunded` webhook handling, productionize email/sessions (real Resend + domain, `SESSION_SECRET`, HTTPS). Plugin side: CSV/JSON export (deferred from v0.2), v0.5 (file upload, conditional logic, multi-step).
+**Next buildable (no external deps):** ~~Upstash rate-limiter~~ done, ~~`order_refunded`~~ done. Remaining backend prod work all needs external inputs (live Resend key + verified domain, real `SESSION_SECRET`, HTTPS, live LS keys). Plugin side: CSV/JSON export (deferred from v0.2), v0.5 (file upload, conditional logic, multi-step).
 
 **Local dev env (rebuild if stale):** backend `npm run start` on `:8787` (`MOCK_LLM=1`, `MAIL_DEV=1`); wooDev (Lando) has the plugin deployed + `dev/raif-cloud-dev.php` mu-plugin (endpoint → `host.docker.internal:8787`, provider gate on); `npm run usage [show|reset|topup N|clear]` manages quota. Test artifacts: forms 8/10, "Guard/Block Test" pages.
 
@@ -158,7 +158,7 @@ limiter, pooled Neon).
 
 ### Phase C — backend generation + metering ✅ built locally; ✅ e2e verified on wooDev
 - [x] `POST /v1/generate-form` + `POST /v1/generate-text` via OpenAI-compatible call (Vercel AI Gateway by default; `MOCK_LLM` for dev). NB: raw `fetch`, not the Vercel AI SDK.
-- [x] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker. ⚠️ Rate limiter is in-memory/per-instance — must move to Upstash before prod (§5A.7).
+- [x] Atomic debit/refund ledger writes; idempotency keys; per-site rate limits; prompt caps; consecutive-failure breaker. Rate limiter is **Upstash-backed** (`src/lib/ratelimit.ts`, REST pipeline) so limits hold across instances; fails open to a per-instance memory window if Redis is unreachable (`UPSTASH_REDIS_REST_URL`/`_TOKEN`; unset ⇒ memory). ✅ done 2026-07.
 - [x] End-to-end on wooDev against the local backend (2026-06-24): Connect handshake completed (real domain-verification callback → site-bound token), quota meter rendered (green, then amber at 0), generation debited (backend confirmed 2→0 then 402), and the plugin surfaced the neutral 402 verbatim ("You've reached this month's free usage limit.").
 
 **E2E follow-ups (non-blocking, fold into Phase E polish):**
@@ -170,7 +170,7 @@ limiter, pooled Neon).
 - [x] Magic-link auth + dashboard, served from the backend app (no separate frontend): `POST /v1/auth/request` → emailed token → `GET /auth/verify` → signed session → `GET /dashboard` (linked sites + balances). Email via Resend with a `MAIL_DEV` console fallback. Verified e2e locally.
 - [x] `POST /v1/claim` exchange + dashboard `GET /claim?code=` linking flow; status `manage_url` carries a fresh claim code when unlinked so the plugin's "Manage account" walks into it. (`POST /v1/claim-code` already existed.)
 - [x] 80%/100% usage emails for linked accounts — fire after a debit, once per threshold per month (`usage_alerts`). Verified locally (incl. dedupe).
-- [~] Checkout via **LemonSqueezy** (provider chosen 2026-06-24; BD bank payout confirmed). Scaffolded + verified by signed-curl: `POST /v1/billing/checkout` (creates hosted checkout), `POST /v1/billing/webhook` (HMAC-verified, idempotent on order id → `purchased` ledger row), per-site dashboard buy buttons. **Pending: live store keys + a webhook tunnel for the real e2e; `order_refunded` handling.** See `rapid-ai-cloud/docs/lemonsqueezy.md`.
+- [~] Checkout via **LemonSqueezy** (provider chosen 2026-06-24; BD bank payout confirmed). Scaffolded + verified by signed-curl: `POST /v1/billing/checkout` (creates hosted checkout), `POST /v1/billing/webhook` (HMAC-verified) — `order_created` credits (idempotent on order id → `purchased` ledger row) and `order_refunded` claws back (idempotent via `billing_events.refunded_at`, migration 005; verified e2e on local DB 2026-07), per-site dashboard buy buttons. **Pending (external): live store keys + a webhook tunnel for the real checkout e2e.** Subscribe the webhook to both `order_created` and `order_refunded`. See `rapid-ai-cloud/docs/lemonsqueezy.md`.
 - [ ] Productionize email/sessions/billing: real `RESEND_API_KEY` + verified domain, override `SESSION_SECRET`, serve over HTTPS, live LemonSqueezy keys.
 
 ### Phase E — 0.3.0 release gate

@@ -495,10 +495,10 @@ These belong in the separate `rapid-ai-forms-backend` service, not this plugin:
 - [ ] License keys are at least 128 bits of entropy, prefixed for type detection (e.g. `raif_live_…`).
 - [ ] License keys are hashed at rest (Argon2id / bcrypt) — never stored plaintext server-side.
 - [ ] Site-URL binding enabled for paid plans.
-- [ ] `429`s on per-license, per-IP, and global tiers.
-- [ ] `X-Idempotency-Key` honored.
-- [ ] All errors return a `request_id` to aid customer support.
-- [ ] Webhook signature verification implemented before the webhook is announced.
+- [x] `429`s on per-license, per-IP, and global tiers. Rate limiter is **Upstash Redis-backed** (REST) so limits hold across serverless instances; fails open to a per-instance memory window if Redis is unreachable. Set `UPSTASH_REDIS_REST_URL`/`_TOKEN` in prod.
+- [x] `X-Idempotency-Key` honored.
+- [x] All errors return a `request_id` to aid customer support.
+- [x] Webhook signature verification implemented before the webhook is announced. Both `order_created` (credit) and `order_refunded` (idempotent clawback) are handled.
 
 ### 5A.8 Implemented endpoints (free tier — v0.3)
 
@@ -522,7 +522,7 @@ The shipped contract. Endpoint base is filterable via `rapid_ai_forms_managed_en
 - `POST /v1/claim` `{ code, email }` → links the site to an account (created/reused by email); also the dashboard's `GET /claim?code=` does this against the signed-in session.
 - Dashboard + passwordless auth (`POST /v1/auth/request`, `GET /auth/verify`, `GET /dashboard`) are served by the backend app; see the `rapid-ai-cloud` README.
 - **Usage emails:** 80%/100% free-pool alerts fire to linked accounts (once per threshold per month).
-- **Billing (LemonSqueezy):** `POST /v1/billing/checkout` (session) creates a hosted checkout; `POST /v1/billing/webhook` (HMAC-verified) credits the site once on `order_created` as a `purchased` ledger row — so the plugin's quota meter reflects purchases with **no plugin changes**. Scaffolded; needs live store keys. See `rapid-ai-cloud/docs/lemonsqueezy.md`.
+- **Billing (LemonSqueezy):** `POST /v1/billing/checkout` (session) creates a hosted checkout; `POST /v1/billing/webhook` (HMAC-verified) credits the site once on `order_created` and claws credits back on `order_refunded` (both idempotent), as `purchased` ledger rows — so the plugin's quota meter reflects purchases and refunds with **no plugin changes**. Subscribe the webhook to both events. Scaffolded; needs live store keys for the real checkout e2e. See `rapid-ai-cloud/docs/lemonsqueezy.md`.
 
 Balances are **computed from the ledger** (no stored totals); the monthly free reset is just the calendar window; purchased units never expire.
 
@@ -738,8 +738,8 @@ Ships **gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org la
 - [x] `Managed` provider + `/managed/*` handshake routes + Settings card (Connect / quota meter / Disconnect). Phase B; e2e verified on wooDev.
 - [x] Backend service (`rapid-ai-cloud`): register/verify handshake, ledger metering, generate-form/text. Phase A/C.
 - [x] Account model: claim-code linking, magic-link auth + dashboard served from the backend app. Phase D (partial).
-- [ ] Checkout (Stripe/LemonSqueezy) → `purchased` credits; 80%/100% usage emails. Phase D (pending provider choice).
-- [ ] Prod hardening: in-memory rate limiter → Upstash Redis (§5A.7).
+- [x] Checkout (LemonSqueezy) → `purchased` credits + `order_refunded` clawback; 80%/100% usage emails. Phase D. ⚠️ Real checkout e2e still needs live store keys + a webhook tunnel.
+- [x] Prod hardening: in-memory rate limiter → Upstash Redis (§5A.7). Fails open to memory if Redis is unreachable.
 - [ ] Readme *Privacy & external services* disclosure + FAQ when the feature is un-gated.
 
 ### v0.4 — Block editor — ✅ shipped (`Blocks\Form_Block`, `blocks/form/block.json`)
