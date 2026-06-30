@@ -55,7 +55,6 @@ Forms are stored in custom DB tables (`{prefix}rapid_ai_forms`, `{prefix}rapid_a
 - Run wp.org Plugin Check against the installed copy: `lando wp plugin check rapid-ai-forms`. Must report `Success: Checks complete. No errors found.` before submitting.
 
 ## Not yet built (see `docs/SPEC.md` §12 for full roadmap)
-- CSV/JSON export + date filter on the submissions page — deferred from v0.2.
 - File upload field type — v0.5.
 - Conditional logic / multi-step — v0.5.
 - Managed service (UI + backend) — v1.0, post wp.org launch.

@@ -12,6 +12,7 @@ use Rapid_Ai_Forms\Ai\Provider_Manager;
 use Rapid_Ai_Forms\Ai\Providers\Managed;
 use Rapid_Ai_Forms\Ai\Schema_Prompt;
 use Rapid_Ai_Forms\Forms\Form_Repository;
+use Rapid_Ai_Forms\Forms\Submission_Exporter;
 use Rapid_Ai_Forms\Forms\Submission_Guard;
 use Rapid_Ai_Forms\Forms\Submission_Repository;
 use Rapid_Ai_Forms\Notifications\Email_Notifier;
@@ -88,6 +89,18 @@ class Rest_Controller {
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'list_submissions' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+			)
+		);
+
+		// CSV/JSON download of the filtered submissions. Streams a file, so the
+		// callback emits raw bytes and exits rather than returning JSON.
+		register_rest_route(
+			self::NAMESPACE,
+			'/submissions/export',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'export_submissions' ),
 				'permission_callback' => array( $this, 'can_manage' ),
 			)
 		);
@@ -330,17 +343,19 @@ class Rest_Controller {
 	public function list_submissions( $req ) {
 		$page     = max( 1, (int) $req->get_param( 'page' ) ?: 1 );
 		$per_page = max( 1, min( 100, (int) $req->get_param( 'per_page' ) ?: 20 ) );
-		$form_id  = max( 0, (int) $req->get_param( 'form_id' ) );
+		$filter   = $this->submission_filter_args( $req );
 
 		$submissions = new Submission_Repository();
 		$rows        = $submissions->list(
-			array(
-				'form_id'  => $form_id,
-				'page'     => $page,
-				'per_page' => $per_page,
+			array_merge(
+				$filter,
+				array(
+					'page'     => $page,
+					'per_page' => $per_page,
+				)
 			)
 		);
-		$total       = $submissions->count( $form_id );
+		$total       = $submissions->count( $filter );
 
 		// Attach the rendered notification email (using the form's current
 		// template) so the admin view can show what was sent. Null when
@@ -361,6 +376,71 @@ class Rest_Controller {
 		$response->header( 'X-WP-Total', (string) $total );
 		$response->header( 'X-WP-TotalPages', (string) max( 1, (int) ceil( $total / $per_page ) ) );
 		return $response;
+	}
+
+	/**
+	 * Shared form_id + date-range filter shape, read and validated from the
+	 * request. Dates are kept only when they look like `Y-m-d`.
+	 */
+	private function submission_filter_args( $req ) {
+		$args    = array( 'form_id' => max( 0, (int) $req->get_param( 'form_id' ) ) );
+		foreach ( array( 'date_from', 'date_to' ) as $key ) {
+			$val = sanitize_text_field( (string) $req->get_param( $key ) );
+			if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $val ) ) {
+				$args[ $key ] = $val;
+			}
+		}
+		return $args;
+	}
+
+	/**
+	 * Stream the filtered submissions as a CSV or JSON download. Emits raw
+	 * bytes with attachment headers and exits — REST's JSON serializer is
+	 * bypassed on purpose. Permission is enforced by `can_manage`.
+	 */
+	public function export_submissions( $req ) {
+		$format = strtolower( sanitize_text_field( (string) $req->get_param( 'format' ) ) );
+		if ( ! in_array( $format, array( 'csv', 'json' ), true ) ) {
+			$format = 'csv';
+		}
+
+		$filter      = $this->submission_filter_args( $req );
+		$submissions = new Submission_Repository();
+		$rows        = $submissions->export( $filter );
+
+		// Single-form export → resolve field labels from that form's schema for
+		// friendlier CSV headers.
+		$labels = array();
+		if ( ! empty( $filter['form_id'] ) ) {
+			$form = ( new Form_Repository() )->get( (int) $filter['form_id'] );
+			if ( $form && ! empty( $form['schema']['fields'] ) ) {
+				foreach ( $form['schema']['fields'] as $field ) {
+					if ( isset( $field['name'] ) ) {
+						$labels[ $field['name'] ] = $field['label'] ?? $field['name'];
+					}
+				}
+			}
+		}
+
+		$exporter = new Submission_Exporter();
+		$filename = 'submissions-' . gmdate( 'Ymd-His' ) . '.' . $format;
+
+		if ( 'json' === $format ) {
+			$body         = $exporter->to_json( $rows );
+			$content_type = 'application/json; charset=utf-8';
+		} else {
+			$body         = $exporter->to_csv( $rows, $labels );
+			$content_type = 'text/csv; charset=utf-8';
+		}
+
+		nocache_headers();
+		header( 'Content-Type: ' . $content_type );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Content-Length: ' . strlen( $body ) );
+
+		// Raw bytes; bypass the REST JSON serializer. Tests stub `wp_die`.
+		echo $body; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
 	}
 
 	public function ai_verify( $req ) {

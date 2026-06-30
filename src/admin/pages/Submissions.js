@@ -3,6 +3,9 @@ import {
 	Button,
 	Card,
 	CardBody,
+	Dropdown,
+	MenuGroup,
+	MenuItem,
 	Modal,
 	Notice,
 	SelectControl,
@@ -12,6 +15,13 @@ import { __, sprintf, _n } from '@wordpress/i18n';
 import PageHeader from '../../shared/components/PageHeader';
 
 const PER_PAGE = 20;
+
+// Pull the download filename out of Content-Disposition, with a sane default.
+function filenameFromResponse( res, fallback ) {
+	const cd = res.headers.get( 'Content-Disposition' ) || '';
+	const match = cd.match( /filename="?([^"]+)"?/i );
+	return ( match && match[ 1 ] ) || fallback;
+}
 
 // "3h ago" style within 24h, locale date beyond that.
 function formatSubmitted( iso ) {
@@ -87,6 +97,9 @@ export default function Submissions( { api } ) {
 	const [ page, setPage ] = useState( 1 );
 	const [ total, setTotal ] = useState( 0 );
 	const [ viewing, setViewing ] = useState( null );
+	const [ dateFrom, setDateFrom ] = useState( '' );
+	const [ dateTo, setDateTo ] = useState( '' );
+	const [ exporting, setExporting ] = useState( false );
 	const [ formId, setFormId ] = useState( () => {
 		// Deep link: admin.php?page=rapid-ai-forms-submissions&form_id=6
 		const param = new URLSearchParams( window.location.search ).get(
@@ -94,6 +107,15 @@ export default function Submissions( { api } ) {
 		);
 		return param && /^\d+$/.test( param ) ? param : '';
 	} );
+
+	// Shared form_id + date-range query string for both list and export.
+	const filterQuery = useMemo( () => {
+		const params = new URLSearchParams();
+		if ( formId ) params.set( 'form_id', formId );
+		if ( dateFrom ) params.set( 'date_from', dateFrom );
+		if ( dateTo ) params.set( 'date_to', dateTo );
+		return params.toString();
+	}, [ formId, dateFrom, dateTo ] );
 
 	// Forms power both the filter dropdown and the field-label lookup.
 	useEffect( () => {
@@ -115,7 +137,7 @@ export default function Submissions( { api } ) {
 		setLoading( true );
 		const url =
 			`submissions?page=${ page }&per_page=${ PER_PAGE }` +
-			( formId ? `&form_id=${ formId }` : '' );
+			( filterQuery ? `&${ filterQuery }` : '' );
 		api.getWithHeaders( url )
 			.then( ( { data, headers } ) => {
 				if ( cancelled ) return;
@@ -139,7 +161,39 @@ export default function Submissions( { api } ) {
 		return () => {
 			cancelled = true;
 		};
-	}, [ api, page, formId ] );
+	}, [ api, page, filterQuery ] );
+
+	// Download the current selection as CSV or JSON. Fetched as a blob (keeps
+	// header-based nonce auth) then saved via a transient object URL.
+	const handleExport = async ( format ) => {
+		setExporting( true );
+		setError( null );
+		try {
+			const path =
+				`submissions/export?format=${ format }` +
+				( filterQuery ? `&${ filterQuery }` : '' );
+			const res = await api.getResponse( path );
+			const blob = await res.blob();
+			const url = URL.createObjectURL( blob );
+			const a = document.createElement( 'a' );
+			a.href = url;
+			a.download = filenameFromResponse(
+				res,
+				`submissions.${ format }`
+			);
+			document.body.appendChild( a );
+			a.click();
+			a.remove();
+			URL.revokeObjectURL( url );
+		} catch ( e ) {
+			setError(
+				e.message ||
+					__( 'Export failed.', 'rapid-ai-forms' )
+			);
+		} finally {
+			setExporting( false );
+		}
+	};
 
 	const totalPages = Math.max( 1, Math.ceil( total / PER_PAGE ) );
 	const viewingSchema = viewing
@@ -204,6 +258,88 @@ export default function Submissions( { api } ) {
 						setPage( 1 );
 					} }
 					__nextHasNoMarginBottom
+				/>
+
+				<div className="raif-submissions__dates">
+					<label className="raif-submissions__date">
+						<span>{ __( 'From', 'rapid-ai-forms' ) }</span>
+						<input
+							type="date"
+							value={ dateFrom }
+							max={ dateTo || undefined }
+							onChange={ ( e ) => {
+								setDateFrom( e.target.value );
+								setPage( 1 );
+							} }
+						/>
+					</label>
+					<label className="raif-submissions__date">
+						<span>{ __( 'To', 'rapid-ai-forms' ) }</span>
+						<input
+							type="date"
+							value={ dateTo }
+							min={ dateFrom || undefined }
+							onChange={ ( e ) => {
+								setDateTo( e.target.value );
+								setPage( 1 );
+							} }
+						/>
+					</label>
+					{ ( dateFrom || dateTo ) && (
+						<Button
+							variant="tertiary"
+							size="small"
+							onClick={ () => {
+								setDateFrom( '' );
+								setDateTo( '' );
+								setPage( 1 );
+							} }
+						>
+							{ __( 'Clear dates', 'rapid-ai-forms' ) }
+						</Button>
+					) }
+				</div>
+
+				<div className="raif-submissions__spacer" />
+
+				<Dropdown
+					className="raif-submissions__export"
+					popoverProps={ { placement: 'bottom-end' } }
+					renderToggle={ ( { isOpen, onToggle } ) => (
+						<Button
+							variant="secondary"
+							onClick={ onToggle }
+							aria-expanded={ isOpen }
+							disabled={
+								exporting || ! rows || rows.length === 0
+							}
+							isBusy={ exporting }
+						>
+							{ exporting
+								? __( 'Exporting…', 'rapid-ai-forms' )
+								: __( 'Export', 'rapid-ai-forms' ) }
+						</Button>
+					) }
+					renderContent={ ( { onClose } ) => (
+						<MenuGroup>
+							<MenuItem
+								onClick={ () => {
+									onClose();
+									handleExport( 'csv' );
+								} }
+							>
+								{ __( 'Download CSV', 'rapid-ai-forms' ) }
+							</MenuItem>
+							<MenuItem
+								onClick={ () => {
+									onClose();
+									handleExport( 'json' );
+								} }
+							>
+								{ __( 'Download JSON', 'rapid-ai-forms' ) }
+							</MenuItem>
+						</MenuGroup>
+					) }
 				/>
 			</div>
 

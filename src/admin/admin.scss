@@ -516,11 +516,38 @@
 
 	&__toolbar {
 		display: flex;
-		justify-content: flex-end;
+		align-items: flex-end;
+		flex-wrap: wrap;
+		gap: 12px;
 		margin: 0 0 12px;
 
 		.components-select-control {
 			min-width: 220px;
+		}
+	}
+
+	&__spacer {
+		flex: 1 1 auto;
+	}
+
+	&__dates {
+		display: flex;
+		align-items: flex-end;
+		gap: 8px;
+	}
+
+	&__date {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: #757575;
+
+		input {
+			min-height: 32px;
 		}
 	}
 
