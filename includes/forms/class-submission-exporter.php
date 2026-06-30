@@ -19,11 +19,11 @@ class Submission_Exporter {
 	 * `data` columns (one per form field) are appended after these.
 	 */
 	const META_COLUMNS = array(
-		'ID'         => 'id',
-		'Form ID'    => 'form_id',
-		'Form'       => 'form_title',
+		'ID'              => 'id',
+		'Form ID'         => 'form_id',
+		'Form'            => 'form_title',
 		'Submitted (UTC)' => 'created_at',
-		'IP address' => 'ip_address',
+		'IP address'      => 'ip_address',
 	);
 
 	/**

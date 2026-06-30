@@ -18,7 +18,7 @@ class Test_Submission_Repository extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->repo    = new Submission_Repository();
-		$this->form_id = ( new Form_Repository() )->create(
+		$form          = ( new Form_Repository() )->create(
 			array(
 				'title'  => 'Contact',
 				'schema' => array(
@@ -29,6 +29,8 @@ class Test_Submission_Repository extends WP_UnitTestCase {
 				),
 			)
 		);
+		// Form_Repository::create() returns the full form row, not just the id.
+		$this->form_id = (int) $form['id'];
 	}
 
 	/** Insert a submission then force its created_at (UTC) for date-filter tests. */
@@ -84,7 +86,7 @@ class Test_Submission_Repository extends WP_UnitTestCase {
 			array( 'title' => 'Other', 'schema' => array( 'fields' => array(), 'notifications' => array( 'enabled' => false ) ) )
 		);
 		$this->seed( '2026-06-20 12:00:00' );
-		$this->repo->create( $other, array() );
+		$this->repo->create( (int) $other['id'], array() );
 
 		$this->assertSame( 1, $this->repo->count( $this->form_id ) );
 		$this->assertSame( 2, $this->repo->count() );

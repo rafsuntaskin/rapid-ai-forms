@@ -119,6 +119,7 @@ class Submission_Repository {
 			. $where . ' ORDER BY s.created_at DESC, s.id DESC LIMIT %d OFFSET %d';
 		$args_p = array_merge( array( Schema::submissions_table(), Schema::forms_table() ), $params, array( $limit, $offset ) );
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is a static base + placeholder-only WHERE from where(); every value is bound via prepare().
 		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $args_p ), ARRAY_A );
 		return $this->decode_rows( $rows );
 	}
@@ -130,8 +131,9 @@ class Submission_Repository {
 			$args = $args ? array( 'form_id' => (int) $args ) : array();
 		}
 		list( $where, $params ) = $this->where( $args );
-		$sql    = 'SELECT COUNT(*) FROM %i s' . $where;
-		$args_p = array_merge( array( Schema::submissions_table() ), $params );
+		$sql                    = 'SELECT COUNT(*) FROM %i s' . $where;
+		$args_p                 = array_merge( array( Schema::submissions_table() ), $params );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is a static base + placeholder-only WHERE from where(); every value is bound via prepare().
 		return (int) $wpdb->get_var( $wpdb->prepare( $sql, $args_p ) );
 	}
 
@@ -147,10 +149,11 @@ class Submission_Repository {
 		$max = max( 1, $max );
 
 		list( $where, $params ) = $this->where( $args );
-		$sql    = 'SELECT s.*, f.title AS form_title FROM %i s LEFT JOIN %i f ON f.id = s.form_id'
+		$sql                    = 'SELECT s.*, f.title AS form_title FROM %i s LEFT JOIN %i f ON f.id = s.form_id'
 			. $where . ' ORDER BY s.created_at DESC, s.id DESC LIMIT %d';
-		$args_p = array_merge( array( Schema::submissions_table(), Schema::forms_table() ), $params, array( $max ) );
+		$args_p                 = array_merge( array( Schema::submissions_table(), Schema::forms_table() ), $params, array( $max ) );
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is a static base + placeholder-only WHERE from where(); every value is bound via prepare().
 		$rows = $wpdb->get_results( $wpdb->prepare( $sql, $args_p ), ARRAY_A );
 		return $this->decode_rows( $rows );
 	}

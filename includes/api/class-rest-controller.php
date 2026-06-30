@@ -383,7 +383,7 @@ class Rest_Controller {
 	 * request. Dates are kept only when they look like `Y-m-d`.
 	 */
 	private function submission_filter_args( $req ) {
-		$args    = array( 'form_id' => max( 0, (int) $req->get_param( 'form_id' ) ) );
+		$args = array( 'form_id' => max( 0, (int) $req->get_param( 'form_id' ) ) );
 		foreach ( array( 'date_from', 'date_to' ) as $key ) {
 			$val = sanitize_text_field( (string) $req->get_param( $key ) );
 			if ( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $val ) ) {
