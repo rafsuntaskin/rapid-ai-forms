@@ -37,6 +37,7 @@ phpcs.xml*
 phpunit.xml*
 .phpunit.result.cache
 tests/
+playwright.config.ts
 .wp-env.json
 .wp-env.override.json
 

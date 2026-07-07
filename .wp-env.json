@@ -1,4 +1,7 @@
 {
 	"plugins": [ "." ],
-	"phpVersion": "8.2"
+	"phpVersion": "8.2",
+	"mappings": {
+		"wp-content/mu-plugins/raif-e2e.php": "./tests/e2e/mu-plugins/raif-e2e.php"
+	}
 }

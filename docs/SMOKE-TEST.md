@@ -1,7 +1,9 @@
 # Smoke test — Rapid AI Forms
 
-Manual release checklist for the admin + frontend flows, written so each scenario
-maps cleanly onto a future Playwright spec (`tests/e2e/` against `wp-env`). Run it
+Manual release checklist for the admin + frontend flows. The core form-flow
+scenarios (1–2, 3 partial, 6, plus AI generation) are now automated in
+`tests/e2e/` (Playwright against `wp-env` — see `tests/e2e/README.md`); the rest
+remain manual for now. Run it
 against the **installed release zip** (`npm run dist` → install via
 `wp plugin install <zip> --force --activate`), not the rsync dev copy, so the test
 exercises exactly what ships.

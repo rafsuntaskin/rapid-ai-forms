@@ -10,3 +10,9 @@ dist/
 .poke/
 .phpunit.result.cache
 .wp-env.override.json
+tests/e2e/.auth/
+tests/e2e/.artifacts/
+tests/e2e/.report/
+tests/e2e/.fixtures.json
+test-results/
+playwright-report/
