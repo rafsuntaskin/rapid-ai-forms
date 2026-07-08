@@ -76,7 +76,7 @@ class Admin {
 		$asset      = file_exists( $asset_file )
 			? require $asset_file
 			: array(
-				'dependencies' => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n', 'wp-data', 'wp-notices' ),
+				'dependencies' => array( 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-url', 'wp-i18n', 'wp-data', 'wp-notices' ),
 				'version'      => RAPID_AI_FORMS_VERSION,
 			);
 

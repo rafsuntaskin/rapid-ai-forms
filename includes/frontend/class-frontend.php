@@ -18,7 +18,7 @@ class Frontend {
 	public function register_assets() {
 		$asset_file = RAPID_AI_FORMS_PATH . 'build/frontend.asset.php';
 		$asset      = file_exists( $asset_file ) ? require $asset_file : array(
-			'dependencies' => array( 'wp-element' ),
+			'dependencies' => array( 'wp-api-fetch', 'wp-url' ),
 			'version'      => RAPID_AI_FORMS_VERSION,
 		);
 
