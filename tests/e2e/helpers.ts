@@ -16,6 +16,10 @@ export interface Fixtures {
 	contactFormUuid: string;
 	contactPageId: number;
 	contactPageUrl: string;
+	contactMessage: string;
+	rsvpFormId: number;
+	rsvpFormTitle: string;
+	rsvpGuest: string;
 	seededAt: string;
 }
 

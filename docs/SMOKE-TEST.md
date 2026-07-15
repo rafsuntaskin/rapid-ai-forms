@@ -8,11 +8,11 @@ against the **installed release zip** (`npm run dist` → install via
 `wp plugin install <zip> --force --activate`), not the rsync dev copy, so the test
 exercises exactly what ships.
 
-> Status: partly automated. **Playwright suite: 6/6 green (2026-07-15)** on
-> `wp-env` (`develop` @ `57d6313`) — covers AI form creation (stub provider),
-> frontend render + required-field validation (client + server), a stored
-> submission surfacing in the admin list, and a plain-permalink REST regression.
-> Run with `npm run test:e2e`.
+> Status: partly automated. **Playwright suite: 9/9 green (2026-07-15)** on
+> `wp-env` — covers AI form creation (stub provider), frontend render +
+> required-field validation (client + server), a stored submission surfacing in
+> the admin list, the submissions filter-by-form + detail modal / email preview,
+> and a plain-permalink REST regression. Run with `npm run test:e2e`.
 >
 > Last full **manual** pass: **0.2.0 (2026-06-15)** on the local Lando *wooDev*
 > site (WP 7.0) — all scenarios passed, no console errors; covers the v0.2
@@ -79,12 +79,12 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
   - form without a message field → labeled digest `Label: val · Label: val` (≤3 fields).
   - empty submission → `(no content)`.
 
-### 4. Submissions — filter by form
+### 4. Submissions — filter by form — ✅ automated (`submissions-dashboard.spec.ts`)
 - On Submissions, choose a form in the **"Filter by form"** select (`SelectControl`).
 - **Expect:** list narrows to that form; header count updates; the form pill is hidden
   while filtered. Deep link `&form_id={id}` applies the filter on load.
 
-### 5. Submission detail modal + email preview
+### 5. Submission detail modal + email preview — ✅ automated (`submissions-dashboard.spec.ts`)
 - Click **View** on a row from a form with notifications enabled.
 - **Expect** `.raif-submission-modal`: form pill + timestamp, a field table covering
   every non-hidden/non-password schema field (empty → `—`), then **IP address** and
@@ -161,6 +161,5 @@ Built under `tests/e2e/` — see `tests/e2e/README.md` for the run instructions.
 - Mirrors rather than duplicates PHPUnit: PHPUnit covers the REST contracts
   (`tests/test-rest-submissions.php`) and sanitizers; Playwright's job is the React
   UI and the rendered frontend.
-- **Still manual (candidates to automate next):** scenarios 4–5 (submission filter +
-  detail modal / email preview), 7–9 (editor tabs, Style tab + iframe preview, CSS
-  persistence/scoping), 10–11 (preview route auth, Settings).
+- **Still manual (candidates to automate next):** scenarios 7–9 (editor tabs, Style
+  tab + iframe preview, CSS persistence/scoping), 10–11 (preview route auth, Settings).
