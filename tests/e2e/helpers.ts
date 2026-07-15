@@ -14,6 +14,7 @@ export function wpCli( args: string ): string {
 export interface Fixtures {
 	contactFormId: number;
 	contactFormUuid: string;
+	contactPageId: number;
 	contactPageUrl: string;
 	seededAt: string;
 }

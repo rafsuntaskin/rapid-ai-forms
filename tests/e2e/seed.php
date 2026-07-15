@@ -73,6 +73,7 @@ $page_id = wp_insert_post(
 $fixtures = array(
 	'contactFormId'   => $form_id,
 	'contactFormUuid' => $form_uuid,
+	'contactPageId'   => (int) $page_id,
 	'contactPageUrl'  => get_permalink( $page_id ),
 	'seededAt'        => gmdate( 'c' ),
 );
