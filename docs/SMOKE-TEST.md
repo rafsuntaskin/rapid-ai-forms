@@ -1,17 +1,25 @@
 # Smoke test — Rapid AI Forms
 
 Manual release checklist for the admin + frontend flows. The core form-flow
-scenarios (1–2, 3 partial, 6, plus AI generation) are now automated in
-`tests/e2e/` (Playwright against `wp-env` — see `tests/e2e/README.md`); the rest
-remain manual for now. Run it
+scenarios (2, 3 partial, 6, plus AI generation) are now automated in `tests/e2e/`
+(Playwright against `wp-env` — see `tests/e2e/README.md`), including a
+plain-permalink REST regression; the rest remain manual for now. Run it
 against the **installed release zip** (`npm run dist` → install via
 `wp plugin install <zip> --force --activate`), not the rsync dev copy, so the test
 exercises exactly what ships.
 
-> Status: manual. Last run **0.2.0 (2026-06-15)** on the local Lando *wooDev* site
-> (WP 7.0) — all scenarios passed, no console errors. Covers v0.2 surface
-> (BYOK/WP-AI-Client providers, submissions, required-field validation, custom CSS).
-> Rapid AI Cloud flows (`feat/rapid-ai-cloud`) get added here when that branch merges.
+> Status: partly automated. **Playwright suite: 6/6 green (2026-07-15)** on
+> `wp-env` (`develop` @ `57d6313`) — covers AI form creation (stub provider),
+> frontend render + required-field validation (client + server), a stored
+> submission surfacing in the admin list, and a plain-permalink REST regression.
+> Run with `npm run test:e2e`.
+>
+> Last full **manual** pass: **0.2.0 (2026-06-15)** on the local Lando *wooDev*
+> site (WP 7.0) — all scenarios passed, no console errors; covers the v0.2
+> surface (BYOK/WP-AI-Client providers, submissions, required-field validation,
+> custom CSS). Rapid AI Cloud flows were browser-verified on wooDev (Connect
+> handshake, live quota meter, generation debiting purchased credits); fold
+> those into a spec when the provider is un-gated.
 
 ## Conventions
 
@@ -53,7 +61,7 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
 - **Assert:** `RAPID_AI_FORMS_ADMIN` global present; `wp plugin get rapid-ai-forms
   --field=version` equals the release version.
 
-### 2. Forms list
+### 2. Forms list — ✅ partly automated (`admin-form-flow.spec.ts`: created form appears in list)
 - **Go to** Forms list.
 - **Expect:** `.raif-list__grid` with one `.raif-card` per form; each card shows field
   count, relative "Updated", a click-to-copy shortcode, and **Edit / Submissions /
@@ -61,7 +69,7 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
 - **Playwright:** assert `.raif-card` count == seeded form count; "Submissions" link
   href contains `page=rapid-ai-forms-submissions&form_id=`.
 
-### 3. Submissions dashboard (cross-form list)
+### 3. Submissions dashboard (cross-form list) — ✅ partly automated (`frontend-submission.spec.ts`: stored row surfaces in the list)
 - **Go to** Submissions.
 - **Expect:** `.raif-submissions__list` with a `.raif-submissions__row` per entry,
   newest first. Each row: `#id` + `.raif-submissions__form-pill` (form title),
@@ -85,7 +93,7 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
   rendered subject and a `<pre>` body with mail-tags resolved (e.g. `Name: <value>`).
   Absent when the form has notifications disabled.
 
-### 6. Required-field validation (frontend, the integrity fix)
+### 6. Required-field validation (frontend, the integrity fix) — ✅ automated (`frontend-submission.spec.ts`: native + server-side, plus stored success)
 - Render a form with required fields on a page (`[rapid_ai_form id="{id}"]`); submit
   empty or with only some required fields filled.
 - **Expect:** request returns **HTTP 422**; per-field `.raif-field-error` messages
@@ -131,17 +139,28 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
   disabled until a key is present. `GET /settings` never returns a stored `api_key`
   (only `api_key_set`).
 
+### 12. Plain-permalink REST calls — ✅ automated (`plain-permalinks.spec.ts`)
+- Switch the site to **plain** permalinks (`?rest_route=/…/v1/` REST root), submit a
+  form entry, then open the admin **Submissions** list filtered by `form_id`.
+- **Expect:** the filtered list loads (no "Failed to load submissions"); the row is
+  visible. Regression for the query-string collision fixed in `c085958` — the admin
+  SPA's `submissions?form_id=` call must not 404 under plain permalinks.
+
 ---
 
-## Notes for the Playwright harness (when we build it)
+## Notes on the Playwright harness
 
-- Run WP via `@wordpress/env` (already a dev dep); target `http://localhost:8888`.
-- `globalSetup`: `wp-env run cli wp ...` to activate the plugin, seed forms/submissions,
-  and create an admin session (`storageState`).
-- Stub AI providers with a test mu-plugin filtering `pre_http_request` so generation and
-  the AI CSS editor return canned responses — never hit a real provider in CI.
-- Keep API-level checks (scenarios 6, 10, 11) as fast `request`-context tests; reserve
-  full browser drives for the UI-heavy ones (3–5, 7–9).
-- Mirror the existing PHPUnit coverage rather than duplicate it: PHPUnit already covers
-  the REST contracts (`tests/test-rest-submissions.php`) and sanitizers; Playwright's job
-  is the React UI and the rendered frontend.
+Built under `tests/e2e/` — see `tests/e2e/README.md` for the run instructions.
+
+- Runs WP via `@wordpress/env`; targets `http://localhost:8888`.
+- `global-setup.ts`: activates the plugin, sets pretty permalinks, seeds a form +
+  page (`seed.php` → `.fixtures.json`), and saves an admin `storageState`.
+- The stub AI provider is a mu-plugin registering an `e2e_stub` provider
+  (`tests/e2e/mu-plugins/raif-e2e.php`, mounted via `.wp-env.json` mappings, dist-
+  excluded) so generation is deterministic and never hits a real provider.
+- Mirrors rather than duplicates PHPUnit: PHPUnit covers the REST contracts
+  (`tests/test-rest-submissions.php`) and sanitizers; Playwright's job is the React
+  UI and the rendered frontend.
+- **Still manual (candidates to automate next):** scenarios 4–5 (submission filter +
+  detail modal / email preview), 7–9 (editor tabs, Style tab + iframe preview, CSS
+  persistence/scoping), 10–11 (preview route auth, Settings).
