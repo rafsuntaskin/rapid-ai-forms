@@ -116,6 +116,21 @@ $sub_repo->create(
 	array( 'full_name' => E2E_RSVP_GUEST, 'email' => 'bravo@example.com', 'guests' => '3' )
 );
 
+// --- Third form: dedicated to the Style-tab specs (scenarios 7-9) so those
+// tests can mutate custom CSS without touching the forms other specs use. ---
+$style_form = $repo->create(
+	array(
+		'title'  => 'E2E Style',
+		'schema' => array(
+			'fields'        => array(
+				array( 'name' => 'your_name', 'label' => 'Your name', 'type' => 'text', 'required' => true ),
+				array( 'name' => 'email', 'label' => 'Email', 'type' => 'email', 'required' => true ),
+			),
+			'notifications' => array( 'enabled' => false ),
+		),
+	)
+);
+
 $fixtures = array(
 	'contactFormId'   => $form_id,
 	'contactFormUuid' => $form_uuid,
@@ -125,6 +140,8 @@ $fixtures = array(
 	'rsvpFormId'      => $rsvp_id,
 	'rsvpFormTitle'   => 'E2E RSVP',
 	'rsvpGuest'       => E2E_RSVP_GUEST,
+	'styleFormId'     => (int) $style_form['id'],
+	'styleFormUuid'   => (string) $style_form['uuid'],
 	'seededAt'        => gmdate( 'c' ),
 );
 

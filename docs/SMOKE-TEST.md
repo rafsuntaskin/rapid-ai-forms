@@ -8,11 +8,12 @@ against the **installed release zip** (`npm run dist` → install via
 `wp plugin install <zip> --force --activate`), not the rsync dev copy, so the test
 exercises exactly what ships.
 
-> Status: partly automated. **Playwright suite: 9/9 green (2026-07-15)** on
+> Status: partly automated. **Playwright suite: 13/13 green (2026-07-17)** on
 > `wp-env` — covers AI form creation (stub provider), frontend render +
 > required-field validation (client + server), a stored submission surfacing in
 > the admin list, the submissions filter-by-form + detail modal / email preview,
-> and a plain-permalink REST regression. Run with `npm run test:e2e`.
+> the editor Form/Style tabs + live CSS iframe preview + persistence/scoping +
+> sanitizer, and a plain-permalink REST regression. Run with `npm run test:e2e`.
 >
 > Last full **manual** pass: **0.2.0 (2026-06-15)** on the local Lando *wooDev*
 > site (WP 7.0) — all scenarios passed, no console errors; covers the v0.2
@@ -103,13 +104,13 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
   /wp-json/rapid-ai-forms/v1/submissions/{uuid}` with a missing required field →
   `422 raif_validation` with `data.fields`; submission count unchanged.
 
-### 7. Form editor — Form / Style tabs
+### 7. Form editor — Form / Style tabs — ✅ automated (`editor-style.spec.ts`)
 - **Go to** the form editor for a form.
 - **Expect:** a `.raif-editor__tabs` TabPanel with **Form** (default) and **Style** tabs;
   Save / Back action bar sits outside the tabs. Form tab shows the AI prompt card, form
   details, fields, notifications, and a live mock preview.
 
-### 8. Style tab — custom CSS + theme iframe preview
+### 8. Style tab — custom CSS + theme iframe preview — ✅ automated (`editor-style.spec.ts`)
 - Click the **Style** tab.
 - **Expect:** prompt box + **Apply with AI** button, a `.raif-css-editor` textarea, and
   an `<iframe>` (`.raif-styling__preview`) loading `/?rapid_ai_form_preview={id}`
@@ -119,7 +120,7 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
 - **Playwright:** assert inside `frameLocator('.raif-styling__preview iframe')` that a
   label's computed `color` is `rgb(220, 20, 60)`.
 
-### 9. Custom CSS persistence + scoping
+### 9. Custom CSS persistence + scoping — ✅ automated (`editor-style.spec.ts`; frontend checks use the preview route)
 - In the Style tab, enter CSS and click **Save**; reload the editor.
 - **Expect:** CSS persists (it round-trips through `settings.custom_css`).
 - On the frontend, **expect** a `<style id="raif-css-{uuid}">` block scoping rules under
@@ -161,5 +162,6 @@ Built under `tests/e2e/` — see `tests/e2e/README.md` for the run instructions.
 - Mirrors rather than duplicates PHPUnit: PHPUnit covers the REST contracts
   (`tests/test-rest-submissions.php`) and sanitizers; Playwright's job is the React
   UI and the rendered frontend.
-- **Still manual (candidates to automate next):** scenarios 7–9 (editor tabs, Style
-  tab + iframe preview, CSS persistence/scoping), 10–11 (preview route auth, Settings).
+- **Still manual (candidates to automate next):** scenarios 1 (plugin-loads-clean
+  asserts), 10 (preview route auth — the 403-for-logged-out branch), 11 (Settings
+  provider dropdown / key masking).

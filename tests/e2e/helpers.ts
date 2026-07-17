@@ -20,6 +20,8 @@ export interface Fixtures {
 	rsvpFormId: number;
 	rsvpFormTitle: string;
 	rsvpGuest: string;
+	styleFormId: number;
+	styleFormUuid: string;
 	seededAt: string;
 }
 
