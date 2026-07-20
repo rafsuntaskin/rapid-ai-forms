@@ -41,6 +41,13 @@ $settings['active_provider'] = 'e2e_stub';
 // A non-empty api_key makes get_settings() report the provider as
 // `configured`, which is what un-gates the admin "Generate with AI" prompt.
 $settings['providers']['e2e_stub'] = array( 'api_key' => 'stub-configured' );
+// A saved BYOK key so the settings spec can assert GET /settings masks it
+// (returns api_key_set=true, never the value).
+$settings['providers']['openai_compatible'] = array(
+	'api_key'  => 'sk-e2e-masked-secret',
+	'base_url' => 'https://api.openai.com/v1',
+	'model'    => 'gpt-4o-mini',
+);
 update_option( 'rapid_ai_forms_ai_settings', $settings, false );
 
 // --- Clean previous E2E fixtures so re-runs start from a known state. ---

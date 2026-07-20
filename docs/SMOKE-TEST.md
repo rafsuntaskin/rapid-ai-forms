@@ -1,19 +1,20 @@
 # Smoke test — Rapid AI Forms
 
-Manual release checklist for the admin + frontend flows. The core form-flow
-scenarios (2, 3 partial, 6, plus AI generation) are now automated in `tests/e2e/`
-(Playwright against `wp-env` — see `tests/e2e/README.md`), including a
-plain-permalink REST regression; the rest remain manual for now. Run it
-against the **installed release zip** (`npm run dist` → install via
-`wp plugin install <zip> --force --activate`), not the rsync dev copy, so the test
-exercises exactly what ships.
+Checklist for the admin + frontend flows. **All 11 scenarios below are now
+automated** in `tests/e2e/` (Playwright against `wp-env` — see
+`tests/e2e/README.md`), plus a plain-permalink REST regression. Keep this doc as
+the scenario spec / manual fallback, and run it against the **installed release
+zip** (`npm run dist` → install via `wp plugin install <zip> --force --activate`)
+before a release for a belt-and-suspenders pass on exactly what ships.
 
-> Status: partly automated. **Playwright suite: 13/13 green (2026-07-17)** on
-> `wp-env` — covers AI form creation (stub provider), frontend render +
-> required-field validation (client + server), a stored submission surfacing in
-> the admin list, the submissions filter-by-form + detail modal / email preview,
-> the editor Form/Style tabs + live CSS iframe preview + persistence/scoping +
-> sanitizer, and a plain-permalink REST regression. Run with `npm run test:e2e`.
+> Status: **fully automated. Playwright suite: 18/18 green (2026-07-21)** on
+> `wp-env` — covers plugin-loads-clean, AI form creation (stub provider),
+> frontend render + required-field validation (client + server), a stored
+> submission surfacing in the admin list, the submissions filter-by-form +
+> detail modal / email preview, the editor Form/Style tabs + live CSS iframe
+> preview + persistence/scoping + sanitizer, the preview-route auth + headers,
+> Settings (provider fields, Verify gate, api_key masking), and a plain-permalink
+> REST regression. Run with `npm run test:e2e`.
 >
 > Last full **manual** pass: **0.2.0 (2026-06-15)** on the local Lando *wooDev*
 > site (WP 7.0) — all scenarios passed, no console errors; covers the v0.2
@@ -57,7 +58,7 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
 
 ## Scenarios
 
-### 1. Plugin loads clean
+### 1. Plugin loads clean — ✅ automated (`plugin-health.spec.ts`)
 - **Go to** Forms list. **Expect:** page renders, no PHP notice, no console error.
 - **Assert:** `RAPID_AI_FORMS_ADMIN` global present; `wp plugin get rapid-ai-forms
   --field=version` equals the release version.
@@ -128,12 +129,12 @@ Playwright should seed via WP-CLI in `globalSetup` rather than depend on existin
 - **Security assert:** saving `</style><script>alert(1)</script>` results in stripped
   output — no `<script>` reaches the rendered page.
 
-### 10. Preview route is admin-only
+### 10. Preview route is admin-only — ✅ automated (`plugin-health.spec.ts`)
 - Logged out (or non-admin), **GET** `/?rapid_ai_form_preview={id}`.
 - **Expect:** HTTP **403**. As admin: 200 with the form inside a minimal themed document,
   `X-Frame-Options: SAMEORIGIN`, no-cache headers.
 
-### 11. Settings
+### 11. Settings — ✅ automated (`settings.spec.ts`)
 - **Go to** Settings.
 - **Expect:** provider dropdown lists the available providers; selecting a BYOK provider
   shows API key / model (and base URL where applicable); **Verify connection** is
@@ -162,6 +163,7 @@ Built under `tests/e2e/` — see `tests/e2e/README.md` for the run instructions.
 - Mirrors rather than duplicates PHPUnit: PHPUnit covers the REST contracts
   (`tests/test-rest-submissions.php`) and sanitizers; Playwright's job is the React
   UI and the rendered frontend.
-- **Still manual (candidates to automate next):** scenarios 1 (plugin-loads-clean
-  asserts), 10 (preview route auth — the 403-for-logged-out branch), 11 (Settings
-  provider dropdown / key masking).
+- **All 11 scenarios are automated** (spec files noted on each heading above). Not
+  yet covered by a spec: the Rapid AI Cloud (Managed provider) flows — browser-
+  verified manually on wooDev — pending the provider being un-gated; and running
+  the suite against the built dist zip rather than the dev mount.
