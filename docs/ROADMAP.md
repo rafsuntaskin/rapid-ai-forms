@@ -28,16 +28,33 @@ All implemented on the release branch; move to readme.txt changelog when 0.2.0 s
 - PHPUnit on the official WP test suite (`npm run test:php` via wp-env).
 
 (Database migration runner was descoped — dbDelta-on-activation is enough at the
-current install base. CSV export + date filter deferred from the original v0.2 scope.)
+current install base.)
 
-## v0.3
+- ~~CSV export + date filter deferred from v0.2.~~ **Shipped on develop:**
+  `Forms\Submission_Exporter` + `GET /submissions/export?format=csv|json` +
+  a date-range filter on the Submissions page.
 
-- **Rapid AI Cloud** — hosted free-quota provider (hybrid: anonymous auto-connect +
-  optional website account for purchases). Plugin + backend plan with checklist:
-  [`PLAN-rapid-ai-cloud.md`](PLAN-rapid-ai-cloud.md).
-- Anti-abuse / submission-origin validation: signed cache-safe per-render token,
-  honeypot + time-trap, per-IP rate limit, pluggable CAPTCHA/Akismet hook — see
+## v0.3 — ✅ shipped (on develop)
+
+- ~~**Rapid AI Cloud** — hosted free-quota provider (hybrid: anonymous auto-connect +
+  optional website account for purchases).~~ Built plugin-side (`Managed` provider +
+  `/managed/*` + Settings card) **and** backend (`rapid-ai-cloud`, Phases A–D:
+  handshake, ledger, generate, magic-link auth/dashboard, usage emails,
+  LemonSqueezy checkout/webhook, Upstash rate limiter, `order_refunded` clawback).
+  **Gated off** behind `rapid_ai_forms_managed_enabled` until post wp.org launch.
+  Plan + checklist: [`PLAN-rapid-ai-cloud.md`](PLAN-rapid-ai-cloud.md).
+- ~~Anti-abuse / submission-origin validation~~ **Shipped:** `Forms\Submission_Guard`
+  — signed cache-safe per-render token, honeypot + time-trap, per-IP rate limit,
+  pluggable CAPTCHA/Akismet hook. See
   [`PLAN-submission-integrity.md`](PLAN-submission-integrity.md) Part B.
+
+## Test infrastructure — ✅ shipped (on develop)
+
+- Playwright e2e suite (`tests/e2e/`, `npm run test:e2e`) — 18/18 green, covers
+  every [`SMOKE-TEST.md`](SMOKE-TEST.md) scenario (1–12). Complements the PHPUnit
+  REST/sanitizer coverage.
+- REST client hardened for plain-permalink sites (query-string `?rest_route=`
+  collision) + a dedicated regression spec.
 
 ## v0.4 — ✅ shipped (on develop)
 

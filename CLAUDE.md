@@ -1,5 +1,7 @@
 # Rapid AI Forms — agent notes
 
+> **Resuming? Read [`docs/HANDOFF.md`](docs/HANDOFF.md) first** — current repo/branch state, what's shipped-but-unreleased, how to run everything, blocked-on-user items, and landmines.
+>
 > **For product/technical spec** (data contracts, REST endpoints, AI provider contract, roadmap), see [`docs/SPEC.md`](docs/SPEC.md). This file holds agent-oriented conventions only.
 
 ## What this plugin is
